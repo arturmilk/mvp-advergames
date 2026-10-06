@@ -1,0 +1,280 @@
+{
+  "version": 1,
+  "style": "16-bit SNES-era pixel art, limited palette, crisp pixels, no anti-aliasing, no blur, no text, clean silhouette, flat shading with 1px dark outline. Flat solid pure magenta #FF00FF background.",
+  "model": "gpt_image_2_5 (Higgsfield)",
+  "note": "Sprites em pixels lógicos (o jogo escala por inteiro, nearest-neighbor). Entradas com runtime=true são carregadas pelo jogo e substituem os placeholders procedurais de mesmo id. Camadas \"mid\"/\"near\" dos cenários e efeitos (poeira, brilho, confete) são procedurais no index.html.",
+  "assets": [
+    {
+      "id": "dheep",
+      "file": "dheep.png",
+      "width": 108,
+      "height": 23,
+      "runtime": true,
+      "kind": "sprite",
+      "frameWidth": 18,
+      "frameHeight": 23,
+      "frames": [
+        "idle",
+        "run1",
+        "run2",
+        "jump",
+        "win",
+        "hurt"
+      ],
+      "usage": "Jogador (CONFIG.mascotName). Personagem estilizado, não é retrato.",
+      "source": "higgsfield:gpt_image_2_5",
+      "prompt": "Game sprite sheet, exactly 6 frames in ONE horizontal row ... stylized cartoon young delivery worker, red cap with yellow brim, orange t-shirt with yellow and red stripe, blue jeans, white sneakers. 16-bit SNES-era pixel art, limited palette, crisp pixels, no anti-aliasing, no blur, no text, clean silhouette, flat shading with 1px dark outline. Flat solid pure magenta #FF00FF background."
+    },
+    {
+      "id": "boss",
+      "file": "boss.png",
+      "width": 112,
+      "height": 31,
+      "runtime": true,
+      "kind": "sprite",
+      "frameWidth": 28,
+      "frameHeight": 31,
+      "frames": [
+        "idle",
+        "wind",
+        "throw",
+        "stun"
+      ],
+      "usage": "Inimigo no topo (CONFIG.bossName) que lança obstáculos.",
+      "source": "higgsfield:gpt_image_2_5",
+      "prompt": "Game sprite sheet, exactly 4 frames ... grumpy cartoon rival manager, slicked-back black hair, mustache, grey suit, green tie. 16-bit SNES-era pixel art, limited palette, crisp pixels, no anti-aliasing, no blur, no text, clean silhouette, flat shading with 1px dark outline. Flat solid pure magenta #FF00FF background."
+    },
+    {
+      "id": "barrel",
+      "file": "barrel.png",
+      "width": 26,
+      "height": 11,
+      "runtime": true,
+      "kind": "sprite",
+      "frameWidth": 13,
+      "frameHeight": 11,
+      "frames": [
+        "roll1",
+        "roll2"
+      ],
+      "usage": "Obstáculo vermelho que rola pelas vigas.",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "box",
+      "file": "box.png",
+      "width": 12,
+      "height": 11,
+      "runtime": true,
+      "kind": "sprite",
+      "frames": [
+        "box"
+      ],
+      "usage": "Obstáculo laranja (caixa) que quica.",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "bottle",
+      "file": "bottle.png",
+      "width": 6,
+      "height": 14,
+      "runtime": true,
+      "kind": "sprite",
+      "frames": [
+        "bottle"
+      ],
+      "usage": "Obstáculo azul (garrafa) que cai rápido em linha reta.",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "food_caixa",
+      "file": "food_caixa.png",
+      "width": 10,
+      "height": 12,
+      "runtime": true,
+      "kind": "sprite",
+      "frames": [
+        "caixa"
+      ],
+      "usage": "Item coletável de alimento (+10).",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "food_saco",
+      "file": "food_saco.png",
+      "width": 9,
+      "height": 12,
+      "runtime": true,
+      "kind": "sprite",
+      "frames": [
+        "saco"
+      ],
+      "usage": "Item coletável de alimento (+10).",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "food_leite",
+      "file": "food_leite.png",
+      "width": 7,
+      "height": 12,
+      "runtime": true,
+      "kind": "sprite",
+      "frames": [
+        "leite"
+      ],
+      "usage": "Item coletável de alimento (+10).",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "food_fardo",
+      "file": "food_fardo.png",
+      "width": 12,
+      "height": 12,
+      "runtime": true,
+      "kind": "sprite",
+      "frames": [
+        "fardo"
+      ],
+      "usage": "Item coletável de alimento (+10).",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "food_congelado",
+      "file": "food_congelado.png",
+      "width": 10,
+      "height": 12,
+      "runtime": true,
+      "kind": "sprite",
+      "frames": [
+        "congelado"
+      ],
+      "usage": "Item coletável de alimento (+10).",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "coin",
+      "file": "coin.png",
+      "width": 48,
+      "height": 12,
+      "runtime": true,
+      "kind": "sprite",
+      "frameWidth": 12,
+      "frameHeight": 12,
+      "frames": [
+        "spin1",
+        "spin2",
+        "spin3",
+        "spin4"
+      ],
+      "usage": "Moeda R (bônus raro, +50).",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "pw_shield",
+      "file": "pw_shield.png",
+      "width": 11,
+      "height": 13,
+      "runtime": true,
+      "kind": "sprite",
+      "frames": [
+        "shield"
+      ],
+      "usage": "Capa de chuva: escudo contra 1 batida.",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "pw_nitro",
+      "file": "pw_nitro.png",
+      "width": 9,
+      "height": 13,
+      "runtime": true,
+      "kind": "sprite",
+      "frames": [
+        "nitro"
+      ],
+      "usage": "Nitro: velocidade 2x por 3 s.",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "pw_magnet",
+      "file": "pw_magnet.png",
+      "width": 12,
+      "height": 13,
+      "runtime": true,
+      "kind": "sprite",
+      "frames": [
+        "magnet"
+      ],
+      "usage": "Ímã: puxa itens próximos.",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "pw_fair",
+      "file": "pw_fair.png",
+      "width": 13,
+      "height": 13,
+      "runtime": true,
+      "kind": "sprite",
+      "frames": [
+        "fair"
+      ],
+      "usage": "Preço justo: pontos x2.",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "truck",
+      "file": "truck.png",
+      "width": 48,
+      "height": 22,
+      "runtime": true,
+      "kind": "sprite",
+      "frameWidth": 48,
+      "frameHeight": 22,
+      "frames": [
+        "drive"
+      ],
+      "usage": "Caminhão baú Rover (cenário da rodovia e decoração).",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "bg_warehouse_far",
+      "file": "bg_warehouse_far.png",
+      "width": 232,
+      "height": 300,
+      "runtime": true,
+      "kind": "layer",
+      "usage": "Camada de fundo (parallax lento) do mundo \"warehouse\".",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "bg_highway_far",
+      "file": "bg_highway_far.png",
+      "width": 232,
+      "height": 300,
+      "runtime": true,
+      "kind": "layer",
+      "usage": "Camada de fundo (parallax lento) do mundo \"highway\".",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "bg_forest_far",
+      "file": "bg_forest_far.png",
+      "width": 232,
+      "height": 300,
+      "runtime": true,
+      "kind": "layer",
+      "usage": "Camada de fundo (parallax lento) do mundo \"forest\".",
+      "source": "higgsfield:gpt_image_2_5"
+    },
+    {
+      "id": "bg_river_far",
+      "file": "bg_river_far.png",
+      "width": 232,
+      "height": 300,
+      "runtime": true,
+      "kind": "layer",
+      "usage": "Camada de fundo (parallax lento) do mundo \"river\".",
+      "source": "higgsfield:gpt_image_2_5"
+    }
+  ]
+}
