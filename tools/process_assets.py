@@ -23,15 +23,34 @@ FONT = {'0': '111101101101111', '1': '010110010010111', '2': '111001111100111', 
         '4': '101101111001001', '6': '111100111101111', 'B': '110101110101110', 'R': '110101110101101'}
 
 
+def is_magenta(r, g, b):
+    return r > 170 and b > 170 and g < 110 and abs(r - b) < 60
+
+
+def is_fringe(r, g, b):
+    # mistura do magenta com o contorno escuro (anti-aliasing da IA); não pega roxo/azul das roupas
+    return r > 70 and b > 70 and g < min(r, b) * .55 and abs(r - b) < 45
+
+
 def key(im):
-    """Remove o fundo magenta (inclui franjas rosadas do anti-aliasing)."""
+    """Remove o fundo magenta e as franjas rosadas coladas nele (sem apagar roupas roxas)."""
     im = im.convert('RGBA')
     px = im.load()
     w, h = im.size
+    bg = [[False] * w for _ in range(h)]
     for y in range(h):
         for x in range(w):
             r, g, b, a = px[x, y]
-            if min(r, b) - g > 70 and r > 120 and b > 120:
+            if is_magenta(r, g, b):
+                bg[y][x] = True
+    for y in range(h):
+        for x in range(w):
+            if bg[y][x]:
+                px[x, y] = (0, 0, 0, 0)
+                continue
+            r, g, b, a = px[x, y]
+            if is_fringe(r, g, b) and any(0 <= x + dx < w and 0 <= y + dy < h and bg[y + dy][x + dx]
+                                          for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
                 px[x, y] = (0, 0, 0, 0)
     return im
 
@@ -97,15 +116,17 @@ def add_outline(im, col=(20, 20, 20, 255)):
     return big
 
 
-def sheet(frames, scale, anchor='feet', colors=20, outline=True):
+def sheet(frames, scale, anchor='feet', colors=20, outline=True, min_cell=0, flip=False):
     """Monta uma tira horizontal com células iguais, quadros alinhados pela base e pelos pés."""
     small = [shrink(f, scale, colors) for f in frames]
+    if flip:
+        small = [s.transpose(Image.FLIP_LEFT_RIGHT) for s in small]
     if outline:
         small = [add_outline(s) for s in small]
     cx = [feet_center(s) if anchor == 'feet' else s.size[0] / 2 for s in small]
     left = max(c for c in cx)
     right = max(s.size[0] - c for s, c in zip(small, cx))
-    cw, ch = int(round(left + right)) + 1, max(s.size[1] for s in small)
+    cw, ch = max(min_cell, int(round(left + right)) + 1), max(min_cell, max(s.size[1] for s in small))
     if cw % 2:
         cw += 1
     strip = Image.new('RGBA', (cw * len(small), ch), (0, 0, 0, 0))
@@ -129,10 +150,10 @@ def ptext(img, text, cx, y, col=(255, 255, 255, 255)):
 manifest = []
 
 
-def save(name, im, **meta):
-    path = os.path.join(OUT, name + '.png')
-    im.save(path)
-    entry = {'id': name, 'file': name + '.png', 'width': im.size[0], 'height': im.size[1], 'runtime': True}
+def save(name, im, file=None, **meta):
+    file = file or name + '.png'
+    im.save(os.path.join(OUT, file))
+    entry = {'id': name, 'file': file, 'width': im.size[0], 'height': im.size[1], 'runtime': True}
     entry.update(meta)
     manifest.append(entry)
     print(f'{name:22s} {im.size}')
@@ -142,47 +163,58 @@ def raw(name):
     return Image.open(os.path.join(RAW, name))
 
 
-# ---------- personagens ----------
-fr = slice_frames(key(raw('dheep_sheet.png')))
-assert len(fr) == 6, f'dheep: {len(fr)} quadros'
-sc = 19 / fr[0].size[1]
-img, cw, ch = sheet(fr, sc)
-save('dheep', img, kind='sprite', frameWidth=cw, frameHeight=ch, frames=['idle', 'run1', 'run2', 'jump', 'win', 'hurt'],
-     usage='Jogador (CONFIG.mascotName). Personagem estilizado, não é retrato.', source='higgsfield:gpt_image_2_5',
-     prompt='Game sprite sheet, exactly 6 frames in ONE horizontal row ... stylized cartoon young delivery worker, red cap with yellow brim, orange t-shirt with yellow and red stripe, blue jeans, white sneakers. ' + STYLE)
+# ---------- personagens (v2: super deformed, célula 48x48 lógica = 96x96 px de tela em escala 2x) ----------
+CELL = 48
+fr = slice_frames(key(raw('dheep_v2_sheet.png')))
+assert len(fr) == 7, f'dheep: {len(fr)} quadros'
+img, cw, ch = sheet(fr, 42 / fr[0].size[1], min_cell=CELL)
+save('dheep', img, file='dheep-96x96.png', kind='sprite', frameWidth=cw, frameHeight=ch,
+     frames=['idle', 'run1', 'run2', 'jump', 'land', 'win', 'hurt'], runFrames=[1, 0],
+     usage='Jogador (CONFIG.mascotName), estilo SD. Personagem estilizado, não é retrato. '
+           'Os quadros run1/run2 vieram quase iguais da IA, por isso a corrida alterna run1 e idle (runFrames).',
+     source='higgsfield:gpt_image_2_5 (quality high, referência: geração v1 do Dheep)',
+     prompt='Game sprite sheet, exactly 7 frames in ONE horizontal row ... 1 idle, 2-3 running, 4 jumping, 5 landing, '
+            '6 happy victory, 7 surprised hurt. Young male courier based on the reference image (red cap with yellow brim), '
+            'super deformed proportions (head ~35%), orange t-shirt with thin red and yellow stripe, dark graphite gray pants, '
+            'yellow sneakers, minimalist 3-4 pixel eyes and mouth. ' + STYLE)
 
-fr = slice_frames(key(raw('boss_sheet.png')))
+fr = slice_frames(key(raw('boss_v2_sheet.png')))
 assert len(fr) == 4, f'boss: {len(fr)} quadros'
-sc = 28 / fr[0].size[1]
-img, cw, ch = sheet(fr, sc)
-save('boss', img, kind='sprite', frameWidth=cw, frameHeight=ch, frames=['idle', 'wind', 'throw', 'stun'],
-     usage='Inimigo no topo (CONFIG.bossName) que lança obstáculos.', source='higgsfield:gpt_image_2_5',
-     prompt='Game sprite sheet, exactly 4 frames ... grumpy cartoon rival manager, slicked-back black hair, mustache, grey suit, green tie. ' + STYLE)
+# a IA desenhou olhando para a direita; no jogo ele fica no topo à direita, olhando para a esquerda
+img, cw, ch = sheet(fr, 46 / fr[0].size[1], min_cell=CELL, flip=True)
+save('boss', img, file='boss-96x96.png', kind='sprite', frameWidth=cw, frameHeight=ch,
+     frames=['idle', 'prep', 'throw', 'celebrate'],
+     usage='Gerente Rival (CONFIG.bossName) no topo: feliz e brincalhão, lança obstáculos e comemora.',
+     source='higgsfield:gpt_image_2_5 (quality high, referência: geração v1 do Boss)',
+     prompt="Game sprite sheet, exactly 4 frames ... 1 idle proud with arms open and big smile ^_^, 2 throw preparation arm "
+            "raised (let's go!), 3 throwing arm extended, 4 celebrating jumping arms up laughing. Happy friendly rival manager "
+            "based on the reference image (black slicked hair, mustache), super deformed (head ~40%), purple shirt with rolled "
+            "sleeves, light blue tie, gray pants. No aggressive features. " + STYLE)
 
 # ---------- obstáculos ----------
 fr = slice_frames(key(raw('hazards_sheet.png')))
 assert len(fr) == 3, f'hazards: {len(fr)}'
-b = add_outline(shrink(fr[0], 11 / fr[0].size[0], 10))
+b = add_outline(shrink(fr[0], 17 / fr[0].size[0], 12))
 bar = Image.new('RGBA', (b.size[0] * 2, b.size[1]), (0, 0, 0, 0))
 bar.paste(b, (0, 0)); bar.paste(b.transpose(Image.FLIP_TOP_BOTTOM), (b.size[0], 0))
 save('barrel', bar, kind='sprite', frameWidth=b.size[0], frameHeight=b.size[1], frames=['roll1', 'roll2'],
      usage='Obstáculo vermelho que rola pelas vigas.', source='higgsfield:gpt_image_2_5')
-save('box', add_outline(shrink(fr[1], 10 / fr[1].size[0], 10)), kind='sprite', frames=['box'],
+save('box', add_outline(shrink(fr[1], 15 / fr[1].size[0], 12)), kind='sprite', frames=['box'],
      usage='Obstáculo laranja (caixa) que quica.', source='higgsfield:gpt_image_2_5')
-save('bottle', add_outline(shrink(fr[2], 12 / fr[2].size[1], 8)), kind='sprite', frames=['bottle'],
+save('bottle', add_outline(shrink(fr[2], 18 / fr[2].size[1], 10)), kind='sprite', frames=['bottle'],
      usage='Obstáculo azul (garrafa) que cai rápido em linha reta.', source='higgsfield:gpt_image_2_5')
 
 # ---------- itens ----------
 fr = slice_frames(key(raw('food_sheet.png')))
 assert len(fr) == 5, f'food: {len(fr)}'
 for name, f in zip(['caixa', 'saco', 'leite', 'fardo', 'congelado'], fr):
-    sc = 10 / max(f.size)
+    sc = 15 / max(f.size)
     save('food_' + name, add_outline(shrink(f, sc, 12)), kind='sprite', frames=[name],
          usage='Item coletável de alimento (+10).', source='higgsfield:gpt_image_2_5')
 
 fr = slice_frames(key(raw('power_sheet.png')))
 assert len(fr) == 5, f'power: {len(fr)}'
-coin = add_outline(shrink(fr[0], 10 / max(fr[0].size), 10))
+coin = add_outline(shrink(fr[0], 14 / max(fr[0].size), 10))
 w, h = coin.size
 strip = Image.new('RGBA', (w * 4, h), (0, 0, 0, 0))
 for i, sx in enumerate([1.0, .6, .2, .6]):  # giro da moeda (achatamento horizontal)
@@ -191,7 +223,7 @@ for i, sx in enumerate([1.0, .6, .2, .6]):  # giro da moeda (achatamento horizon
 save('coin', strip, kind='sprite', frameWidth=w, frameHeight=h, frames=['spin1', 'spin2', 'spin3', 'spin4'],
      usage='Moeda R (bônus raro, +50).', source='higgsfield:gpt_image_2_5')
 for name, f in zip(['shield', 'nitro', 'magnet', 'fair'], fr[1:]):
-    save('pw_' + name, add_outline(shrink(f, 11 / max(f.size), 12)), kind='sprite', frames=[name],
+    save('pw_' + name, add_outline(shrink(f, 16 / max(f.size), 12)), kind='sprite', frames=[name],
          usage={'shield': 'Capa de chuva: escudo contra 1 batida.', 'nitro': 'Nitro: velocidade 2x por 3 s.',
                 'magnet': 'Ímã: puxa itens próximos.', 'fair': 'Preço justo: pontos x2.'}[name],
          source='higgsfield:gpt_image_2_5')
@@ -218,6 +250,21 @@ for theme, dark in [('warehouse', .62), ('highway', .55), ('forest', .58), ('riv
         ptext(im, '364', 196, 151)
     save(f'bg_{theme}_far', im, kind='layer', usage=f'Camada de fundo (parallax lento) do mundo "{theme}".',
          source='higgsfield:gpt_image_2_5')
+
+# ---------- ilustrações do tutorial (256x256) ----------
+TUT = [('tutorial-jump', 'tutorial_jump.png', 'PULE: Dheep pulando de uma plataforma para a outra, seta amarela para cima.'),
+       ('tutorial-dodge', 'tutorial_dodge.png', 'DESVIE: Dheep desviando de um barril, círculo e placa vermelha de aviso.'),
+       ('tutorial-win', 'tutorial_win.png', 'VENÇA: Dheep e o Gerente Rival comemorando no topo, troféu e check verde.')]
+for name, src, desc in TUT:
+    if not os.path.exists(os.path.join(RAW, src)):
+        print('faltando', src)
+        continue
+    im = raw(src).convert('RGB').resize((256, 256), Image.BOX)
+    im = im.quantize(40, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE).convert('RGBA')
+    save(name, im, kind='ui', runtime=False, usage='Tela "Como jogar": ' + desc,
+         source='higgsfield:gpt_image_2_5 (quality high, referências: Dheep v2 / Boss v2)',
+         prompt='16-bit pixel art instructional diagram ... ' + desc + ' Clean light gray background, no text. '
+                '16-bit SNES-era pixel art, clean lines, no anti-aliasing, instructional diagram, flat colors.')
 
 json.dump({
     'version': 1,

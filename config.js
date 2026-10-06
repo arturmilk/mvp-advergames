@@ -113,17 +113,22 @@ window.CONFIG = {
   /* ---------- Jogo ---------- */
   game: {
     lives: 3,
-    deliveryTime: 75,    // segundos para chegar ao topo; zerou = perde 1 vida
+    deliveryTime: 50,    // segundos para chegar ao topo; zerou = perde 1 vida
+    // Quantas partidas o jogador pode fazer:
+    //   'visit'  = 1 partida cada vez que o link é aberto (recarregar a página na mesma aba NÃO libera outra)
+    //   'device' = 1 partida por aparelho/navegador, para sempre (só o admin libera, com "Reset total")
+    //   'none'   = sem limite (ex.: totem em loja)
+    onePlayPer: 'visit',
     maxInventory: 2,     // power-ups diferentes ao mesmo tempo
     invulnTime: 1.6
   },
 
   /* ---------- Física (pixels lógicos; 1 px lógico ≈ 1,7 px de tela) ---------- */
   physics: {
-    gravity: 1430,       // px/s²
-    jumpVelocity: 400,   // => altura ~56 px lógicos (~95 px de tela), ~0,56 s no ar
-    walkSpeed: 52,
-    walkSpeedMax: 76,    // segurando a seta
+    gravity: 1540,       // px/s²
+    jumpVelocity: 510,   // => altura ~84 px lógicos, ~0,66 s no ar (vigas a cada ~74 px)
+    walkSpeed: 58,
+    walkSpeedMax: 84,    // segurando a seta
     accelTime: 0.6,
     coyoteTime: 0.08,
     jumpBuffer: 0.12
@@ -158,7 +163,54 @@ window.CONFIG = {
   },
 
   /* ---------- Controles ---------- */
-  controls: { size: 50 },  // px de tela (mín. 44 para acessibilidade)
+  // Setas [◀][▶] juntas no canto inferior esquerdo; [PULO] no canto inferior direito.
+  controls: { size: 50, gap: 4, hitbox: 60 },  // px de tela (área de toque 60x60, maior que o visual)
+
+  /* ---------- Sprites e tamanhos (pixels lógicos; 1 px lógico = 2 px de tela num celular de 430 px) ----------
+     Os arquivos e quadros vêm de assets/manifest.json (dheep-96x96.png, boss-96x96.png).
+     Célula de 48x48 lógicos = 96x96 px de tela em escala 2x. */
+  sprites: {
+    cell: 48,
+    player: { hitW: 14, hitH: 34, hurtW: 10, hurtH: 26, startX: 196 },  // corpo (vigas), área de dano (menor, mais justa) e posição inicial
+    boss:   { x: 194 }                               // o Gerente Rival fica no topo, à direita
+  },
+
+  /* ---------- Tela "Como jogar" ---------- */
+  tutorial: {
+    title: 'COMO JOGAR',
+    lines: [
+      'PULE ENTRE AS PLATAFORMAS',
+      'DESVIE DOS OBSTÁCULOS',
+      'COLETE ITENS E POWER-UPS',
+      'CHEGUE AO FINAL DO CIRCUITO'
+    ],
+    cards: [
+      { img: 'assets/tutorial-jump.png',  label: 'PULE',   color: '#FFD21F', alt: 'Dheep pulando de uma plataforma para outra' },
+      { img: 'assets/tutorial-dodge.png', label: 'DESVIE', color: '#E30613', alt: 'Dheep desviando de um barril' },
+      { img: 'assets/tutorial-win.png',   label: 'VENÇA',  color: '#1f9d55', alt: 'Dheep e o Gerente Rival comemorando no topo' }
+    ],
+    button: 'ENTENDIDO!',
+    buttonPlay: 'ENTENDIDO! JOGAR'
+  },
+
+  /* ---------- Filtro de apelidos (palavrões e termos ofensivos) ----------
+     A verificação ignora maiúsculas, acentos, hífen e letras repetidas, e entende troca de letras por
+     números/símbolos (0=o, 1=i, 3=e, 4=a, 5=s, 7=t, 8=b, @=a, $=s). Ex.: "P3N1S", "naz1", "PINTOO", "b-u-n-d-a".
+     contains = bloqueia se aparecer EM QUALQUER PARTE do apelido (use para palavras de 4+ letras).
+     exact    = bloqueia só se o apelido for EXATAMENTE isso (palavras curtas como "cu", que estão dentro de nomes normais). */
+  nickFilter: {
+    contains: [
+      'morte', 'nazi', 'hitler', 'pinto', 'penis', 'xoxota', 'xota', 'buceta', 'boceta', 'bunda', 'bosta', 'merda',
+      'porra', 'caralh', 'carai', 'foda', 'fode', 'fuder', 'puta', 'puto', 'viado', 'viad', 'cacete', 'piroca', 'xereca',
+      'punhet', 'boquet', 'estupr', 'pedof', 'porno', 'sexo', 'cuzao', 'cuzin', 'arromb', 'otario', 'babaca', 'macaco',
+      'crioul', 'fuck', 'shit', 'bitch', 'dick', 'porn', 'nigg', 'suicid', 'cocain', 'maconh', 'rapariga', 'vagabund',
+      'safad', 'corno', 'broxa', 'brocha', 'peido', 'cagar', 'cagao', 'mijo'
+    ],
+    exact: [
+      'cu', 'ku', 'cus', 'pau', 'rola', 'pica', 'xana', 'xxt', 'kct', 'krl', 'crl', 'fdp', 'vsf', 'tnc', 'pqp', 'vtnc',
+      'tmnc', 'bct', 'ppk', 'cock', 'cum', 'ass', 'sex', 'anal', 'rape', 'kill', 'nazi', 'kkk', 'matar', 'mijar'
+    ]
+  },
 
   /* ---------- Placar (localStorage) ---------- */
   leaderboard: {

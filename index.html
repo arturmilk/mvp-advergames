@@ -54,15 +54,25 @@ input,textarea{user-select:text;-webkit-user-select:text}
 #pad::before{content:"";position:absolute;left:0;right:0;top:-9px;height:3px;background:var(--red)}
 #pad::after{content:"";position:absolute;left:0;right:0;top:-6px;height:3px;background:var(--yellow)}
 .col{display:flex;flex-direction:column;align-items:center;gap:8px}
-.ctl{width:var(--ctl,50px);height:var(--ctl,50px);border:3px solid #fff;border-radius:10px;background:var(--orange);
-  box-shadow:0 4px 0 #8a2f00, inset 0 -4px 0 #0003;display:flex;align-items:center;justify-content:center;
-  touch-action:none;padding:0;color:#fff;cursor:pointer}
-.ctl svg{width:60%;height:60%;shape-rendering:crispEdges}
-.ctl.jump{background:var(--red);box-shadow:0 4px 0 #6d0008, inset 0 -4px 0 #0003}
-.ctl.down{transform:translateY(3px);box-shadow:0 1px 0 #8a2f00, inset 0 2px 0 #0004;filter:brightness(1.15)}
+/* D-pad: [◀][▶] em cima, [PULO] embaixo, tudo no canto inferior esquerdo */
+.dpad{flex:0 0 auto;display:grid;grid-template-columns:repeat(2,var(--ctl,50px));gap:var(--gap,4px)}
+.ctl{position:relative;width:var(--ctl,50px);height:var(--ctl,50px);border:3px solid var(--orange);border-radius:3px;
+  background:var(--graphite);box-shadow:inset -3px -3px 0 #0007, inset 3px 3px 0 #ffffff1f, 0 3px 0 #000;
+  display:flex;align-items:center;justify-content:center;gap:6px;touch-action:none;padding:0;color:#fff;cursor:pointer;
+  font:900 15px var(--font);letter-spacing:1px}
+/* área de toque maior que o visual (60x60 com botão de 50) */
+.ctl::after{content:"";position:absolute;inset:calc((var(--ctl,50px) - var(--hit,60px)) / 2 - 3px)} /* -3px: desconta a borda */
+.ctl svg{width:56%;height:56%;shape-rendering:crispEdges}
+/* pulo do lado direito (polegar direito), com som e pausa acima dele */
+.jumpcol{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.jumpcol .minis{display:flex;gap:var(--gap,4px)}
+.ctl.jump{width:calc(var(--ctl,50px) * 2 + var(--gap,4px));border-color:var(--red)}
+.ctl.jump svg{width:20px;height:20px}
+.ctl.down{background:var(--orange);opacity:.75;transform:translateY(2px);box-shadow:inset 3px 3px 0 #0005}
+.ctl.jump.down{background:var(--red)}
 .mini{width:44px;height:44px;border:2px solid #fff6;border-radius:8px;background:#0006;color:#fff;font-size:18px;
   display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;touch-action:manipulation}
-#info{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;align-self:stretch;justify-content:flex-end;
+#info{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;align-self:stretch;justify-content:center;
   font-family:var(--mono);font-weight:700;font-size:13px}
 #info .row{display:flex;align-items:center;justify-content:space-between;gap:6px}
 #lives img{width:20px;height:18px;image-rendering:pixelated;margin-right:2px}
@@ -119,6 +129,25 @@ input.t.ph{text-transform:none}
 .err{color:var(--red);font-weight:700;font-size:13px;min-height:18px;margin-top:4px}
 a{color:#c23b00}
 ul.tut{margin:0;padding-left:18px} ul.tut li{margin:6px 0}
+.pxtitle{display:block;image-rendering:pixelated;max-width:100%;height:auto}
+.tut-text{width:100%;display:flex;flex-direction:column;gap:4px}
+.tut-text p{margin:0;font:900 clamp(15px,5vw,24px)/1.3 var(--font);color:#fff;text-shadow:2px 2px 0 #000;letter-spacing:.5px;text-align:left}
+.tut-text p::before{content:"▸ ";color:var(--yellow)}
+.tut-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
+.tut-cards figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:6px}
+.tut-cards img{width:100%;height:auto;max-width:256px;aspect-ratio:1;image-rendering:pixelated;border:3px solid var(--ink);box-shadow:0 0 0 2px #fff}
+.tut-cards figcaption{font:900 clamp(12px,3.6vw,16px) var(--mono);padding:3px 8px;color:#fff;border:2px solid var(--ink);text-shadow:1px 1px 0 #000;box-shadow:2px 2px 0 var(--ink)}
+.btn.px{height:50px;min-height:50px;border-radius:0;box-shadow:0 0 0 3px var(--yellow),0 6px 0 3px var(--ink);margin:6px 0}
+.btn.px:active{box-shadow:0 0 0 3px var(--yellow),0 2px 0 3px var(--ink)}
+/* "Como jogar" como pop-up sobre o título */
+#s-tutorial{background:#000c;justify-content:center}
+#s-tutorial .box{background:#1d1d1d;border:3px solid var(--yellow);box-shadow:0 0 0 3px var(--red),0 10px 0 3px #0008;
+  padding:14px 12px;gap:10px;animation:pop .25s steps(3)}
+#s-tutorial .tut-text p{font-size:clamp(14px,4.6vw,24px)}
+.played-msg{background:#0008;border:2px solid var(--yellow);padding:8px 10px;font-size:14px;line-height:1.35;color:#fff}
+details.tut-more{width:100%;text-align:left;font-size:14px;color:#ddd}
+details.tut-more summary{cursor:pointer;color:var(--yellow);font-weight:700;padding:6px 0;min-height:44px;display:flex;align-items:center}
+details.tut-more ul{background:#0006;padding:10px 10px 10px 26px;border:2px solid #444}
 .lore{font-style:italic}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%}
 .stat{background:#222;border:2px solid #444;padding:8px;border-radius:6px;text-align:center}
@@ -161,19 +190,21 @@ table.lb td.n{text-align:right}
   </div>
 
   <div id="pad">
-    <div class="col">
-      <button class="mini" id="b-mute" aria-label="Som ligado/desligado">🔊</button>
+    <div class="dpad" role="group" aria-label="Andar">
       <button class="ctl" id="b-left" aria-label="Andar para a esquerda"><svg viewBox="0 0 8 8"><path fill="#fff" d="M5 0h1v8H5V7H4V6H3V5H2V3h1V2h1V1h1z"/></svg></button>
+      <button class="ctl" id="b-right" aria-label="Andar para a direita"><svg viewBox="0 0 8 8"><path fill="#fff" d="M2 0h1v1h1v1h1v1h1v2H5v1H4v1H3v1H2z"/></svg></button>
     </div>
     <div id="info">
-      <div class="row"><div id="lives"></div><div id="timer">⏱ 75</div></div>
+      <div class="row"><div id="lives"></div><div id="timer">⏱ 50</div></div>
       <div class="row"><div id="combo">COMBO <b>x1</b></div><div class="cbar"><i id="cbar"></i></div></div>
-      <div class="row"><div id="inv"><div class="slot"></div><div class="slot"></div></div>
-        <button class="mini" id="b-pause" aria-label="Pausar">❚❚</button></div>
+      <div class="row"><div id="inv"><div class="slot"></div><div class="slot"></div></div></div>
     </div>
-    <div class="col">
-      <button class="ctl jump" id="b-jump" aria-label="Pular"><svg viewBox="0 0 8 8"><path fill="#fff" d="M3 0h2v1h1v1h1v1h1v1H6v4H2V4H0V3h1V2h1V1h1z"/></svg></button>
-      <button class="ctl" id="b-right" aria-label="Andar para a direita"><svg viewBox="0 0 8 8"><path fill="#fff" d="M2 0h1v1h1v1h1v1h1v2H5v1H4v1H3v1H2z"/></svg></button>
+    <div class="jumpcol">
+      <div class="minis">
+        <button class="mini" id="b-mute" aria-label="Som ligado/desligado">🔊</button>
+        <button class="mini" id="b-pause" aria-label="Pausar">❚❚</button>
+      </div>
+      <button class="ctl jump" id="b-jump" aria-label="Pular"><svg viewBox="0 0 8 8"><path fill="#fff" d="M3 0h2v1h1v1h1v1h1v1H6v4H2V4H0V3h1V2h1V1h1z"/></svg>PULO</button>
     </div>
   </div>
 
@@ -198,6 +229,7 @@ table.lb td.n{text-align:right}
       <button class="btn red" id="b-play">▶ JOGAR</button>
       <div class="row2"><button class="btn small" id="b-board">🏆 PLACAR</button><button class="btn small" id="b-how">COMO JOGAR</button></div>
       <button class="btn small gray" id="b-about">SOBRE A ROVER</button>
+      <div class="played-msg" id="t-played" style="display:none"></div>
       <div class="foot" id="t-player"></div>
       <div class="foot" id="t-slogan"></div>
     </div>
@@ -222,9 +254,11 @@ table.lb td.n{text-align:right}
 
   <section class="screen" id="s-tutorial">
     <div class="box">
-      <h2>Como jogar</h2>
-      <div class="panel"><p class="lore" id="tut-lore"></p><ul class="tut" id="tut-list"></ul></div>
-      <button class="btn red" id="b-tut-go">COMEÇAR!</button>
+      <h1 style="margin:0"><img class="pxtitle" id="tut-title" alt="Como jogar"></h1>
+      <div class="tut-text" id="tut-text"></div>
+      <div class="tut-cards" id="tut-cards"></div>
+      <button class="btn red px" id="b-tut-go">ENTENDIDO!</button>
+      <details class="tut-more"><summary>Ver detalhes (itens, power-ups e pontos)</summary><ul class="tut" id="tut-list"></ul></details>
       <button class="btn small gray" id="b-tut-back">VOLTAR</button>
     </div>
   </section>
@@ -241,7 +275,7 @@ table.lb td.n{text-align:right}
     <div class="box">
       <h2>Pausado</h2>
       <button class="btn red" id="b-resume">▶ CONTINUAR</button>
-      <button class="btn small gray" id="b-quit">SAIR PARA O MENU</button>
+      <button class="btn small gray" id="b-quit">ENCERRAR PARTIDA</button>
     </div>
   </section>
 
@@ -264,7 +298,7 @@ table.lb td.n{text-align:right}
         <button class="btn green" id="b-save">SALVAR</button>
       </div>
       <div class="panel" id="o-saved" style="display:none;text-align:center"><h3>Pontuação salva!</h3><div id="o-saved-txt"></div></div>
-      <div class="row2"><button class="btn red" id="b-again">JOGAR DE NOVO</button><button class="btn yel" id="b-o-board">VER RANKING</button></div>
+      <button class="btn yel" id="b-o-board">🏆 VER RANKING</button>
       <button class="btn green small" id="b-share">COMPARTILHAR NO WHATSAPP</button>
       <button class="btn small gray" id="b-o-menu">MENU</button>
       <div class="foot" id="o-slogan"></div>
@@ -341,6 +375,31 @@ const pick = a => a[Math.random() * a.length | 0];
 const fmt = n => Math.floor(n).toLocaleString('pt-BR');
 const tpl = s => String(s).replace(/\{mascot\}/g, C.mascotName).replace(/\{boss\}/g, C.bossName);
 const NICK_RE = new RegExp(C.leaderboard.nickPattern);
+// Filtro de palavrões: normaliza (minúsculas, sem acento, leetspeak, sem hífen/números, letras repetidas)
+const LEET = { '0': 'o', '1': 'i', '2': 'z', '3': 'e', '4': 'a', '5': 's', '6': 'g', '7': 't', '8': 'b', '9': 'g', '@': 'a', '$': 's', '!': 'i' };
+const squeeze = t => t.replace(/(.)\1+/g, '$1');
+function nickForms(str) {
+  const low = String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const leet = low.replace(/[0-9@$!]/g, ch => LEET[ch]).replace(/[^a-z]/g, ''); // P3N1S -> penis
+  const strip = low.replace(/[^a-z]/g, '');                                      // CU-1  -> cu
+  return [...new Set([leet, strip, squeeze(leet), squeeze(strip)])].filter(Boolean);
+}
+function isOffensive(nick) {
+  const F = C.nickFilter || { contains: [], exact: [] }, forms = nickForms(nick);
+  for (const w of F.contains) {
+    const wf = nickForms(w)[0]; if (!wf) continue;
+    const ws = squeeze(wf);
+    if (forms.some(f => f.includes(wf) || (ws.length >= 4 && f.includes(ws)))) return true;
+  }
+  for (const w of F.exact) { const wfs = nickForms(w); if (forms.some(f => wfs.includes(f))) return true; }
+  return false;
+}
+function nickError(nick, label = 'Apelido') {
+  if (!NICK_RE.test(nick)) return `${label} inválido: use de 1 a 6 letras (sem acento), números ou hífen.`;
+  if (isOffensive(nick)) return `${label} não permitido. Escolha um ${label.toLowerCase()} sem palavrões ou termos ofensivos.`;
+  if (LB.banned().includes(nick)) return `Este ${label.toLowerCase()} não está disponível. Escolha outro.`;
+  return '';
+}
 function weighted(ws) { const s = ws.reduce((a, b) => a + b, 0); let r = Math.random() * s; for (let i = 0; i < ws.length; i++) { r -= ws[i]; if (r < 0) return i; } return ws.length - 1; }
 function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
@@ -505,6 +564,28 @@ function ptext(x, str, cx, y, col = '#fff', ol = '#000', s = 1) {
   }
 }
 
+// fonte pixel 5x7 (maiúsculas) para títulos grandes, como "COMO JOGAR"
+const FONT57 = {
+  A: '01110100011000111111100011000110001', B: '11110100011000111110100011000111110', C: '01110100011000010000100001000101110',
+  D: '11110100011000110001100011000111110', E: '11111100001000011110100001000011111', F: '11111100001000011110100001000010000',
+  G: '01110100011000010111100011000101111', H: '10001100011000111111100011000110001', I: '01110001000010000100001000010001110',
+  J: '00111000100001000010000101001001100', K: '10001100101010011000101001001010001', L: '10000100001000010000100001000011111',
+  M: '10001110111010110101100011000110001', N: '10001100011100110101100111000110001', O: '01110100011000110001100011000101110',
+  P: '11110100011000111110100001000010000', Q: '01110100011000110001101011001001101', R: '11110100011000111110101001001010001',
+  S: '01111100001000001110000010000111110', T: '11111001000010000100001000010000100', U: '10001100011000110001100011000101110',
+  V: '10001100011000110001100010101000100', W: '10001100011000110101101011010101010', X: '10001100010101000100010101000110001',
+  Y: '10001100010101000100001000010000100', Z: '11111000010001000100010001000011111', '!': '00100001000010000100001000000000100',
+  ' ': '00000000000000000000000000000000000'
+};
+function pixelTitle(text, px = 4, fg = '#FFD21F', sh = '#E30613') {
+  const dpr = Math.min(window.devicePixelRatio || 1, 3), u = px * dpr, cols = text.length * 6 - 1;
+  const c = mk((cols + 2) * u, (7 + 2) * u), x = c.getContext('2d');
+  const put = (col, ox, oy) => { x.fillStyle = col; [...text].forEach((ch, i) => { const g = FONT57[ch] || FONT57[' ']; for (let k = 0; k < 35; k++) if (g[k] === '1') x.fillRect((i * 6 + k % 5 + ox) * u, (((k / 5) | 0) + oy) * u, u, u); }); };
+  for (const [dx, dy] of [[0, 1], [2, 1], [1, 0], [1, 2], [2, 2]]) put('#141414', dx, dy);
+  put(sh, 1.5, 1.5); put(fg, 1, 1);
+  return { url: c.toDataURL(), w: c.width / dpr, h: c.height / dpr };
+}
+
 const P = { sk: '#d9935f', skd: '#b06d3c', hair: '#3b2618', jean: '#2f5aa8', shoe: '#f2f2f2', eye: '#1a1a1a' };
 function drawDheep(x, pose) {
   const c = C.colors;
@@ -616,8 +697,8 @@ function makeLogo(size = 32) {
 }
 
 function buildSprites() {
-  SPR.dheep = ['idle', 'run1', 'run2', 'jump', 'win', 'hurt'].map(p => sprite(12, 18, x => drawDheep(x, p)));
-  SPR.boss = ['idle', 'wind', 'throw', 'stun'].map(p => sprite(24, 26, x => drawBoss(x, p)));
+  SPR.dheep = ['idle', 'run1', 'run2', 'jump', 'land', 'win', 'hurt'].map(p => sprite(12, 18, x => drawDheep(x, p)));
+  SPR.boss = ['idle', 'wind', 'throw', 'stun'].map(p => mirror(sprite(24, 26, x => drawBoss(x, p))));
   SPR.barrel = [0, 1, 2, 3].map(f => sprite(10, 10, x => drawBarrel(x, f)));
   SPR.box = [sprite(10, 9, drawBox)];
   SPR.bottle = [sprite(5, 11, drawBottle)];
@@ -628,6 +709,7 @@ function buildSprites() {
   SPR.heart = [sprite(9, 8, heartDraw)];
   SPR.logo = [makeLogo(32)];
 }
+function mirror(c) { const o = mk(c.width, c.height), x = o.getContext('2d'); x.translate(c.width, 0); x.scale(-1, 1); x.drawImage(c, 0, 0); return o; }
 function iconURL(name, f = 0, scale = 4) {
   const s = SPR[name][f], c = mk(s.width * scale, s.height * scale), x = c.getContext('2d');
   x.imageSmoothingEnabled = false; x.drawImage(s, 0, 0, c.width, c.height); return c.toDataURL();
@@ -715,16 +797,17 @@ const THEME_STYLE = {
 };
 
 /* ======================= MUNDO DO JOGO ======================= */
-// Vigas em zigue-zague (estilo Donkey Kong). Cada viga desce em direção à abertura.
+// Vigas em zigue-zague (estilo Donkey Kong), espaçadas ~74 px para caber os personagens SD (célula 48x48).
+// Cada viga desce em direção à sua abertura; os barris descem em zigue-zague e saem pela direita do chão.
 const GIRDERS = [
-  { x0: 0,  x1: 216, yL: 296, yR: 292 },
-  { x0: 0,  x1: 184, yL: 246, yR: 250 },
-  { x0: 32, x1: 216, yL: 202, yR: 198 },
-  { x0: 0,  x1: 184, yL: 150, yR: 154 },
-  { x0: 32, x1: 216, yL: 106, yR: 102 },
-  { x0: 0,  x1: 184, yL: 58,  yR: 62 }   // topo: onde fica o inimigo
+  { x0: 0,  x1: 216, yL: 292, yR: 296 },  // chão
+  { x0: 40, x1: 216, yL: 222, yR: 218 },  // abertura à esquerda
+  { x0: 0,  x1: 176, yL: 144, yR: 148 },  // abertura à direita
+  { x0: 40, x1: 216, yL: 72,  yR: 68 }    // topo: onde fica o Gerente Rival (à direita)
 ];
-const TOP = GIRDERS.length - 1, THICK = 5, PHW = 3.5, PH = 16;
+const TOP = GIRDERS.length - 1, THICK = 5;
+const PHW = C.sprites.player.hitW / 2, PH = C.sprites.player.hitH, HURTW = (C.sprites.player.hurtW || 10) / 2, HURTH = C.sprites.player.hurtH || 26, START_X = C.sprites.player.startX, BOSS_X = C.sprites.boss.x;
+const ANIM = { dheepRun: [1, 2] };
 GIRDERS.forEach(g => { g.dir = g.yR > g.yL ? 1 : -1; });
 function surfY(g, x) { x = clamp(x, g.x0, g.x1); return g.yL + (g.yR - g.yL) * (x - g.x0) / (g.x1 - g.x0); }
 
@@ -737,7 +820,8 @@ function newGame() {
   G = {
     state: 'playing', score: 0, lives: C.game.lives, world: 0, time: 0, timer: C.game.deliveryTime,
     streak: 0, deliveries: 0, hitsRound: 0, best: bestScore(), recordShown: false,
-    p: { x: 14, y: surfY(GIRDERS[0], 14), vx: 0, vy: 0, ground: 0, last: 0, face: 1, holdT: 0, coyote: 0, inv: 1, anim: 0 },
+    p: { x: START_X, y: surfY(GIRDERS[0], START_X), vx: 0, vy: 0, ground: 0, last: 0, face: -1, holdT: 0, coyote: 0, inv: 1, anim: 0, landT: 0 },
+    hearts: [],
     boss: { pose: 0, wind: 0, poseT: 0 },
     haz: [], items: [], parts: [], pops: [], warns: [], inv: [],
     throwT: 1.6, itemT: 1.2, stateT: 0, shake: 0, flash: 0, rainT: 12, raining: 0
@@ -774,7 +858,7 @@ function checkLevel() {
 }
 function checkRecord() {
   if (!G.recordShown && G.best > 0 && G.score > G.best) {
-    G.recordShown = true; Audio.play('record'); popup(G.p.x, G.p.y - 30, 'NOVO RECORDE!', '#fff', true);
+    G.recordShown = true; Audio.play('record'); popup(clamp(G.p.x, 50, W - 50), G.p.y - PH - 16, 'NOVO RECORDE!', '#fff', true);
     burst(W / 2, 80, 60, ['#E30613', '#FF6A13', '#FFD21F', '#fff', '#3BA7FF'], true);
   }
 }
@@ -787,32 +871,38 @@ function burst(x, y, n, cols, confetti = false) {
 }
 function dust(x, y, n = 4) { for (let i = 0; i < n; i++) G.parts.push({ x: x + rand(-3, 3), y, vx: rand(-25, 25), vy: rand(-25, -5), g: 30, life: rand(.25, .45), t: 0, col: pick(['#cfc3b0', '#a89a86', '#e8dcc8']), sz: 1 }); }
 
+function bossY() { return surfY(GIRDERS[TOP], BOSS_X); }
+function bossCheer(t, hearts = 2) {
+  const bs = G.boss; bs.pose = 3; bs.poseT = t; bs.wind = 0;
+  for (let i = 0; i < hearts; i++) G.hearts.push({ x: BOSS_X + rand(-12, 12), y: bossY() - 46 - rand(0, 10), t: -i * .25 });
+}
 function hurt(reason) {
   const p = G.p;
   if (p.inv > 0 && reason !== 'time') return false;
   if (reason !== 'time' && has('shield')) {
     G.inv = G.inv.filter(i => i.type !== 'shield'); p.inv = .8; Audio.play('shield');
-    popup(p.x, p.y - 22, 'ESCUDO!', '#9fd6ff'); burst(p.x, p.y - 8, 14, ['#9fd6ff', '#fff', '#3BA7FF']); return true;
+    popup(p.x, p.y - PH - 10, 'ESCUDO!', '#9fd6ff'); burst(p.x, p.y - PH / 2, 14, ['#9fd6ff', '#fff', '#3BA7FF']); return true;
   }
   G.lives--; G.streak = 0; G.hitsRound++; p.inv = C.game.invulnTime; G.shake = .3; G.flash = .15;
-  Audio.play('hit'); burst(p.x, p.y - 8, 16, ['#fff', '#E30613', '#FFD21F']);
+  Audio.play('hit'); burst(p.x, p.y - PH / 2, 16, ['#fff', '#E30613', '#FFD21F']);
+  if (G.boss.pose !== 1) bossCheer(1.1, 1);
   if (G.lives <= 0) { G.state = 'dying'; G.stateT = 1.6; p.vy = -260; p.ground = null; Audio.music(null); Audio.play('over'); }
   return true;
 }
 
 function startDelivery() {
-  G.state = 'delivering'; G.stateT = 2.2; G.boss.pose = 3; Audio.play('deliver'); Audio.music(null);
+  G.state = 'delivering'; G.stateT = 2.2; bossCheer(2.2, 5); Audio.play('deliver'); Audio.music(null);
   const s = C.scoring, tb = Math.floor(Math.max(0, G.timer)) * s.timeBonusPerSec, nh = G.hitsRound === 0 ? s.noHitBonus : 0;
   const total = s.deliveryBase + tb + nh;
   G.pendingBonus = total;
   showBanner(C.texts.deliveryDone, `+${total} pontos`, `Entrega +${s.deliveryBase} · Rapidez +${tb}` + (nh ? ` · Sem batidas +${nh}` : ''), 2.2);
-  burst(30, 40, 50, ['#E30613', '#FF6A13', '#FFD21F', '#fff'], true);
+  burst(BOSS_X, 40, 50, ['#E30613', '#FF6A13', '#FFD21F', '#fff'], true);
 }
 function finishDelivery() {
   G.deliveries++; G.hitsRound = 0; G.timer = C.game.deliveryTime; G.haz = []; G.warns = [];
-  const p = G.p; Object.assign(p, { x: 14, y: surfY(GIRDERS[0], 14), vx: 0, vy: 0, ground: 0, last: 0, face: 1, inv: 1.2 });
+  const p = G.p; Object.assign(p, { x: START_X, y: surfY(GIRDERS[0], START_X), vx: 0, vy: 0, ground: 0, last: 0, face: -1, inv: 1.2 });
   G.boss.pose = 0; G.throwT = 1.5; G.state = 'playing';
-  addScore(G.pendingBonus, 40, 60, false, '#fff');
+  addScore(G.pendingBonus, BOSS_X - 30, bossY() - 30, false, '#fff');
   Audio.music(G.world);
 }
 
@@ -824,6 +914,8 @@ function update(dt) {
   for (const q of G.parts) { q.t += dt; q.vy += q.g * dt; q.x += q.vx * dt; q.y += q.vy * dt; }
   G.parts = G.parts.filter(q => q.t < q.life);
   for (const q of G.pops) { q.t += dt; q.y -= 18 * dt; }
+  for (const h of G.hearts) { h.t += dt; if (h.t > 0) h.y -= 22 * dt; }
+  G.hearts = G.hearts.filter(h => h.t < 1.4);
   G.pops = G.pops.filter(q => q.t < (q.big ? 1.8 : .9));
   if (G.bannerT > 0) { G.bannerT -= dt; if (G.bannerT <= 0) $('#banner').classList.remove('on'); }
 
@@ -845,7 +937,7 @@ function update(dt) {
   G.inv = G.inv.filter(it => it.dur === 0 || it.t > 0);
 
   // ---- jogador ----
-  p.inv = Math.max(0, p.inv - dt);
+  p.inv = Math.max(0, p.inv - dt); p.landT = Math.max(0, p.landT - dt);
   const dir = (inp.left ? -1 : 0) + (inp.right ? 1 : 0);
   if (dir) { p.holdT += dt; p.face = dir; } else p.holdT = 0;
   let spd = lerp(ph.walkSpeed, ph.walkSpeedMax, clamp(p.holdT / ph.accelTime, 0, 1));
@@ -853,38 +945,38 @@ function update(dt) {
   p.vx = dir * spd;
   p.coyote = p.ground != null ? ph.coyoteTime : p.coyote - dt;
   inp.jbuf -= dt;
-  if (inp.jbuf > 0 && p.coyote > 0) { p.vy = -ph.jumpVelocity; p.ground = null; p.coyote = 0; inp.jbuf = 0; Audio.play('jump'); dust(p.x, p.y, 3); }
-  p.x = clamp(p.x + p.vx * dt, 5, W - 5);
+  if (inp.jbuf > 0 && p.coyote > 0) { p.vy = -ph.jumpVelocity; p.ground = null; p.hang = 0; p.coyote = 0; inp.jbuf = 0; Audio.play('jump'); dust(p.x, p.y, 3); }
+  p.x = clamp(p.x + p.vx * dt, 12, W - 12); // margem para o sprite (célula 48) não ser cortado na borda
   if (p.ground != null) {
     const g = GIRDERS[p.ground];
     if (p.x + PHW < g.x0 || p.x - PHW > g.x1) p.ground = null;
     else { p.y = surfY(g, p.x); p.vy = 0; }
   }
   if (p.ground == null) {
-    const py = p.y; p.vy = Math.min(p.vy + ph.gravity * dt, 520);
+    const py = p.y; if (p.hang > 0) p.hang -= dt; else p.vy = Math.min(p.vy + ph.gravity * dt, 560);
     let ny = p.y + p.vy * dt;
     if (p.vy < 0) {
       for (const g of GIRDERS) if (p.x + PHW - 1 > g.x0 && p.x - PHW + 1 < g.x1) {
         const b = surfY(g, p.x) + THICK;
-        if (py - PH >= b - .01 && ny - PH < b) { ny = b + PH; p.vy = 30; }
+        if (py - PH >= b - .01 && ny - PH < b) { ny = b + PH; p.vy = 0; p.hang = .06; }
       }
     } else {
       for (let i = 0; i < GIRDERS.length; i++) {
         const g = GIRDERS[i]; if (p.x + PHW < g.x0 || p.x - PHW > g.x1) continue;
         const s = surfY(g, p.x);
-        if (py <= s + 1.5 && ny >= s) { ny = s; p.vy = 0; p.ground = i; p.last = i; dust(p.x, s, 3); break; }
+        if (py <= s + 1.5 && ny >= s) { ny = s; p.vy = 0; p.ground = i; p.last = i; p.landT = .12; dust(p.x, s, 4); break; }
       }
     }
     p.y = ny;
   }
   if (p.ground != null) p.last = p.ground;
   p.anim += dt * (dir ? 10 : 0);
-  if (p.ground === TOP && p.x < 32) { startDelivery(); return; }
+  if (p.ground === TOP && p.x > BOSS_X - 28) { startDelivery(); return; }
 
   // ---- inimigo lança objetos ----
   G.throwT -= dt;
   const bs = G.boss; bs.poseT -= dt; if (bs.poseT <= 0 && bs.pose !== 1) bs.pose = 0;
-  if (G.throwT <= 0 && bs.pose !== 1) { bs.pose = 1; bs.wind = .35; }
+  if (G.throwT <= 0 && bs.pose !== 1) { bs.pose = 1; bs.wind = .4; if (Math.random() < .3) popup(BOSS_X - 14, bossY() - 54, 'VAMOS!', '#fff', true); }
   if (bs.pose === 1) {
     bs.wind -= dt;
     if (bs.wind <= 0) {
@@ -899,7 +991,7 @@ function update(dt) {
         Audio.play('warn');
       } else {
         const strong = Math.random() < .18 + d * .2;
-        G.haz.push({ type, x: 30, y: 36, vx: strong ? rand(140, 230) : rand(20, 75), vy: strong ? rand(-170, -120) : rand(-90, -30), st: 'air', g: -1, rot: 0, hopT: rand(.4, .8), jumped: false });
+        G.haz.push({ type, x: BOSS_X - 20, y: bossY() - 30, vx: -(strong ? rand(140, 230) : rand(20, 75)), vy: strong ? rand(-170, -120) : rand(-90, -30), st: 'air', g: -1, rot: 0, hopT: rand(.4, .8), jumped: false });
       }
     }
   }
@@ -910,34 +1002,38 @@ function update(dt) {
   const rollSp = lerp(D.rollSpeed.start, D.rollSpeed.end, d), og = lerp(D.objectGravity.start, D.objectGravity.end, d);
   for (const h of G.haz) {
     if (h.st === 'drop') { h.y += h.vy * dt; continue; }
+    if (h.st === 'exit') { h.x += h.vx * dt; h.y += 30 * dt; continue; }
     if (h.st === 'air') {
       const py = h.y; h.vy += og * dt; if (h.type === 'box') h.vx += Math.sin(G.time * 7) * 25 * dt;
       h.x += h.vx * dt; let ny = h.y + h.vy * dt;
-      if (h.x < 5 && h.vx < 0 && h.y < 290) { h.x = 5; h.vx = -h.vx; } if (h.x > W - 5 && h.vx > 0) { h.x = W - 5; h.vx = -h.vx; }
+      const exiting = h.g === 0 && Math.sign(h.vx) === GIRDERS[0].dir; // indo para a saída do chão: não rebate na parede
+      if (!exiting) { if (h.x < 5 && h.vx < 0) { h.x = 5; h.vx = -h.vx; } if (h.x > W - 5 && h.vx > 0) { h.x = W - 5; h.vx = -h.vx; } }
       if (h.vy > 0) for (let i = 0; i < GIRDERS.length; i++) {
         const g = GIRDERS[i]; if (h.x < g.x0 || h.x > g.x1) continue;
         const s = surfY(g, h.x);
-        if (py <= s + 1 && ny >= s) { ny = s; h.st = 'roll'; h.g = i; h.vy = 0; h.jumped = false; h.vx = g.dir * rollSp * (h.type === 'box' ? .8 : 1) * rand(.92, 1.08); break; }
+        if (py <= s + 1 && ny >= s) { ny = s; h.st = 'roll'; h.g = i; h.vy = 0; h.jumped = false; h.vx = (h.vx ? Math.sign(h.vx) : g.dir) * rollSp * (h.type === 'box' ? .8 : 1) * rand(.92, 1.08); break; } // mantém o embalo da queda
       }
       h.y = ny;
     } else {
       const g = GIRDERS[h.g];
       h.x += h.vx * dt; h.rot += Math.abs(h.vx) * dt * .35;
-      if (h.x < g.x0 - 3 || h.x > g.x1 + 3) { h.st = 'air'; h.vy = 0; }
+      // embalo contra a ladeira: segue até a parede, quica e volta descendo (varre os cantos, como no Donkey Kong)
+      if (h.vx * g.dir < 0 && ((h.vx < 0 && h.x <= Math.max(g.x0, 0) + 5) || (h.vx > 0 && h.x >= Math.min(g.x1, W) - 5))) { h.vx = -h.vx; dust(h.x, h.y, 3); }
+      if (h.x < g.x0 - 3 || h.x > g.x1 + 3) { h.st = h.g === 0 ? 'exit' : 'air'; h.vy = 0; } // saiu do chão: vai embora da tela, sem quicar
       else {
         h.y = surfY(g, h.x);
         if (h.type === 'box') { h.hopT -= dt; if (h.hopT <= 0) { h.hopT = rand(.5, .9); h.st = 'air'; h.vy = -95; } }
       }
     }
     // pulo por cima = pontos
-    if (!h.jumped && h.st === 'roll' && p.ground == null && h.g === p.last && Math.abs(h.x - p.x) < 4 && p.y < h.y - 9) {
+    if (!h.jumped && h.st === 'roll' && p.ground == null && h.g === p.last && Math.abs(h.x - p.x) < 6 && p.y < h.y - 11) {
       h.jumped = true; Audio.play('jumpover'); addScore(C.scoring.jumpOver, p.x, p.y - 20);
     }
   }
   G.haz = G.haz.filter(h => {
     if (h.x < -14 || h.x > W + 14 || h.y > H + 14) return false;
-    const hw = h.type === 'bottle' ? 2 : 4, hh = h.type === 'bottle' ? 10 : h.type === 'box' ? 7 : 8;
-    if (p.x + PHW > h.x - hw && p.x - PHW < h.x + hw && p.y - PH + 1 < h.y && p.y - 1 > h.y - hh) {
+    const hw = h.type === 'bottle' ? 3 : 5, hh = h.type === 'bottle' ? 16 : 11;
+    if (p.x + HURTW > h.x - hw && p.x - HURTW < h.x + hw && p.y - HURTH < h.y && p.y - 1 > h.y - hh) {
       if (hurt('hit')) { if (h.type === 'bottle') burst(h.x, h.y - 4, 10, ['#3BA7FF', '#d6f1ff', '#fff']); else dust(h.x, h.y, 6); return false; }
     }
     return true;
@@ -953,17 +1049,17 @@ function update(dt) {
       if (Math.abs(x - p.x) < 20 && gi === p.last) x = clamp(x + 50, g.x0 + 10, g.x1 - 10);
       const iw = C.items.weights, kind = ['food', 'coin', 'power'][weighted([iw.food, iw.coin * (1 - d * .4), iw.power])];
       const sub = kind === 'food' ? pick(Object.keys(FOODS)) : kind === 'power' ? pick(Object.keys(POWERS)) : 'coin';
-      G.items.push({ kind, sub, x, y: surfY(g, x) - 7, t: 0, life: C.items.lifetime });
+      G.items.push({ kind, sub, x, y: surfY(g, x) - 10, t: 0, life: C.items.lifetime });
     }
   }
   const mag = has('magnet');
   for (const it of G.items) {
     it.t += dt;
-    if (mag) { const dx = p.x - it.x, dy = (p.y - 8) - it.y, dd = Math.hypot(dx, dy); if (dd < C.powerups.magnet.radius && dd > 1) { it.x += dx / dd * 130 * dt; it.y += dy / dd * 130 * dt; } }
+    if (mag) { const dx = p.x - it.x, dy = (p.y - PH / 2) - it.y, dd = Math.hypot(dx, dy); if (dd < C.powerups.magnet.radius && dd > 1) { it.x += dx / dd * 130 * dt; it.y += dy / dd * 130 * dt; } }
   }
   G.items = G.items.filter(it => {
     if (it.t > it.life) return false;
-    if (Math.abs(it.x - p.x) < 7 && Math.abs(it.y - (p.y - 8)) < 11) { collect(it); return false; }
+    if (Math.abs(it.x - p.x) < PHW + 6 && Math.abs(it.y - (p.y - PH / 2)) < PH / 2 + 6) { collect(it); return false; }
     return true;
   });
 }
@@ -984,7 +1080,7 @@ function collect(it) {
 
 /* ---------- renderização ---------- */
 const canvas = $('#game'), ctx = canvas.getContext('2d');
-const buf = mk(W, H), b = buf.getContext('2d');
+const buf = mk(W, H), b = buf.getContext('2d'); b.imageSmoothingEnabled = false;
 let HB = H, OY = 0; // altura do buffer e faixa extra do topo (HUD)
 function themeName() { return C.levels[G ? G.world : 0].theme; }
 function layers(t) { return LAYERS[t] || (LAYERS[t] = makeLayers(t)); }
@@ -1041,8 +1137,6 @@ function render() {
   b.drawImage(L.far, Math.round(-8 - par * 2), 0, LW, H);
   b.drawImage(L.mid, Math.round(-8 - par * 5), 0, LW, H);
   drawAnim(th, T, Math.round(-8 - par * 5), ext);
-  // pilha de barris ao lado do inimigo
-  for (const [bx, by] of [[4, 58], [4, 48], [12, 58]]) drawSpr('barrel', 0, bx, by);
   GIRDERS.forEach((g, i) => drawGirder(g, i, th));
   // dica da abertura (primeiras entregas)
   if (G && G.state === 'playing' && G.deliveries < 2 && G.p.last < TOP && (T * 2 | 0) % 2) {
@@ -1053,15 +1147,16 @@ function render() {
     for (const it of G.items) {
       const blink = it.life - it.t < 2 && (T * 8 | 0) % 2; if (blink) continue;
       const bob = Math.round(Math.sin(it.t * 4) * 1.5);
-      if (it.kind !== 'food') { b.globalAlpha = .35 + Math.sin(T * 6) * .15; disc(b, Math.round(it.x), Math.round(it.y) + bob, 7, it.kind === 'coin' ? '#FFD21F' : '#9fd6ff'); b.globalAlpha = 1; }
+      if (it.kind !== 'food') { b.globalAlpha = .35 + Math.sin(T * 6) * .15; disc(b, Math.round(it.x), Math.round(it.y) + bob, 10, it.kind === 'coin' ? '#FFD21F' : '#9fd6ff'); b.globalAlpha = 1; }
       const nm = it.kind === 'food' ? 'food_' + it.sub : it.kind === 'coin' ? 'coin' : 'pw_' + it.sub;
-      drawSpr(nm, it.kind === 'coin' ? (T * 8) | 0 : 0, it.x, it.y + 6 + bob);
+      drawSpr(nm, it.kind === 'coin' ? (T * 8) | 0 : 0, it.x, it.y + 8 + bob);
     }
     for (const w of G.warns) if ((w.t * 10 | 0) % 2) { ptext(b, '!', w.x, 22, '#FFD21F', '#E30613'); R(b, '#E30613', Math.round(w.x) - 3, 29, 7, 1); }
-    const bp = G.boss.pose;
-    drawSpr('boss', bp, 18, 58 + Math.round(surfY(GIRDERS[TOP], 18) - 58));
-    if (bp === 3) for (let i = 0; i < 3; i++) { const a = T * 5 + i * 2.1; R(b, '#FFD21F', Math.round(18 + Math.cos(a) * 9), Math.round(26 + Math.sin(a) * 3), 2, 2); }
-    if (bp === 1) drawSpr('barrel', 0, 18, 26);
+    // Gerente Rival: feliz; pula ao comemorar e solta corações
+    const bp = G.boss.pose, hop = bp === 3 ? Math.round(Math.abs(Math.sin(T * 9)) * 6) : 0;
+    drawSpr('boss', bp, BOSS_X, Math.round(bossY()) - hop);
+    if (bp === 1) drawSpr('barrel', 0, BOSS_X + 6, Math.round(bossY()) - 44);
+    for (const h of G.hearts) if (h.t > 0) { if (h.t > 1 && (T * 12 | 0) % 2) continue; drawSpr('heart', 0, h.x + Math.sin(h.t * 6) * 3, h.y); }
     for (const h of G.haz) {
       if (h.type === 'barrel') drawSpr('barrel', (h.rot | 0), h.x, h.y);
       else if (h.type === 'box') drawSpr('box', 0, h.x, h.y);
@@ -1069,18 +1164,21 @@ function render() {
     }
     const pl = G.p;
     if (!(pl.inv > 0 && (T * 14 | 0) % 2 && G.state === 'playing')) {
-      let f = 0;
-      if (G.state === 'dying') f = 5; else if (G.state === 'delivering') f = 4;
-      else if (pl.ground == null) f = 3; else if (pl.vx) f = 1 + ((pl.anim | 0) % 2);
-      if (has('shield')) { b.globalAlpha = .35; disc(b, Math.round(pl.x), Math.round(pl.y - 9), 11, '#9fd6ff'); b.globalAlpha = 1; }
+      // quadros: 0 parado, 1-2 corrida, 3 no ar, 4 pouso, 5 vitória, 6 susto
+      let f = 0; const run = ANIM.dheepRun;
+      if (G.state === 'dying') f = 6; else if (G.state === 'delivering') f = 5;
+      else if (pl.ground == null) f = 3; else if (pl.landT > 0) f = 4; else if (pl.vx) f = run[(pl.anim | 0) % run.length];
+      if (has('shield')) { b.globalAlpha = .3; disc(b, Math.round(pl.x), Math.round(pl.y - PH / 2 - 2), 22, '#9fd6ff'); b.globalAlpha = 1; }
       drawSpr('dheep', f, pl.x, pl.y, pl.face < 0);
-      if (has('nitro') && pl.vx && (T * 20 | 0) % 2) R(b, '#FF6A13', Math.round(pl.x - pl.face * 7), Math.round(pl.y - 6), 2, 2);
+      if (has('nitro') && pl.vx && (T * 20 | 0) % 2) { R(b, '#FF6A13', Math.round(pl.x - pl.face * 12), Math.round(pl.y - 8), 3, 3); R(b, '#FFD21F', Math.round(pl.x - pl.face * 16), Math.round(pl.y - 12), 2, 2); }
+      // power-ups ativos: ícones pequenos flutuando acima da cabeça (não distorcem o personagem)
+      G.inv.forEach((it, i) => { const n = G.inv.length; drawSpr('pw_' + it.type, 0, pl.x + (i - (n - 1) / 2) * 18, pl.y - 50 + Math.round(Math.sin(T * 4 + i) * 1.5)); });
     }
     for (const q of G.parts) R(b, q.col, Math.round(q.x), Math.round(q.y), q.sz, q.sz);
     for (const q of G.pops) { if (/^[0-9+x! -]+$/.test(q.text)) ptext(b, q.text, q.x, Math.round(q.y), q.col); else popText(q); }
   } else {
-    drawSpr('boss', 0, 18, 58);
-    drawSpr('dheep', 0, 30, surfY(GIRDERS[0], 30));
+    drawSpr('boss', 0, BOSS_X, Math.round(surfY(GIRDERS[TOP], BOSS_X)));
+    drawSpr('dheep', 0, START_X, surfY(GIRDERS[0], START_X), true);
   }
   b.drawImage(L.near, Math.round(-8 - par * 8), 0, LW, H);
   if (G && th === 'forest') rain();
@@ -1114,7 +1212,7 @@ function layout() {
   if (buf.height !== HB) buf.height = HB;
   canvas.width = Math.round(W * k); canvas.height = Math.round(HB * k);
   canvas.style.width = (canvas.width / dpr) + 'px'; canvas.style.height = (canvas.height / dpr) + 'px';
-  document.documentElement.style.setProperty('--ctl', C.controls.size + 'px');
+  const ds = document.documentElement.style; ds.setProperty('--ctl', C.controls.size + 'px'); ds.setProperty('--gap', (C.controls.gap ?? 4) + 'px'); ds.setProperty('--hit', (C.controls.hitbox ?? 60) + 'px');
 }
 
 /* ---------- HUD ---------- */
@@ -1186,19 +1284,38 @@ function resumeGame() { paused = false; Audio.pause(false); show(null); last = p
 document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(); });
 addEventListener('blur', pauseGame);
 click('b-pause', pauseGame); click('b-resume', resumeGame);
-click('b-quit', () => { paused = false; Audio.pause(false); G = null; goTitle(); });
+click('b-quit', () => confirmBox('Encerrar partida', 'Encerrar agora? Sua pontuação atual vale como resultado final e <b>não dá para jogar de novo</b> nesta visita.', () => {
+  paused = false; Audio.pause(false); if (G) { G.state = 'over'; gameOver(); }
+}));
 function updMute() { $('#b-mute').textContent = Audio.muted ? '🔇' : '🔊'; $('#b-mute').setAttribute('aria-pressed', Audio.muted); }
 click('b-mute', () => { Audio.setMuted(!Audio.muted); updMute(); });
 
+// ---- limite de partidas (CONFIG.game.onePlayPer) ----
+const PLAYED_KEY = 'rover_played';
+function playStore() { const m = C.game.onePlayPer; return m === 'device' ? localStorage : m === 'visit' ? sessionStorage : null; }
+function hasPlayed() { try { const st = playStore(); return !!(st && st.getItem(PLAYED_KEY)); } catch (e) { return false; } }
+function markPlayed() { try { const st = playStore(); if (st) st.setItem(PLAYED_KEY, new Date().toISOString()); } catch (e) {} }
+function playedMsg() {
+  return C.game.onePlayPer === 'device'
+    ? 'Obrigado por jogar! Cada aparelho tem direito a uma partida. Confira sua posição no placar.'
+    : 'Obrigado por jogar! É uma partida por vez que o link é aberto. Confira sua posição no placar.';
+}
 function goTitle() {
   show('s-title'); G = null; Audio.music(3);
+  const done = hasPlayed(), bp = $('#b-play');
+  bp.disabled = done; bp.textContent = done ? '✔ PARTIDA JÁ JOGADA' : '▶ JOGAR';
+  $('#t-played').style.display = done ? '' : 'none'; $('#t-played').textContent = done ? playedMsg() : '';
   const pl = player(); $('#t-player').innerHTML = pl ? `Jogando como <b>${esc(pl.nick)}</b> · <a href="#" id="t-chg" style="color:#FFD21F">trocar</a>` : '';
   const chg = $('#t-chg'); if (chg) chg.onclick = e => { e.preventDefault(); openRegister(); };
 }
 function startPlay() {
+  if (hasPlayed()) { toast(playedMsg()); return goTitle(); }
   const pl = player(); if (!pl) return openRegister(true);
-  if (!store.get('rover_tut_seen', false)) return openTutorial(true);
-  show(null); paused = false; newGame();
+  openTutorial(true); // pop-up "Como jogar" sempre antes de começar
+}
+function beginGame() {
+  if (hasPlayed()) return goTitle();
+  markPlayed(); show(null); paused = false; newGame();
 }
 let regThenPlay = false, tutThenPlay = false;
 function openRegister(thenPlay = false) {
@@ -1206,21 +1323,23 @@ function openRegister(thenPlay = false) {
   $('#r-nick').value = pl ? pl.nick : ''; $('#r-wa').value = pl ? (pl.whatsapp || '') : ''; $('#r-ok').checked = !!(pl && pl.consent); $('#r-err').textContent = '';
   show('s-register');
 }
-function openTutorial(thenPlay = false) { tutThenPlay = thenPlay; show('s-tutorial'); }
+function openTutorial(thenPlay = false) {
+  tutThenPlay = thenPlay; $('#b-tut-go').textContent = thenPlay ? C.tutorial.buttonPlay : C.tutorial.button;
+  show('s-tutorial');
+}
 click('b-play', startPlay);
 click('b-board', () => openBoard('title'));
 click('b-how', () => openTutorial(false));
 click('b-about', () => show('s-about'));
 click('b-about-back', goTitle);
 click('b-tut-back', goTitle);
-click('b-tut-go', () => { store.set('rover_tut_seen', true); startPlay(); });
+click('b-tut-go', () => { if (tutThenPlay) beginGame(); else goTitle(); });
 click('b-reg-back', goTitle);
 click('r-pol', () => { if (C.privacyPolicyUrl) window.open(C.privacyPolicyUrl, '_blank', 'noopener'); else show('s-privacy'); });
 click('b-priv-back', () => show('s-register'));
 click('b-reg', () => {
   const nick = $('#r-nick').value.trim().toUpperCase(), wa = $('#r-wa').value.replace(/\D/g, ''), ok = $('#r-ok').checked, err = $('#r-err');
-  if (!NICK_RE.test(nick)) return err.textContent = 'Apelido inválido: use de 1 a 6 letras (sem acento), números ou hífen.';
-  if (LB.banned().includes(nick)) return err.textContent = 'Este apelido não está disponível. Escolha outro.';
+  const ne = nickError(nick, 'Apelido'); if (ne) return err.textContent = ne;
   if (wa && (wa.length < 10 || wa.length > 13)) return err.textContent = 'WhatsApp inválido. Use DDD + número (ex.: 69999999999).';
   if (!ok) return err.textContent = 'Para continuar, aceite a política de privacidade.';
   store.set(K.player, { nick, whatsapp: wa || '', consent: true, consentDate: new Date().toISOString() });
@@ -1245,8 +1364,7 @@ function gameOver() {
 click('b-save', () => {
   if (!lastGame || lastGame.saved) return;
   const nick = $('#o-nick').value.trim().toUpperCase(), err = $('#o-err');
-  if (!NICK_RE.test(nick)) return err.textContent = 'Nome inválido: use de 1 a 6 letras (sem acento), números ou hífen.';
-  if (LB.banned().includes(nick)) return err.textContent = 'Este nome não está disponível. Escolha outro.';
+  const ne = nickError(nick, 'Nome'); if (ne) return err.textContent = ne;
   const pl = player();
   const entry = { nickname: nick, score: lastGame.score, level: lastGame.level, date: new Date().toISOString(), duration: lastGame.duration, deliveries: lastGame.deliveries };
   if (pl && pl.consent && pl.whatsapp && pl.nick === nick) entry.whatsapp = pl.whatsapp;
@@ -1255,7 +1373,6 @@ click('b-save', () => {
   $('#o-saved-txt').textContent = pos ? `${nick}, você está em #${pos} no ranking!` : 'Sua pontuação não entrou no top ' + C.leaderboard.max + '. Tente de novo!';
   if (pos) $('#o-rank').textContent = '#' + pos;
 });
-click('b-again', () => { show(null); paused = false; newGame(); });
 click('b-o-board', () => openBoard('over'));
 click('b-o-menu', goTitle);
 click('b-share', () => {
@@ -1345,7 +1462,7 @@ click('b-a-reset', () => {
   const pw = $('#a-del').value;
   if (!hashOK(pw, C.adminDeletePasswordSHA256, C.adminDeletePassword)) return $('#a-msg').textContent = 'Senha de limpeza incorreta.';
   confirmBox('Reset total', '⚠️ Apaga placar, estatísticas, banidos e recorde deste aparelho. Não pode ser desfeito. Exporte o CSV antes.', () => {
-    [K.leaderboard, K.stats, K.banned, K.best].forEach(k => store.del(k)); $('#a-del').value = ''; admTab('acts'); $('#a-msg').textContent = 'Reset total concluído.';
+    [K.leaderboard, K.stats, K.banned, K.best, PLAYED_KEY].forEach(k => store.del(k)); try { sessionStorage.removeItem(PLAYED_KEY); } catch (e) {} $('#a-del').value = ''; admTab('acts'); $('#a-msg').textContent = 'Reset total concluído.';
   });
 });
 
@@ -1376,6 +1493,7 @@ function applyAsset(a, im) {
     const fw = a.frameWidth || im.width, fh = a.frameHeight || im.height, n = a.frames ? a.frames.length : Math.max(1, Math.floor(im.width / fw));
     const fr = []; for (let i = 0; i < n; i++) { const c = mk(fw, fh); c.getContext('2d').drawImage(im, i * fw, 0, fw, fh, 0, 0, fw, fh); fr.push(c); }
     SPR[a.id] = fr;
+    if (a.runFrames) ANIM[a.id + 'Run'] = a.runFrames;
   } else if (a.kind === 'layer') BGX[a.id] = im;
   else UIIMG[a.id] = im;
 }
@@ -1395,9 +1513,13 @@ async function boot() {
   // textos
   $('#t-sub').textContent = C.texts.subtitle; $('#t-seal').textContent = C.brand.foundedLabel;
   $('#t-slogan').innerHTML = `<b>${esc(C.brand.slogan)}</b>`; $('#o-slogan').innerHTML = `<b>${esc(C.brand.slogan)}</b>`;
-  $('#tut-lore').textContent = tpl(C.texts.lore);
+  const TU = C.tutorial, pt = pixelTitle(TU.title);
+  Object.assign($('#tut-title'), { src: pt.url, alt: TU.title }); $('#tut-title').style.width = pt.w + 'px';
+  $('#tut-text').innerHTML = TU.lines.slice(0, 4).map(l => `<p>${esc(l)}</p>`).join('');
+  $('#tut-cards').innerHTML = TU.cards.map(c => `<figure><img src="${esc(c.img)}" alt="${esc(c.alt)}" width="256" height="256"><figcaption style="background:${esc(c.color)}">${esc(c.label)}</figcaption></figure>`).join('');
+  $('#b-tut-go').textContent = TU.button;
   $('#tut-list').innerHTML = C.texts.tutorial.map(t => `<li>${esc(tpl(t))}</li>`).join('');
-  $('#about-txt').innerHTML = `<h3>${esc(C.brand.name)}</h3>` + C.texts.about.map(t => `<p>${esc(t)}</p>`).join('') + `<p><span class="seal">${esc(C.brand.foundedLabel)}</span></p><p><b>${esc(C.brand.slogan)}</b></p>`;
+  $('#about-txt').innerHTML = `<p class="lore">${esc(tpl(C.texts.lore))}</p><h3>${esc(C.brand.name)}</h3>` + C.texts.about.map(t => `<p>${esc(t)}</p>`).join('') + `<p><span class="seal">${esc(C.brand.foundedLabel)}</span></p><p><b>${esc(C.brand.slogan)}</b></p>`;
   $('#r-ok-l').textContent = C.texts.consent; $('#priv-txt').innerHTML = `<p>${esc(C.texts.privacy)}</p>`;
   updMute();
   $('#load-txt').textContent = tpl('{mascot} está pronto para a entrega!');
@@ -1409,7 +1531,7 @@ boot();
 
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
 // gancho de teste: avança a simulação de forma determinística (usado nos testes descritos no README)
-window.__rover = { get G() { return G; }, inp, LB, sha256, newGame, GIRDERS, step(sec) { for (let i = 0; i < sec / STEP; i++) update(STEP); render(); }, gameOver: () => gameOver() };
+window.__rover = { get G() { return G; }, inp, LB, sha256, newGame, GIRDERS, isOffensive, hasPlayed, step(sec) { for (let i = 0; i < sec / STEP; i++) update(STEP); render(); }, gameOver: () => gameOver() };
 })();
 </script>
 </body>
