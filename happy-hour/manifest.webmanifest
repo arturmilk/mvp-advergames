@@ -1,0 +1,14 @@
+{
+  "name": "Rover Happy Hour",
+  "short_name": "Happy Hour",
+  "lang": "pt-BR",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#22130c",
+  "theme_color": "#2B2B2B",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
