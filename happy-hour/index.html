@@ -373,11 +373,13 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--red); }
 <div id="rotate">📱 Gire o celular para a posição em pé para jogar.</div>
 
 <script src="config.js"></script>
+<script src="analytics.js"></script>
 <script>
 (() => {
 'use strict';
 const C = window.CONFIG;
 const K = C.storageKeys;
+const RA = window.RoverAnalytics || { init() {}, start() {}, progress() {}, level() {}, end() {}, saved() {}, event() {} };
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -793,6 +795,7 @@ function newGame() {
   releaseAll(); showScreen(null); setHud(true); updateHud(true);
   Sound.unlock(); Sound.music(true); Sound.musicLevel(1);
   toast('Bora comer!', 900);
+  RA.start({ nick: player().nick || '' });
 }
 
 /* ---- update ---- */
@@ -815,6 +818,7 @@ function update(dt) {
   const newStep = Math.floor(G.elapsed / C.difficultyIncrementInterval);
   if (newStep !== G.stepIdx) {
     G.stepIdx = newStep; G.maxLevel = Math.max(G.maxLevel, level());
+    if (newStep < C.maxLevel) RA.level(level(), G.elapsed / 1000, '', G.score);
     if (level() > 1 && level() <= C.maxLevel && newStep < C.maxLevel) { toast('Nível ' + level() + '!', 900); Sound.sfx('level'); }
     // acelera também quem já está caindo
     for (const o of G.items) o.vy = C.baseFallSpeed * (V.H / C.canvasHeight) * fallMult() * C.items[o.kind].speedFactor;
@@ -854,6 +858,7 @@ function onCatch(o) {
   const pts = Math.round(it.score * mult * (1 + bonus));
   const prevStep = Math.floor(G.streak / C.comboEvery);
   G.score += pts; G.streak++; G.caught++; G.maxCombo = Math.max(G.maxCombo, G.streak);
+  RA.progress(G.score, G.elapsed / 1000);
   G.eatT = .32; G.squash = 1;
   const y = V.floorY - 80;
   G.texts.push({ x: o.x, y: o.y - 10, txt: '+' + pts, sub: mult > 1 ? 'x' + String(mult).replace('.', ',') : '', life: .9, col: it.score >= 25 ? '#FFD21F' : '#fff' });
@@ -889,6 +894,8 @@ function endGame(reason) {
   Sound.sfx('over'); Sound.musicLevel(.4);
   const r = { score: G.score, level: goalFor(G.score), maxCombo: G.maxCombo, duration: Math.round(G.elapsed / 1000) };
   LB.record(r);
+  RA.end({ score: G.score, sec: G.elapsed / 1000, level: G.maxLevel, title: r.level, reason: { misses: 'perdeu_itens', time: 'tempo', quit: 'encerrou' }[reason] || reason,
+    maxCombo: G.maxCombo, items: G.caught, misses: G.misses, nick: player().nick || '' });
   const pl = player(); G.newRecord = G.score > (pl.best || 0) && G.score > 0;
   if (G.newRecord) { pl.best = G.score; pl.bestCombo = G.maxCombo; pl.bestId = null; store.set(K.player, pl); }
   setTimeout(() => { if (G.state === 'over') showGameOver(); }, 1300);
@@ -1041,6 +1048,7 @@ function saveScore(e) {
     date: new Date().toISOString(), maxCombo: G.maxCombo, duration: Math.round(G.elapsed / 1000) };
   const pos = LB.add(entry);
   G.saved = true; G.entryId = entry.id;
+  RA.saved({ nick, rank: pos || null });
   const pl = player(); pl.nick = nick;
   if (G.score >= (pl.best || 0)) { pl.best = G.score; pl.bestId = entry.id; pl.bestCombo = G.maxCombo; }
   store.set(K.player, pl);
@@ -1206,6 +1214,7 @@ function frame(now) {
 
 /* ======================= BOOT ======================= */
 (async function boot() {
+  RA.init(C);
   const t0 = performance.now();
   await loadAssets(p => { $('#loadBar').style.width = Math.round(p * 100) + '%'; });
   bindDomAssets(); buildStatic(); resize();

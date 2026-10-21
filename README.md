@@ -5,7 +5,7 @@ O jogador controla **Dheep**, que sobe as vigas de um circuito fixo até alcanç
 desviando dos barris, caixas e garrafas que ele lança. Quando chega ao topo, a entrega é concluída
 e um novo ciclo começa, mais difícil. O jogo tem 4 mundos que são liberados conforme a pontuação.
 
-* 100% client-side: HTML + JS puro, Canvas 2D, sem dependências e sem requisições externas.
+* 100% client-side: HTML + JS puro, Canvas 2D, sem dependências. A única requisição externa é a coleta de dados para a planilha/dashboard (opcional, veja `analytics/README.md`).
 * Resolução lógica de 216×300 px, com escala inteira (nearest-neighbor) e `image-rendering: pixelated`.
 * Placar e painel admin guardados em `localStorage` (nenhum dado sai do aparelho).
 
@@ -133,9 +133,9 @@ Palavras curtas ficam na lista `exact` para não bloquear nomes normais (`PAULO`
   **Banir apelido** (remove as pontuações e bloqueia novos cadastros com esse apelido), **Limpar placar** (pede confirmação),
   **Reset total** (exige a senha de limpeza e apaga placar, estatísticas, banidos e recorde) e **Estatísticas** (partidas, melhor pontuação, médias e distribuição por mundo).
 
-> **Importante:** como não há backend, o login do admin é só uma barreira de interface. Os dados ficam no navegador
-> **daquele aparelho**: o painel mostra apenas as partidas jogadas nele (ideal para totem ou tablet em loja ou evento). Exporte o CSV
-> com frequência como backup. Para consolidar placares de vários aparelhos, será preciso um endpoint (`POST /api/backup`, fora do escopo).
+> **Importante:** o login do admin é só uma barreira de interface, e este painel mostra apenas as partidas jogadas **naquele aparelho**.
+> Os dados de **todos os aparelhos** (ranking geral, jogadores, tempo jogado, tempo até cada pontuação) ficam na planilha Google
+> e no **dashboard do dono** (`dashboard/`). Instalação: `analytics/README.md` (preencha `analytics.endpoint` no `config.js`).
 
 ---
 

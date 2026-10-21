@@ -11,6 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/icon-192.png">
 <script src="config.js"></script>
+<script src="analytics.js"></script>
 <style>
 :root{
   --red:#E30613; --orange:#FF6A13; --yellow:#FFD21F; --graphite:#2B2B2B; --amber:#FFA726;
@@ -366,6 +367,7 @@ table.lb td.n{text-align:right}
 'use strict';
 const C = window.CONFIG;
 const K = C.storageKeys;
+const RA = window.RoverAnalytics || { init() {}, start() {}, progress() {}, level() {}, end() {}, saved() {}, event() {} };
 const W = 216, H = 300;
 const $ = s => document.querySelector(s);
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -844,6 +846,7 @@ function addScore(base, x, y, combo = true, col = '#FFD21F') {
   G.score += pts;
   popup(x, y, '+' + pts, col);
   checkLevel(); checkRecord();
+  RA.progress(G.score, G.time);
   return pts;
 }
 function checkLevel() {
@@ -851,6 +854,7 @@ function checkLevel() {
     G.world++;
     G.score += C.levelUpBonus;
     const L = C.levels[G.world];
+    RA.level(G.world + 1, G.time, L.name, G.score);
     showBanner(`MUNDO ${G.world + 1}`, L.name, tpl(L.intro) + `  (+${C.levelUpBonus} bônus)`, 3);
     Audio.play('level'); Audio.music(G.world);
     burst(W / 2, 140, 40, ['#E30613', '#FF6A13', '#FFD21F', '#fff']);
@@ -921,7 +925,7 @@ function update(dt) {
 
   if (G.state === 'dying') {
     p.vy += ph.gravity * .5 * dt; p.y += p.vy * dt; G.stateT -= dt;
-    if (G.stateT <= 0) { G.state = 'over'; gameOver(); }
+    if (G.stateT <= 0) { G.state = 'over'; G.endReason = 'vidas'; gameOver(); }
     return;
   }
   if (G.state === 'delivering') { G.stateT -= dt; if (G.stateT <= 0) finishDelivery(); return; }
@@ -1285,7 +1289,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) pause
 addEventListener('blur', pauseGame);
 click('b-pause', pauseGame); click('b-resume', resumeGame);
 click('b-quit', () => confirmBox('Encerrar partida', 'Encerrar agora? Sua pontuação atual vale como resultado final e <b>não dá para jogar de novo</b> nesta visita.', () => {
-  paused = false; Audio.pause(false); if (G) { G.state = 'over'; gameOver(); }
+  paused = false; Audio.pause(false); if (G) { G.state = 'over'; G.endReason = 'encerrou'; gameOver(); }
 }));
 function updMute() { $('#b-mute').textContent = Audio.muted ? '🔇' : '🔊'; $('#b-mute').setAttribute('aria-pressed', Audio.muted); }
 click('b-mute', () => { Audio.setMuted(!Audio.muted); updMute(); });
@@ -1316,6 +1320,7 @@ function startPlay() {
 function beginGame() {
   if (hasPlayed()) return goTitle();
   markPlayed(); show(null); paused = false; newGame();
+  const pl = player(); RA.start({ nick: pl ? pl.nick : '' });
 }
 let regThenPlay = false, tutThenPlay = false;
 function openRegister(thenPlay = false) {
@@ -1343,6 +1348,7 @@ click('b-reg', () => {
   if (wa && (wa.length < 10 || wa.length > 13)) return err.textContent = 'WhatsApp inválido. Use DDD + número (ex.: 69999999999).';
   if (!ok) return err.textContent = 'Para continuar, aceite a política de privacidade.';
   store.set(K.player, { nick, whatsapp: wa || '', consent: true, consentDate: new Date().toISOString() });
+  RA.event('register', C.analytics && C.analytics.sendWhatsapp && wa ? { nick, whatsapp: wa } : { nick });
   if (regThenPlay) startPlay(); else goTitle();
 });
 
@@ -1353,6 +1359,7 @@ function gameOver() {
   statsAdd(s, lvl, dur);
   const rec = s > best0; if (rec) store.set(K.best, s);
   lastGame = { score: s, level: lvl, duration: Math.round(dur), deliveries: G.deliveries, saved: false };
+  RA.end({ score: s, sec: dur, level: lvl, title: rankTitle(s), reason: G.endReason || 'vidas', deliveries: G.deliveries, nick: (player() || {}).nick || '' });
   $('#o-score').textContent = fmt(s); $('#o-level').textContent = lvl; $('#o-time').textContent = fmtTime(dur);
   $('#o-rank').textContent = '#' + LB.rankOf(s); $('#o-title').textContent = rankTitle(s);
   $('#o-rec').style.display = rec && s > 0 ? 'inline-block' : 'none';
@@ -1369,6 +1376,7 @@ click('b-save', () => {
   const entry = { nickname: nick, score: lastGame.score, level: lastGame.level, date: new Date().toISOString(), duration: lastGame.duration, deliveries: lastGame.deliveries };
   if (pl && pl.consent && pl.whatsapp && pl.nick === nick) entry.whatsapp = pl.whatsapp;
   const pos = LB.add(entry); lastGame.saved = true;
+  RA.saved({ nick, rank: pos || null });
   $('#o-form').style.display = 'none'; $('#o-saved').style.display = '';
   $('#o-saved-txt').textContent = pos ? `${nick}, você está em #${pos} no ranking!` : 'Sua pontuação não entrou no top ' + C.leaderboard.max + '. Tente de novo!';
   if (pos) $('#o-rank').textContent = '#' + pos;
@@ -1379,6 +1387,7 @@ click('b-share', () => {
   if (!lastGame) return;
   const url = C.share.gameUrl || location.href.split('?')[0];
   const txt = C.share.text.replace('{score}', fmt(lastGame.score)).replace('{world}', C.levels[lastGame.level - 1].name).replace('{url}', url);
+  RA.event('share', { score: lastGame.score });
   window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener');
 });
 
@@ -1499,6 +1508,7 @@ function applyAsset(a, im) {
 }
 
 async function boot() {
+  RA.init(C);
   buildSprites();
   layout(); addEventListener('resize', layout); addEventListener('orientationchange', () => setTimeout(layout, 200));
   if (window.ResizeObserver) new ResizeObserver(layout).observe($('#stage'));

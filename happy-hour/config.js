@@ -100,7 +100,16 @@ const CONFIG = {
     mascot: '{mascot} é a força jovem da Rover: começou na empresa aos 18 anos e cresceu nos bastidores. O personagem do jogo é uma versão em cartoon, inspirada nele.'
   },
 
-  // Placar (localStorage) — nenhum dado sai do aparelho
+  // Coleta de dados (dashboard do dono + planilha Google). endpoint = URL do Web App do Apps Script (termina em /exec).
+  // Vazio = não envia nada. Passo a passo em ../analytics/README.md
+  analytics: {
+    game: 'happy-hour', // não troque: é a chave deste jogo na planilha
+    endpoint: '',
+    // Pontuações cujo tempo de jogo é registrado ("quanto tempo o jogador leva para chegar a X pontos")
+    milestones: [100, 250, 500, 1000, 1500, 2000, 3000, 4000, 5000]
+  },
+
+  // Placar local (localStorage) do aparelho; o placar geral fica na planilha (analytics)
   leaderboardMax: 100,
   publicTop: 50,
   nickPattern: '^[A-Z0-9-]{1,6}$', // depois de converter para maiúsculas

@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Rover Dashboard</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f4f3f1; --surface: #fcfcfb; --surface-2: #f0efec; --border: #e2e0dc;
+  --text: #0b0b0b; --text-2: #52514e; --text-3: #7c7a75;
+  --s1: #2a78d6; --s2: #eb6834; --grid: #e6e4df; --brand: #E30613;
+  --good: #1f8a4c; --warn: #b06d00;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --bg: #111110; --surface: #1a1a19; --surface-2: #232321; --border: #33332f;
+    --text: #f0efec; --text-2: #c3c2b7; --text-3: #8f8e86;
+    --s1: #3987e5; --s2: #d95926; --grid: #2c2c29; --good: #4cc27f; --warn: #e3a336;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111110; --surface: #1a1a19; --surface-2: #232321; --border: #33332f;
+  --text: #f0efec; --text-2: #c3c2b7; --text-3: #8f8e86;
+  --s1: #3987e5; --s2: #d95926; --grid: #2c2c29; --good: #4cc27f; --warn: #e3a336;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 16px 48px; }
+header { display: flex; align-items: center; gap: 12px; padding: 18px 0 14px; flex-wrap: wrap; }
+.logo { width: 34px; height: 34px; border-radius: 9px; background: var(--brand); color: #fff; font-weight: 900; display: grid; place-items: center; font-size: 19px; }
+header h1 { font-size: 19px; margin: 0; letter-spacing: -.01em; }
+header .sub { color: var(--text-3); font-size: 12.5px; }
+header .sp { flex: 1; }
+.btn { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 7px 12px; cursor: pointer; white-space: nowrap; }
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--text); color: var(--surface); border-color: var(--text); }
+.btn.small { padding: 4px 9px; font-size: 12.5px; }
+a { color: var(--s1); }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 10px 0 16px; position: sticky; top: 0; background: var(--bg); z-index: 5; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: none; padding: 6px 12px; cursor: pointer; color: var(--text-2); }
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button[aria-pressed="true"] { background: var(--text); color: var(--surface); }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 6px; vertical-align: 0; }
+.status { color: var(--text-3); font-size: 12.5px; margin-left: auto; }
+.demo { background: #fff3cd; color: #5c4400; border: 1px solid #f0d78a; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+.kpi .l { color: var(--text-2); font-size: 12.5px; }
+.kpi .v { font-size: 26px; font-weight: 700; letter-spacing: -.02em; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.kpi .h { color: var(--text-3); font-size: 12px; margin-top: 2px; }
+.grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; min-width: 0; grid-column: span 12; }
+.c6 { grid-column: span 6; } .c4 { grid-column: span 4; } .c8 { grid-column: span 8; }
+@media (max-width: 900px) { .c6, .c4, .c8 { grid-column: span 12; } }
+.card h2 { font-size: 14.5px; margin: 0 0 2px; }
+.card .d { color: var(--text-3); font-size: 12.5px; margin: 0 0 10px; }
+.card .hd { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
+.card .hd > div:first-child { flex: 1; min-width: 200px; }
+.legend { display: flex; gap: 14px; font-size: 12.5px; color: var(--text-2); margin-bottom: 6px; }
+.chart { width: 100%; position: relative; }
+.chart svg { display: block; width: 100%; overflow: visible; }
+.chart text { fill: var(--text-3); font-size: 11px; }
+.chart .gl { stroke: var(--grid); stroke-width: 1; }
+.chart [data-tip] { cursor: default; }
+.chart [data-tip]:hover { opacity: .8; }
+.empty { color: var(--text-3); padding: 28px 0; text-align: center; font-size: 13px; }
+.tbl { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.tbl th { text-align: left; font-weight: 600; color: var(--text-2); font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.tbl td { padding: 6px 8px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+.tbl .n { text-align: right; }
+.tbl tr:last-child td { border-bottom: 0; }
+.scroll { overflow-x: auto; max-height: 520px; overflow-y: auto; }
+.scroll thead th { position: sticky; top: 0; background: var(--surface); }
+.range { position: relative; height: 14px; min-width: 160px; background: var(--surface-2); border-radius: 4px; }
+.range .b { position: absolute; top: 3px; height: 8px; border-radius: 4px; opacity: .45; }
+.range .m { position: absolute; top: 0; width: 3px; height: 14px; border-radius: 2px; }
+.hbar { display: grid; grid-template-columns: minmax(90px, 38%) 1fr auto; gap: 8px; align-items: center; margin: 5px 0; font-size: 13px; }
+.hbar .t { height: 12px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.hbar .f { height: 100%; border-radius: 4px; }
+.hbar .lbl { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hbar .val { color: var(--text); font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; }
+.sub-h { font-size: 12.5px; font-weight: 600; margin: 10px 0 4px; color: var(--text-2); }
+.exports { display: flex; gap: 8px; flex-wrap: wrap; }
+.search { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 5px 10px; min-width: 160px; }
+.pill { font-size: 11.5px; padding: 1px 7px; border-radius: 99px; background: var(--surface-2); color: var(--text-2); }
+.pill.ok { color: var(--good); } .pill.ab { color: var(--warn); }
+#tip { position: fixed; pointer-events: none; background: var(--text); color: var(--surface); font-size: 12.5px; padding: 6px 9px; border-radius: 7px; z-index: 50; display: none; max-width: 260px; line-height: 1.35; }
+/* login */
+.login { max-width: 460px; margin: 8vh auto 0; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+.login h1 { margin: 0 0 4px; font-size: 20px; }
+.login p { color: var(--text-2); margin: 0 0 14px; font-size: 13.5px; }
+.login label { display: block; font-size: 12.5px; color: var(--text-2); margin: 10px 0 4px; }
+.login input { width: 100%; border: 1px solid var(--border); background: var(--bg); border-radius: 8px; padding: 9px 10px; }
+.login .row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.err { color: #c62828; font-size: 13px; min-height: 18px; margin-top: 8px; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div id="tip"></div>
+
+<!-- ============ LOGIN ============ -->
+<div class="wrap" id="v-login" hidden>
+  <form class="login" id="f-login">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px"><div class="logo">R</div><h1>Dashboard dos jogos Rover</h1></div>
+    <p>Dados de todas as partidas de <b>Rover — A Entrega</b> e <b>Rover Happy Hour</b>. Use o endereço do Web App e o token gerados na instalação (veja <code>analytics/README.md</code>).</p>
+    <label for="i-ep">Endereço do Web App (termina em /exec)</label>
+    <input id="i-ep" type="url" placeholder="https://script.google.com/macros/s/…/exec" required autocomplete="url">
+    <label for="i-tk">Token</label>
+    <input id="i-tk" type="password" required autocomplete="current-password">
+    <div class="err" id="l-err"></div>
+    <div class="row">
+      <button class="btn primary" type="submit" id="b-login">Entrar</button>
+      <button class="btn" type="button" id="b-demo">Ver com dados de exemplo</button>
+    </div>
+  </form>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div class="wrap" id="v-dash" hidden>
+  <header>
+    <div class="logo">R</div>
+    <div><h1>Dashboard dos jogos Rover</h1><div class="sub" id="h-sub">—</div></div>
+    <div class="sp"></div>
+    <a class="btn" id="b-sheet" target="_blank" rel="noopener" hidden>Abrir planilha no Google Sheets</a>
+    <button class="btn" id="b-refresh">Atualizar</button>
+    <button class="btn" id="b-logout">Sair</button>
+  </header>
+  <div class="demo" id="demo" hidden>Você está vendo <b>dados de exemplo</b>, gerados no navegador. Nada aqui é real. <a href="#" id="b-demo-exit">Sair do exemplo</a></div>
+
+  <div class="filters">
+    <div class="seg" id="f-game" role="group" aria-label="Jogo">
+      <button data-v="all" aria-pressed="true">Todos os jogos</button>
+      <button data-v="rover"><span class="dot" style="background:var(--s1)"></span>A Entrega</button>
+      <button data-v="happy-hour"><span class="dot" style="background:var(--s2)"></span>Happy Hour</button>
+    </div>
+    <div class="seg" id="f-range" role="group" aria-label="Período">
+      <button data-v="1">Hoje</button>
+      <button data-v="7">7 dias</button>
+      <button data-v="30">30 dias</button>
+      <button data-v="0" aria-pressed="true">Tudo</button>
+    </div>
+    <span class="status" id="status"></span>
+  </div>
+
+  <section class="kpis" id="kpis"></section>
+
+  <div class="grid">
+    <div class="card c8">
+      <h2>Partidas por dia</h2><p class="d">Quantas partidas começaram em cada dia.</p>
+      <div class="legend" id="lg-daily"></div>
+      <div class="chart" id="ch-daily"></div>
+    </div>
+    <div class="card c4">
+      <h2>Horário das partidas</h2><p class="d">Partidas por hora do dia (horário deste computador).</p>
+      <div class="chart" id="ch-hours"></div>
+    </div>
+
+    <div class="card">
+      <div class="hd">
+        <div><h2>Quanto tempo leva para chegar a cada pontuação</h2>
+          <p class="d">Tempo de jogo (sem contar pausas) até a partida alcançar cada pontuação. A barra vai do 25º ao 75º percentil; o traço é a mediana.</p></div>
+        <button class="btn small" data-csv="milestones">Baixar CSV</button>
+      </div>
+      <div id="tb-ms"></div>
+    </div>
+
+    <div class="card c6">
+      <h2>Distribuição de pontuação</h2><p class="d">Quantas partidas terminaram em cada faixa de pontos.</p>
+      <div class="legend" id="lg-hist"></div>
+      <div class="chart" id="ch-hist"></div>
+    </div>
+    <div class="card c6">
+      <h2>Duração das partidas</h2><p class="d">Quantas partidas duraram cada faixa de tempo.</p>
+      <div class="legend" id="lg-dur"></div>
+      <div class="chart" id="ch-dur"></div>
+    </div>
+
+    <div class="card c4">
+      <h2>Até onde os jogadores chegam</h2><p class="d">Mundo (A Entrega) ou nível (Happy Hour) máximo de cada partida.</p>
+      <div id="bx-levels"></div>
+    </div>
+    <div class="card c4">
+      <h2>Como as partidas terminam</h2><p class="d">"Abandonada" = a aba foi fechada no meio da partida.</p>
+      <div id="bx-reasons"></div>
+    </div>
+    <div class="card c4">
+      <h2>Aparelhos e origem</h2><p class="d">Tipo de aparelho, sistema e de onde veio o jogador.</p>
+      <div id="bx-devices"></div>
+    </div>
+
+    <div class="card c6">
+      <div class="hd">
+        <div><h2>Ranking geral</h2><p class="d">Melhor pontuação de cada jogador, de todos os aparelhos.</p></div>
+        <div class="seg" id="f-rank"><button data-v="rover" aria-pressed="true">A Entrega</button><button data-v="happy-hour">Happy Hour</button></div>
+        <button class="btn small" data-csv="ranking">Baixar CSV</button>
+      </div>
+      <div class="scroll" id="tb-rank"></div>
+    </div>
+    <div class="card c6">
+      <div class="hd">
+        <div><h2>Jogadores</h2><p class="d">Um jogador = um aparelho/navegador. Tempo total somando os dois jogos.</p></div>
+        <button class="btn small" data-csv="players">Baixar CSV</button>
+      </div>
+      <div class="scroll" id="tb-players"></div>
+    </div>
+
+    <div class="card">
+      <div class="hd">
+        <div><h2>Partidas</h2><p class="d">As mais recentes primeiro (até 300 na tela; o CSV traz todas do filtro).</p></div>
+        <input class="search" id="q" type="search" placeholder="Buscar apelido…" aria-label="Buscar apelido">
+        <button class="btn small" data-csv="sessions">Baixar CSV</button>
+      </div>
+      <div class="scroll" id="tb-sessions"></div>
+    </div>
+
+    <div class="card">
+      <h2>Exportar para o Google Sheets</h2>
+      <p class="d">Os dados já ficam gravados na planilha Google ligada ao jogo (botão “Abrir planilha”, no topo). Para levar um recorte para outra planilha, baixe o CSV (respeita os filtros acima) e, no Google Sheets, use <b>Arquivo › Importar › Fazer upload</b>. Datas no formato AAAA-MM-DD HH:MM:SS e números sem casas decimais, para o Sheets reconhecer em qualquer idioma.</p>
+      <div class="exports">
+        <button class="btn" data-csv="sessions">Partidas</button>
+        <button class="btn" data-csv="milestones">Tempo até cada pontuação</button>
+        <button class="btn" data-csv="marcos">Marcos (bruto)</button>
+        <button class="btn" data-csv="ranking">Ranking</button>
+        <button class="btn" data-csv="players">Jogadores</button>
+        <button class="btn" data-csv="daily">Resumo por dia</button>
+        <button class="btn" data-csv="events">Eventos (visitas, cadastros, compartilhamentos)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const GAME = { rover: { name: 'Rover — A Entrega', short: 'A Entrega', color: 'var(--s1)', lvl: 'Mundo' }, 'happy-hour': { name: 'Rover Happy Hour', short: 'Happy Hour', color: 'var(--s2)', lvl: 'Nível' } };
+const GKEYS = Object.keys(GAME);
+const ABANDON_MIN = 30; // partida sem "fim" e sem sinal há 30 min = abandonada
+const LS = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} } };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nf = n => Math.round(n).toLocaleString('pt-BR');
+const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '—';
+const dur = s => { s = Math.round(s || 0); if (s < 60) return s + ' s'; const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), r = s % 60; return h ? `${h} h ${String(m).padStart(2, '0')} min` : `${m} min ${String(r).padStart(2, '0')} s`; };
+const pad = n => String(n).padStart(2, '0');
+const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const dtStr = d => d ? `${dayKey(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` : '';
+const brDate = d => d ? d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+const quant = (a, q) => { if (!a.length) return 0; const s = [...a].sort((x, y) => x - y), i = (s.length - 1) * q, lo = Math.floor(i); return s[lo] + (s[Math.ceil(i)] - s[lo]) * (i - lo); };
+const N = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+const D = v => { if (!v) return null; const d = new Date(v); return isNaN(d) ? null : d; };
+
+let RAW = null, DATA = null, demo = false, timer = null;
+const F = { game: 'all', range: 0, rank: 'rover', q: '' };
+
+/* ---------------- carregar ---------------- */
+async function fetchData(ep, tk) {
+  const url = ep + (ep.includes('?') ? '&' : '?') + 'action=data&token=' + encodeURIComponent(tk) + '&_=' + Date.now();
+  const r = await fetch(url, { cache: 'no-store' });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error === 'token' ? 'Token incorreto.' : 'Erro: ' + (j.error || 'desconhecido'));
+  return j;
+}
+async function load(silent) {
+  if (demo) { RAW = demoData(); return prepare(); }
+  const ep = LS.get('rd_ep'), tk = LS.get('rd_tk');
+  if (!ep || !tk) return showLogin();
+  if (!silent) $('#status').textContent = 'Carregando…';
+  try { RAW = await fetchData(ep, tk); prepare(); }
+  catch (e) { $('#status').textContent = 'Não foi possível atualizar: ' + e.message; }
+}
+
+function prepare() {
+  const now = Date.now();
+  const sessions = (RAW.partidas || []).filter(r => GAME[r.jogo]).map(r => {
+    const start = D(r.inicio) || D(r.atualizado), upd = D(r.atualizado) || start, end = D(r.fim);
+    let status = r.status === 'finalizada' ? 'finalizada' : (upd && now - upd.getTime() > ABANDON_MIN * 60000 ? 'abandonada' : 'jogando');
+    return {
+      id: r.session_id, game: r.jogo, pid: r.player_id || r.session_id, nick: String(r.apelido_ranking || r.apelido || '').replace(/^'/, ''),
+      start, end, status, score: N(r.pontos), sec: N(r.duracao_s), level: N(r.nivel), title: r.meta || '',
+      reason: status === 'finalizada' ? (r.motivo_fim || 'outro') : status, deliveries: r.entregas === '' ? null : N(r.entregas),
+      combo: r.combo_max === '' ? null : N(r.combo_max), items: r.itens === '' ? null : N(r.itens), misses: r.erros === '' ? null : N(r.erros),
+      saved: r.salvo_ranking === 'sim', rank: r.posicao_ranking === '' ? null : N(r.posicao_ranking),
+      device: r.dispositivo || '', os: r.sistema || '', screen: r.tela || '', ref: r.origem || '', utm: r.utm_source || '', camp: r.utm_campaign || '', version: r.versao || ''
+    };
+  }).filter(s => s.start);
+  const byId = new Map(sessions.map(s => [s.id, s]));
+  const marcos = (RAW.marcos || []).map(m => ({ id: m.event_id, sid: m.session_id, game: m.jogo, pid: m.player_id, kind: m.tipo, value: N(m.valor), sec: N(m.segundos), score: N(m.pontos), date: D(m.data) }));
+  // nível máximo a partir dos marcos (vale também para partidas abandonadas)
+  for (const m of marcos) if (m.kind === 'nivel') { const s = byId.get(m.sid); if (s && m.value > s.level) s.level = m.value; }
+  for (const s of sessions) if (!s.level) s.level = 1;
+  const events = (RAW.eventos || []).map(e => ({ id: e.event_id, type: e.tipo, game: e.jogo, sid: e.session_id, pid: e.player_id, nick: e.apelido, date: D(e.data), detail: e.detalhe }));
+  DATA = { sessions, byId, marcos, events };
+  const sheet = $('#b-sheet'); sheet.hidden = !RAW.sheetUrl; if (RAW.sheetUrl) sheet.href = RAW.sheetUrl;
+  $('#status').textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + (demo ? '' : ' · atualiza sozinho a cada minuto');
+  render();
+}
+
+/* ---------------- filtros ---------------- */
+function inRange(d) {
+  if (!F.range) return true;
+  if (!d) return false;
+  const from = new Date(); from.setHours(0, 0, 0, 0); from.setDate(from.getDate() - (F.range - 1));
+  return d >= from;
+}
+const gameOk = g => F.game === 'all' || g === F.game;
+function filtered() {
+  const S = DATA.sessions.filter(s => gameOk(s.game) && inRange(s.start));
+  const ids = new Set(S.map(s => s.id));
+  return { S, M: DATA.marcos.filter(m => ids.has(m.sid)), E: DATA.events.filter(e => gameOk(e.game) && inRange(e.date)) };
+}
+function games() { return F.game === 'all' ? GKEYS : [F.game]; }
+
+/* ---------------- tooltip ---------------- */
+const tip = $('#tip');
+document.addEventListener('mousemove', e => {
+  const t = e.target.closest && e.target.closest('[data-tip]');
+  if (!t) { tip.style.display = 'none'; return; }
+  tip.innerHTML = t.getAttribute('data-tip'); tip.style.display = 'block';
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  tip.style.left = Math.min(innerWidth - w - 8, e.clientX + 12) + 'px';
+  tip.style.top = (e.clientY - h - 12 < 4 ? e.clientY + 16 : e.clientY - h - 12) + 'px';
+});
+
+/* ---------------- gráficos (SVG) ---------------- */
+function niceMax(v) { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; }
+// barras verticais; series = [{key,color,values}] empilhadas
+function bars(el, labels, series, opt = {}) {
+  const W = Math.max(280, el.clientWidth || 600), H = opt.h || 220, L = 36, R = 6, T = 8, B = 24;
+  const tot = labels.map((_, i) => series.reduce((a, s) => a + s.values[i], 0));
+  if (!tot.some(v => v > 0)) { el.innerHTML = '<div class="empty">Sem partidas neste filtro.</div>'; return; }
+  const max = niceMax(Math.max(...tot)), pw = W - L - R, ph = H - T - B, bw = pw / labels.length, gap = Math.min(6, bw * .25);
+  const y = v => T + ph - v / max * ph;
+  let g = '';
+  const nt = max <= 4 ? max : [4, 5, 2].find(k => Number.isInteger(max / k)) || 4; // marcas inteiras no eixo
+  for (let i = 0; i <= nt; i++) { const v = max * i / nt, yy = y(v); g += `<line class="gl" x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}"/><text x="${L - 6}" y="${yy + 4}" text-anchor="end">${nf(v)}</text>`; }
+  const every = Math.ceil(labels.length / Math.max(2, Math.floor(pw / (opt.labelW || 46))));
+  labels.forEach((lab, i) => {
+    const x = L + i * bw + gap / 2, w = Math.max(1, bw - gap);
+    let base = 0;
+    const parts = series.filter(s => s.values[i] > 0);
+    parts.forEach((s, j) => {
+      const v = s.values[i], y0 = y(base), y1 = y(base + v), top = j === parts.length - 1, h = Math.max(1, y0 - y1 - (j ? 2 : 0));
+      const r = top ? Math.min(4, w / 2, h) : 0;
+      // só o topo da pilha é arredondado
+      g += `<path d="M${x},${y0 - (j ? 2 : 0)}V${y0 - h + r}${r ? `Q${x},${y0 - h} ${x + r},${y0 - h}H${x + w - r}Q${x + w},${y0 - h} ${x + w},${y0 - h + r}` : `H${x + w}`}V${y0 - (j ? 2 : 0)}Z" fill="${s.color}"/>`;
+      base += v;
+    });
+    const tipTxt = `<b>${esc(opt.tipLabel ? opt.tipLabel(i) : lab)}</b>` + series.map(s => `<br>${s.name ? esc(s.name) + ': ' : ''}${nf(s.values[i])} ${opt.unit || ''}`).join('') + (series.length > 1 ? `<br>Total: ${nf(tot[i])}` : '');
+    g += `<rect x="${L + i * bw}" y="${T}" width="${bw}" height="${ph}" fill="transparent" data-tip="${esc(tipTxt)}"/>`;
+    if (i % every === 0) g += `<text x="${L + i * bw + bw / 2}" y="${H - 6}" text-anchor="middle">${esc(lab)}</text>`;
+  });
+  g += `<line x1="${L}" x2="${W - R}" y1="${T + ph}" y2="${T + ph}" stroke="var(--text-3)" stroke-width="1"/>`;
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="${esc(opt.aria || '')}">${g}</svg>`;
+}
+function legend(el, gs) {
+  el.innerHTML = gs.length > 1 ? gs.map(g => `<span><span class="dot" style="background:${GAME[g].color}"></span>${GAME[g].name}</span>`).join('') : '';
+}
+function hbars(rows, color, fmtv = nf) {
+  const max = Math.max(1, ...rows.map(r => r[1]));
+  return rows.map(([lab, v, extra]) => `<div class="hbar" data-tip="${esc(`<b>${esc(lab)}</b><br>${fmtv(v)}${extra ? ' · ' + extra : ''}`)}"><span class="lbl">${esc(lab)}</span><span class="t"><span class="f" style="display:block;width:${v / max * 100}%;background:${color}"></span></span><span class="val">${fmtv(v)}${extra ? ` <span style="color:var(--text-3)">${extra}</span>` : ''}</span></div>`).join('');
+}
+
+/* ---------------- agregações ---------------- */
+function milestoneRows(S, M) {
+  const out = [];
+  for (const g of games()) {
+    const sess = S.filter(s => s.game === g), n = sess.length;
+    const vals = [...new Set(M.filter(m => m.game === g && m.kind === 'pontos').map(m => m.value))].sort((a, b) => a - b);
+    for (const v of vals) {
+      const ms = M.filter(m => m.game === g && m.kind === 'pontos' && m.value === v);
+      const t = ms.map(m => m.sec), best = ms.reduce((a, m) => !a || m.sec < a.sec ? m : a, null), bs = best && DATA.byId.get(best.sid);
+      out.push({ game: g, value: v, reached: ms.length, total: n, p25: quant(t, .25), med: quant(t, .5), p75: quant(t, .75), avg: t.reduce((a, b) => a + b, 0) / (t.length || 1), min: best ? best.sec : 0, minNick: bs ? bs.nick : '', max: Math.max(0, ...t) });
+    }
+  }
+  return out;
+}
+function rankingRows(S, g) {
+  const by = new Map();
+  for (const s of S) {
+    if (s.game !== g || s.status === 'jogando') continue;
+    const k = s.pid, cur = by.get(k) || { pid: k, nick: '', best: -1, bestDate: null, games: 0, sec: 0, last: null, level: 0 };
+    cur.games++; cur.sec += s.sec; if (!cur.last || s.start > cur.last) cur.last = s.start;
+    if (s.score > cur.best) { cur.best = s.score; cur.bestDate = s.start; cur.level = s.level; }
+    if (s.nick && (!cur.nick || s.score >= cur.best)) cur.nick = s.nick;
+    by.set(k, cur);
+  }
+  return [...by.values()].sort((a, b) => b.best - a.best || a.bestDate - b.bestDate);
+}
+function playerRows(S) {
+  const by = new Map();
+  for (const s of S) {
+    const p = by.get(s.pid) || { pid: s.pid, nick: '', games: 0, sec: 0, first: s.start, last: s.start, best: {}, count: {}, lastNickAt: 0 };
+    p.games++; p.sec += s.sec; p.count[s.game] = (p.count[s.game] || 0) + 1;
+    p.best[s.game] = Math.max(p.best[s.game] || 0, s.score);
+    if (s.start < p.first) p.first = s.start; if (s.start > p.last) p.last = s.start;
+    if (s.nick && s.start >= p.lastNickAt) { p.nick = s.nick; p.lastNickAt = s.start; }
+    by.set(s.pid, p);
+  }
+  return [...by.values()].sort((a, b) => b.last - a.last);
+}
+function dailyRows(S, E) {
+  if (!S.length && !E.length) return [];
+  const days = [], end = new Date(); end.setHours(0, 0, 0, 0);
+  let start;
+  if (F.range) { start = new Date(end); start.setDate(start.getDate() - (F.range - 1)); }
+  else { start = new Date(Math.min(...S.map(s => +s.start), ...E.filter(e => e.date).map(e => +e.date))); start.setHours(0, 0, 0, 0); }
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) days.push(dayKey(d));
+  const idx = new Map(days.map((k, i) => [k, i]));
+  const rows = days.map(k => ({ day: k, perGame: Object.fromEntries(GKEYS.map(g => [g, { games: 0, players: new Set(), sec: 0, score: 0, visits: 0, best: 0 }])) }));
+  for (const s of S) { const i = idx.get(dayKey(s.start)); if (i == null) continue; const c = rows[i].perGame[s.game]; c.games++; c.players.add(s.pid); c.sec += s.sec; c.score += s.score; c.best = Math.max(c.best, s.score); }
+  for (const e of E) { if (e.type !== 'visit' || !e.date) continue; const i = idx.get(dayKey(e.date)); if (i != null) rows[i].perGame[e.game].visits++; }
+  return rows;
+}
+
+/* ---------------- render ---------------- */
+function render() {
+  if (!DATA) return;
+  const { S, M, E } = filtered(), gs = games();
+  const players = new Set(S.map(s => s.pid)).size, totalSec = S.reduce((a, s) => a + s.sec, 0);
+  const done = S.filter(s => s.status !== 'jogando'), visits = E.filter(e => e.type === 'visit').length;
+  const best = S.reduce((a, s) => !a || s.score > a.score ? s : a, null), saved = S.filter(s => s.saved).length;
+  const live = S.filter(s => s.status === 'jogando').length;
+  const k = (l, v, h) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="h">${h || '&nbsp;'}</div></div>`;
+  $('#kpis').innerHTML =
+    k('Jogadores únicos', nf(players), players ? (S.length / players).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' partidas por jogador' : '') +
+    k('Partidas', nf(S.length), live ? `${live} acontecendo agora` : (S.length ? pct(S.filter(s => s.status === 'abandonada').length, S.length) + ' abandonadas' : '')) +
+    k('Tempo total jogado', dur(totalSec), players ? dur(totalSec / players) + ' por jogador' : '') +
+    k('Duração média', dur(done.length ? done.reduce((a, s) => a + s.sec, 0) / done.length : 0), done.length ? 'mediana ' + dur(quant(done.map(s => s.sec), .5)) : '') +
+    (F.game === 'all' ? '' : k('Pontuação média', nf(done.length ? done.reduce((a, s) => a + s.score, 0) / done.length : 0), done.length ? 'mediana ' + nf(quant(done.map(s => s.score), .5)) : '')) +
+    (F.game === 'all' ? gs.map(g => { const b = S.filter(s => s.game === g).reduce((a, s) => !a || s.score > a.score ? s : a, null); return k('Recorde · ' + GAME[g].short, b ? nf(b.score) : '—', b ? esc(b.nick || 'sem apelido') : ''); }).join('')
+      : k('Recorde', best ? nf(best.score) : '—', best ? esc(best.nick || 'sem apelido') + ' · ' + dur(best.sec) : '')) +
+    k('Visitas', nf(visits), visits ? pct(S.length, visits) + ' viraram partida' : 'aberturas do jogo') +
+    k('Salvas no ranking', nf(saved), S.length ? pct(saved, S.length) + ' das partidas' : '');
+
+  // partidas por dia
+  const daily = dailyRows(S, E);
+  legend($('#lg-daily'), gs);
+  if (daily.length) bars($('#ch-daily'), daily.map(r => { const [y, m, d] = r.day.split('-'); return `${d}/${m}`; }), gs.map(g => ({ name: gs.length > 1 ? GAME[g].short : 'Partidas', color: GAME[g].color, values: daily.map(r => r.perGame[g].games) })),
+    { unit: '', aria: 'Partidas por dia', tipLabel: i => { const [y, m, d] = daily[i].day.split('-'); return `${d}/${m}/${y}`; } });
+  else $('#ch-daily').innerHTML = '<div class="empty">Sem partidas neste filtro.</div>';
+
+  // horas
+  const hrs = Array.from({ length: 24 }, (_, h) => h);
+  bars($('#ch-hours'), hrs.map(h => h + 'h'), [{ name: 'Partidas', color: 'var(--s1)', values: hrs.map(h => S.filter(s => s.start.getHours() === h).length) }], { h: 200, labelW: 34, aria: 'Partidas por hora', tipLabel: i => `${i}h00–${i}h59` });
+
+  // marcos
+  const ms = milestoneRows(S, M);
+  $('#tb-ms').innerHTML = ms.length ? gs.map(g => {
+    const rows = ms.filter(r => r.game === g); if (!rows.length) return '';
+    const tmax = niceMax(Math.max(...rows.map(r => r.p75), 1));
+    return (gs.length > 1 ? `<div class="sub-h"><span class="dot" style="background:${GAME[g].color}"></span>${GAME[g].name}</div>` : '') +
+      `<div class="scroll" style="max-height:none"><table class="tbl"><thead><tr><th>Pontuação</th><th class="n">Partidas que chegaram</th><th class="n">Mediana</th><th class="n">Média</th><th class="n">Mais rápido</th><th style="width:34%">Distribuição (0 a ${dur(tmax)})</th></tr></thead><tbody>` +
+      rows.map(r => `<tr><td><b>${nf(r.value)}</b> pts</td><td class="n">${nf(r.reached)} <span style="color:var(--text-3)">(${pct(r.reached, r.total)})</span></td><td class="n">${dur(r.med)}</td><td class="n">${dur(r.avg)}</td><td class="n">${dur(r.min)}${r.minNick ? ` <span style="color:var(--text-3)">${esc(r.minNick)}</span>` : ''}</td>` +
+        `<td><div class="range" data-tip="${esc(`<b>${nf(r.value)} pts</b><br>25%: ${dur(r.p25)} · mediana: ${dur(r.med)} · 75%: ${dur(r.p75)}<br>mais lento: ${dur(r.max)}`)}"><span class="b" style="left:${r.p25 / tmax * 100}%;width:${Math.max(1, (Math.min(r.p75, tmax) - r.p25) / tmax * 100)}%;background:${GAME[g].color}"></span><span class="m" style="left:calc(${Math.min(r.med, tmax) / tmax * 100}% - 1px);background:${GAME[g].color}"></span></div></td></tr>`).join('') +
+      '</tbody></table></div>';
+  }).join('') : '<div class="empty">Ainda não há marcos de pontuação neste filtro.</div>';
+
+  // histogramas
+  legend($('#lg-hist'), gs); legend($('#lg-dur'), gs);
+  histo($('#ch-hist'), done, s => s.score, gs, 'pts');
+  histo($('#ch-dur'), done, s => s.sec, gs, 's', dur);
+
+  // níveis
+  $('#bx-levels').innerHTML = gs.map(g => {
+    const ss = S.filter(s => s.game === g); if (!ss.length) return '';
+    const lv = [...new Set(ss.map(s => s.level))].sort((a, b) => a - b);
+    return (gs.length > 1 ? `<div class="sub-h">${GAME[g].name}</div>` : '') + hbars(lv.map(v => [`${GAME[g].lvl} ${v}`, ss.filter(s => s.level === v).length, pct(ss.filter(s => s.level === v).length, ss.length)]), GAME[g].color);
+  }).join('') || '<div class="empty">Sem partidas.</div>';
+
+  // motivos
+  const RL = { vidas: 'Perdeu as 3 vidas', perdeu_itens: 'Deixou cair 5 itens', tempo: 'Fim do tempo', encerrou: 'Encerrou na pausa', abandonada: 'Abandonada', jogando: 'Jogando agora', outro: 'Outro' };
+  const rs = {}; S.forEach(s => rs[s.reason] = (rs[s.reason] || 0) + 1);
+  $('#bx-reasons').innerHTML = S.length ? hbars(Object.entries(rs).sort((a, b) => b[1] - a[1]).map(([r, v]) => [RL[r] || r, v, pct(v, S.length)]), 'var(--s1)') : '<div class="empty">Sem partidas.</div>';
+
+  // aparelhos
+  const cnt = f => { const o = {}; S.forEach(s => { const v = f(s) || 'não informado'; o[v] = (o[v] || 0) + 1; }); return Object.entries(o).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k, v]) => [k, v, pct(v, S.length)]); };
+  $('#bx-devices').innerHTML = S.length ? `<div class="sub-h">Aparelho</div>${hbars(cnt(s => s.device), 'var(--s1)')}<div class="sub-h">Sistema</div>${hbars(cnt(s => s.os), 'var(--s1)')}<div class="sub-h">Origem</div>${hbars(cnt(s => s.utm || s.ref || 'link direto'), 'var(--s1)')}` : '<div class="empty">Sem partidas.</div>';
+
+  // ranking
+  $$('#f-rank button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === F.rank));
+  const rk = rankingRows(S, F.rank).slice(0, 100);
+  $('#tb-rank').innerHTML = rk.length ? `<table class="tbl"><thead><tr><th class="n">#</th><th>Apelido</th><th class="n">Melhor</th><th class="n">${GAME[F.rank].lvl}</th><th class="n">Partidas</th><th class="n">Tempo jogado</th><th>Última</th></tr></thead><tbody>` +
+    rk.map((r, i) => `<tr><td class="n">${i + 1}</td><td><b>${esc(r.nick || '—')}</b></td><td class="n">${nf(r.best)}</td><td class="n">${r.level}</td><td class="n">${r.games}</td><td class="n">${dur(r.sec)}</td><td>${brDate(r.last)}</td></tr>`).join('') + '</tbody></table>'
+    : '<div class="empty">Sem partidas deste jogo no filtro.</div>';
+
+  // jogadores
+  const pr = playerRows(S);
+  $('#tb-players').innerHTML = pr.length ? `<table class="tbl"><thead><tr><th>Apelido</th><th class="n">Partidas</th>${gs.map(g => `<th class="n">Melhor ${GAME[g].short}</th>`).join('')}<th class="n">Tempo total</th><th>Primeira</th><th>Última</th></tr></thead><tbody>` +
+    pr.slice(0, 300).map(p => `<tr><td><b>${esc(p.nick || '—')}</b></td><td class="n">${p.games}</td>${gs.map(g => `<td class="n">${p.count[g] ? nf(p.best[g]) : '—'}</td>`).join('')}<td class="n">${dur(p.sec)}</td><td>${brDate(p.first)}</td><td>${brDate(p.last)}</td></tr>`).join('') + '</tbody></table>'
+    : '<div class="empty">Sem jogadores no filtro.</div>';
+
+  // partidas
+  const q = F.q.trim().toUpperCase();
+  const ps = S.filter(s => !q || s.nick.toUpperCase().includes(q)).sort((a, b) => b.start - a.start);
+  const st = { finalizada: '<span class="pill ok">finalizada</span>', abandonada: '<span class="pill ab">abandonada</span>', jogando: '<span class="pill">jogando</span>' };
+  $('#tb-sessions').innerHTML = ps.length ? `<table class="tbl"><thead><tr><th>Início</th>${F.game === 'all' ? '<th>Jogo</th>' : ''}<th>Apelido</th><th class="n">Pontos</th><th class="n">Duração</th><th class="n">Mundo/nível</th><th>Situação</th><th>Ranking</th><th>Aparelho</th></tr></thead><tbody>` +
+    ps.slice(0, 300).map(s => `<tr><td>${brDate(s.start)}</td>${F.game === 'all' ? `<td><span class="dot" style="background:${GAME[s.game].color}"></span>${GAME[s.game].short}</td>` : ''}<td><b>${esc(s.nick || '—')}</b></td><td class="n">${nf(s.score)}</td><td class="n">${dur(s.sec)}</td><td class="n">${s.level}</td><td>${st[s.status]}</td><td>${s.saved ? (s.rank ? '#' + s.rank + ' no aparelho' : 'salvou') : ''}</td><td>${esc([s.device, s.os].filter(Boolean).join(' · '))}</td></tr>`).join('') + '</tbody></table>'
+    : '<div class="empty">Nenhuma partida.</div>';
+
+  $('#h-sub').textContent = `${nf(DATA.sessions.length)} partidas registradas · ${new Set(DATA.sessions.map(s => s.pid)).size.toLocaleString('pt-BR')} jogadores no total`;
+}
+function histo(el, S, f, gs, unit, fmtL) {
+  if (!S.length) { el.innerHTML = '<div class="empty">Sem partidas finalizadas neste filtro.</div>'; return; }
+  // ~10 faixas de largura "redonda"; o que passa do percentil 98 vai para a última ("X+")
+  const mx = quant(S.map(f), .98) || 1, nice = niceMax(mx / 10), st = nice >= mx / 10 * 2.5 ? nice / 2 : nice;
+  const nb = Math.min(20, Math.floor(mx / st) + 1);
+  const lab = i => fmtL ? fmtL(i * st) : nf(i * st);
+  bars(el, Array.from({ length: nb }, (_, i) => i === nb - 1 ? lab(i) + '+' : lab(i)), gs.map(g => ({ name: gs.length > 1 ? GAME[g].short : 'Partidas', color: GAME[g].color,
+    values: Array.from({ length: nb }, (_, i) => S.filter(s => s.game === g && (i === nb - 1 ? f(s) >= i * st : f(s) >= i * st && f(s) < (i + 1) * st)).length) })),
+  { labelW: 52, tipLabel: i => i === nb - 1 ? `${lab(i)} ou mais` : `${lab(i)} a ${fmtL ? fmtL((i + 1) * st) : nf((i + 1) * st - 1) + ' ' + unit}` });
+}
+
+/* ---------------- CSV (Google Sheets) ---------------- */
+function csv(name, head, rows) {
+  const cell = v => { v = v == null ? '' : String(v); if (/^[=+\-@]/.test(v)) v = "'" + v; return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  const txt = '﻿' + [head, ...rows].map(r => r.map(cell).join(',')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt], { type: 'text/csv;charset=utf-8' }));
+  const per = F.range ? `${F.range}d` : 'tudo', g = F.game === 'all' ? 'todos' : F.game;
+  a.download = `rover_${name}_${g}_${per}_${dayKey(new Date())}.csv`;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+const R0 = v => Math.round(v || 0);
+const EXPORTS = {
+  sessions() {
+    const { S } = filtered();
+    csv('partidas', ['inicio', 'fim', 'jogo', 'apelido', 'player_id', 'session_id', 'situacao', 'pontos', 'duracao_s', 'mundo_nivel', 'titulo', 'motivo_fim', 'entregas', 'combo_max', 'itens', 'erros', 'salvo_ranking', 'dispositivo', 'sistema', 'tela', 'origem', 'utm_source', 'utm_campaign', 'versao'],
+      S.sort((a, b) => a.start - b.start).map(s => [dtStr(s.start), dtStr(s.end), s.game, s.nick, s.pid, s.id, s.status, R0(s.score), R0(s.sec), s.level, s.title, s.reason, s.deliveries ?? '', s.combo ?? '', s.items ?? '', s.misses ?? '', s.saved ? 'sim' : 'nao', s.device, s.os, s.screen, s.ref, s.utm, s.camp, s.version]));
+  },
+  milestones() {
+    const { S, M } = filtered();
+    csv('tempo_ate_pontuacao', ['jogo', 'pontuacao', 'partidas_que_chegaram', 'total_partidas', 'percentual', 'mediana_s', 'media_s', 'p25_s', 'p75_s', 'mais_rapido_s', 'mais_rapido_apelido', 'mais_lento_s'],
+      milestoneRows(S, M).map(r => [r.game, r.value, r.reached, r.total, r.total ? R0(r.reached / r.total * 100) : 0, R0(r.med), R0(r.avg), R0(r.p25), R0(r.p75), R0(r.min), r.minNick, R0(r.max)]));
+  },
+  marcos() {
+    const { M } = filtered();
+    csv('marcos', ['data', 'jogo', 'session_id', 'player_id', 'apelido', 'tipo', 'valor', 'segundos', 'pontos_no_momento'],
+      M.sort((a, b) => (a.date || 0) - (b.date || 0)).map(m => { const s = DATA.byId.get(m.sid); return [dtStr(m.date), m.game, m.sid, m.pid, s ? s.nick : '', m.kind, R0(m.value), R0(m.sec), R0(m.score)]; }));
+  },
+  ranking() {
+    const { S } = filtered(), rows = [];
+    for (const g of games()) rankingRows(S, g).forEach((r, i) => rows.push([g, i + 1, r.nick, r.pid, R0(r.best), r.level, r.games, R0(r.sec), dtStr(r.bestDate), dtStr(r.last)]));
+    csv('ranking', ['jogo', 'posicao', 'apelido', 'player_id', 'melhor_pontuacao', 'mundo_nivel_no_recorde', 'partidas', 'tempo_jogado_s', 'data_do_recorde', 'ultima_partida'], rows);
+  },
+  players() {
+    const { S } = filtered();
+    csv('jogadores', ['player_id', 'apelido', 'partidas', ...GKEYS.flatMap(g => ['partidas_' + g, 'melhor_' + g]), 'tempo_total_s', 'primeira_partida', 'ultima_partida'],
+      playerRows(S).map(p => [p.pid, p.nick, p.games, ...GKEYS.flatMap(g => [p.count[g] || 0, p.count[g] ? R0(p.best[g]) : '']), R0(p.sec), dtStr(p.first), dtStr(p.last)]));
+  },
+  daily() {
+    const { S, E } = filtered(), rows = [];
+    for (const r of dailyRows(S, E)) for (const g of games()) { const c = r.perGame[g]; rows.push([r.day, g, c.visits, c.games, c.players.size, R0(c.sec), c.games ? R0(c.sec / c.games) : 0, c.games ? R0(c.score / c.games) : 0, R0(c.best)]); }
+    csv('resumo_diario', ['dia', 'jogo', 'visitas', 'partidas', 'jogadores', 'tempo_total_s', 'duracao_media_s', 'pontuacao_media', 'melhor_pontuacao'], rows);
+  },
+  events() {
+    const { E } = filtered();
+    csv('eventos', ['data', 'tipo', 'jogo', 'apelido', 'player_id', 'session_id', 'detalhe'], E.sort((a, b) => (a.date || 0) - (b.date || 0)).map(e => [dtStr(e.date), e.type, e.game, e.nick, e.pid, e.sid, e.detail]));
+  }
+};
+
+/* ---------------- dados de exemplo ---------------- */
+function demoData() {
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const nicks = ['ANA', 'BETO', 'CAIO', 'DUDA', 'EDU', 'FEFE', 'GABI', 'HUGO', 'IVO', 'JUJU', 'KAKA', 'LEO', 'MALU', 'NANDO', 'OTTO', 'PAULO', 'RAFA', 'SOL', 'TATA', 'VAL', 'WILL', 'ZECA', 'DH-1', 'PVH69', 'RO-22', 'MARI', 'TONI', 'LULU'];
+  const id = () => Math.floor(rnd() * 1e12).toString(36) + Math.floor(rnd() * 1e12).toString(36);
+  const players = nicks.map(n => ({ pid: id(), nick: n, skill: .4 + rnd() * 1.2, mobile: rnd() < .85, ios: rnd() < .35 }));
+  const P = [], Mk = [], Ev = [], now = Date.now();
+  const MS = { rover: [100, 250, 500, 1000, 1500, 2500, 3500, 5000, 7500, 10000], 'happy-hour': [100, 250, 500, 1000, 1500, 2000, 3000, 4000, 5000] };
+  for (let i = 0; i < 420; i++) {
+    const p = players[Math.floor(rnd() * players.length)], g = rnd() < .55 ? 'rover' : 'happy-hour';
+    const daysAgo = Math.floor(Math.pow(rnd(), 1.4) * 28), hour = [12, 13, 18, 19, 20, 21, 22, 10, 15, 17][Math.floor(rnd() * 10)];
+    const st = new Date(now - daysAgo * 864e5); st.setHours(hour, Math.floor(rnd() * 60), Math.floor(rnd() * 60));
+    if (st > now) st.setTime(now - rnd() * 36e5);
+    const sid = id(), rate = (g === 'rover' ? 14 : 38) * p.skill * (.7 + rnd() * .6);
+    let sec = g === 'rover' ? 25 + rnd() * 240 * p.skill : Math.min(90, 12 + rnd() * 85 * p.skill);
+    const score = Math.round(rate * sec / 10) * 10, ab = rnd() < .07;
+    const reason = g === 'rover' ? (rnd() < .9 ? 'vidas' : 'encerrou') : (sec >= 89 ? 'tempo' : rnd() < .95 ? 'perdeu_itens' : 'encerrou');
+    let level = 1;
+    if (g === 'rover') { [500, 1500, 3500].forEach((t, j) => { if (score >= t) { level = j + 2; Mk.push({ event_id: id(), session_id: sid, jogo: g, player_id: p.pid, tipo: 'nivel', valor: j + 2, segundos: Math.round(t / rate * 10), pontos: t, data: st.toISOString() }); } }); }
+    else level = Math.min(10, 1 + Math.floor(sec / 10));
+    MS[g].forEach(t => { if (score >= t) Mk.push({ event_id: id(), session_id: sid, jogo: g, player_id: p.pid, tipo: 'pontos', valor: t, segundos: Math.round(t / rate * 10 * (0.85 + rnd() * .3) * 10) / 10, pontos: t, data: st.toISOString() }); });
+    const saved = !ab && rnd() < .6;
+    P.push({ session_id: sid, jogo: g, player_id: p.pid, apelido: p.nick, inicio: st.toISOString(), fim: ab ? '' : new Date(+st + sec * 1000).toISOString(), status: ab ? 'jogando' : 'finalizada',
+      pontos: score, duracao_s: Math.round(sec), nivel: ab ? '' : level, meta: '', motivo_fim: ab ? '' : reason, entregas: g === 'rover' ? Math.floor(score / 400) : '', combo_max: g === 'rover' ? '' : Math.floor(rnd() * 25), itens: g === 'rover' ? '' : Math.floor(score / 22), erros: g === 'rover' ? '' : (reason === 'perdeu_itens' ? 5 : Math.floor(rnd() * 5)),
+      salvo_ranking: saved ? 'sim' : '', apelido_ranking: saved ? p.nick : '', posicao_ranking: '', dispositivo: p.mobile ? 'celular' : 'computador', sistema: p.mobile ? (p.ios ? 'iOS' : 'Android') : 'Windows', tela: p.mobile ? '390x844' : '1920x1080', idioma: 'pt-BR',
+      origem: rnd() < .5 ? 'web.whatsapp.com' : rnd() < .5 ? 'instagram.com' : '', utm_source: rnd() < .2 ? 'qr-loja' : '', utm_campaign: '', versao: '1.0.0', atualizado: new Date(+st + sec * 1000).toISOString() });
+    for (let v = 0; v < 1 + Math.floor(rnd() * 2); v++) Ev.push({ event_id: id(), tipo: 'visit', jogo: g, session_id: '', player_id: p.pid, apelido: '', data: new Date(+st - 60000).toISOString(), detalhe: '{}' });
+    if (rnd() < .15) Ev.push({ event_id: id(), tipo: 'share', jogo: g, session_id: sid, player_id: p.pid, apelido: '', data: st.toISOString(), detalhe: '{}' });
+  }
+  return { ok: true, sheetUrl: '', partidas: P, marcos: Mk, eventos: Ev };
+}
+
+/* ---------------- telas e eventos ---------------- */
+function showLogin() {
+  clearInterval(timer); $('#v-dash').hidden = true; $('#v-login').hidden = false;
+  $('#i-ep').value = LS.get('rd_ep') || new URLSearchParams(location.search).get('endpoint') || '';
+}
+function showDash() {
+  $('#v-login').hidden = true; $('#v-dash').hidden = false; $('#demo').hidden = !demo;
+  clearInterval(timer); if (!demo) timer = setInterval(() => { if (!document.hidden) load(true); }, 60000);
+  load();
+}
+$('#f-login').addEventListener('submit', async e => {
+  e.preventDefault();
+  const ep = $('#i-ep').value.trim(), tk = $('#i-tk').value.trim(), err = $('#l-err');
+  err.textContent = ''; $('#b-login').disabled = true; $('#b-login').textContent = 'Conectando…';
+  try { RAW = await fetchData(ep, tk); LS.set('rd_ep', ep); LS.set('rd_tk', tk); demo = false; showDash(); }
+  catch (x) { err.textContent = x.message.includes('Token') ? x.message : 'Não foi possível conectar. Confira o endereço (precisa terminar em /exec) e se o Web App está publicado para "Qualquer pessoa".'; }
+  $('#b-login').disabled = false; $('#b-login').textContent = 'Entrar';
+});
+$('#b-demo').onclick = () => { demo = true; showDash(); };
+$('#b-demo-exit').onclick = e => { e.preventDefault(); demo = false; DATA = null; LS.get('rd_tk') ? showDash() : showLogin(); };
+$('#b-logout').onclick = () => { demo = false; DATA = null; LS.set('rd_tk', null); showLogin(); };
+$('#b-refresh').onclick = () => load();
+const seg = (sel, key, num) => $$(sel + ' button').forEach(b => b.onclick = () => { F[key] = num ? +b.dataset.v : b.dataset.v; $$(sel + ' button').forEach(x => x.setAttribute('aria-pressed', x === b)); if (key === 'game' && F.game !== 'all') F.rank = F.game; render(); });
+seg('#f-game', 'game'); seg('#f-range', 'range', true); seg('#f-rank', 'rank');
+$('#q').addEventListener('input', e => { F.q = e.target.value; render(); });
+document.addEventListener('click', e => { const b = e.target.closest('[data-csv]'); if (b && DATA) EXPORTS[b.dataset.csv](); });
+let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 150); });
+
+if (new URLSearchParams(location.search).has('demo')) { demo = true; showDash(); }
+else if (LS.get('rd_ep') && LS.get('rd_tk')) showDash(); else showLogin();
+})();
+</script>
+</body>
+</html>

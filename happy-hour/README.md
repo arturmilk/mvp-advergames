@@ -4,9 +4,10 @@ Jogo de "pegar o que cai" (estilo *Food Falling* do Pou) para a **Rover Distribu
 O jogador controla **Dheep**, que anda no piso do bar e precisa pegar frango a passarinho, batata frita, cerveja e calabresa
 que caem do alto. A queda acelera a cada 10 s. Se 5 petiscos caírem no chão, o jogo acaba.
 
-* 100% client-side: HTML + JS puro, Canvas 2D, sem dependências e sem nenhuma requisição externa.
+* 100% client-side: HTML + JS puro, Canvas 2D, sem dependências; a única requisição externa é a coleta de dados (opcional).
 * Estilo cartoon moderno (sem pixel art), com `image-rendering: auto` e sprites pré-escalados para a tela do aparelho.
-* Placar e painel admin guardados em `localStorage`: nenhum dado sai do aparelho.
+* Placar e painel admin guardados em `localStorage`. Os dados das partidas vão para a planilha Google e o dashboard do dono
+  (`../dashboard/`) quando `analytics.endpoint` está preenchido no `config.js` (veja `../analytics/README.md`).
 
 ```
 index.html              jogo completo (loop, física, colisão, telas, HUD, admin, áudio sintetizado)
@@ -121,7 +122,7 @@ Depois de editar, basta recarregar a página.
 
 > **Importante:** sem backend, o login é só uma barreira de interface (o `config.js` é público). Os dados ficam no navegador
 > **daquele aparelho**: o painel mostra só as partidas jogadas nele (ideal para totem ou tablet em evento/loja). Exporte o CSV com frequência.
-> Para juntar placares de vários aparelhos, seria preciso um endpoint (`POST /api/backup`), fora desta entrega.
+> Os dados de todos os aparelhos ficam na planilha Google e no dashboard do dono (`../dashboard/`, instalação em `../analytics/README.md`).
 
 ---
 

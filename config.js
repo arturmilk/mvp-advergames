@@ -66,10 +66,11 @@ window.CONFIG = {
     ],
     deliveryDone: 'Entrega concluída!',
     consent:
-      'Li e aceito a política de privacidade. Meus dados ficam só neste aparelho e podem ser apagados pela Rover.',
+      'Li e aceito a política de privacidade. Meu apelido e os dados das minhas partidas vão para o placar e as estatísticas da Rover, que pode apagá-los.',
     privacy:
-      'Este jogo não envia dados para servidores. O apelido e (se informado) o WhatsApp ficam salvos apenas no navegador deste aparelho, ' +
-      'para montar o placar. O placar público mostra só apelido e pontos. A Rover pode apagar todos os dados a qualquer momento. ' +
+      'O jogo envia para a Rover os dados das partidas (apelido, pontos, tempo de jogo, mundo alcançado e tipo de aparelho), ' +
+      'usados só para o ranking e as estatísticas da campanha. O WhatsApp, se informado, fica apenas no navegador deste aparelho. ' +
+      'O placar público mostra só apelido e pontos. A Rover pode apagar todos os dados a qualquer momento. ' +
       'Para pedir a exclusão, fale com a equipe Rover.'
   },
   // Link externo para a política (opcional). Vazio = abre o texto acima no próprio jogo.
@@ -244,9 +245,17 @@ window.CONFIG = {
     text: 'Fiz {score} pontos e cheguei ao mundo "{world}" no jogo da Rover! Consegue me passar? {url}'
   },
 
-  /* ---------- Servidor ---------- */
-  // Sem backend nesta entrega. Reservado para um futuro POST /api/backup.
-  serverUrl: '',
+  /* ---------- Coleta de dados (dashboard do dono + planilha Google) ----------
+     endpoint = URL do Web App do Google Apps Script (termina em /exec). Vazio = não envia nada.
+     Passo a passo da instalação em analytics/README.md. */
+  analytics: {
+    game: 'rover',     // não troque: é a chave deste jogo na planilha
+    endpoint: '',
+    // Pontuações cujo tempo de jogo é registrado ("quanto tempo o jogador leva para chegar a X pontos")
+    milestones: [100, 250, 500, 1000, 1500, 2500, 3500, 5000, 7500, 10000],
+    // true = envia o WhatsApp do cadastro para a planilha (aba Eventos). Atualize os textos de consentimento/privacidade antes.
+    sendWhatsapp: false
+  },
 
   /* ---------- Técnico ---------- */
   render: { integerScaling: true },
