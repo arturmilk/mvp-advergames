@@ -118,7 +118,7 @@ const CONFIG = {
      offline:  'block' = sem internet não dá para conferir, e o jogo não abre | 'allow' = libera sem queimar o código
      texts:    troque aqui qualquer texto das telas de aviso (veja os nomes no começo do ticket.js) */
   ticket: {
-    required: false,
+    required: true,
     oneGame: true,
     offline: 'block',
     color: '#E30613',

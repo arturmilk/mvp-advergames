@@ -141,7 +141,7 @@ Configuração em `config.js` › `ticket` (cada jogo):
 
 | Chave | Padrão | O que faz |
 |---|---|---|
-| `required` | `false` | `false`: o link normal do jogo continua livre e só os links com `?qr=` são de uso único. `true`: o jogo **só abre com QR** (sem código mostra "Precisa de um QR code") |
+| `required` | `true` | `true`: o jogo **só abre com QR** (sem código mostra "Precisa de um QR code"). `false`: o link normal do jogo continua livre e só os links com `?qr=` são de uso único |
 | `oneGame` | `true` | Cada QR vale uma partida. No Happy Hour, "Jogar de novo" mostra "Partida concluída" (A Entrega já é 1 partida por abertura) |
 | `offline` | `'block'` | Sem internet não dá para conferir o código: `'block'` mostra "Sem conexão" com "Tentar de novo"; `'allow'` deixa jogar sem queimar |
 | `texts` | `{}` | Troca qualquer texto dos avisos (nomes no começo do `ticket.js`: `used`, `usedTitle`, `invalid`, `missing`, `offline`, `played`…) |
@@ -150,6 +150,7 @@ Configuração em `config.js` › `ticket` (cada jogo):
 
 * Precisa de internet no aparelho: a validação é na planilha. Sem internet, com `offline: 'block'`, o jogo não abre.
 * Quem já abriu e tocou pode manter a aba aberta (e recarregar) pelo tempo que quiser; o bloqueio vale para os **outros** acessos.
+* Com `required: true`, o painel admin (`?admin=true`) continua abrindo sem QR. Para testar em `localhost` sem QR (ganchos `__rover`/`__hh`), abra com `?livre`.
 * Com `required: false`, quem receber um QR já usado pode apagar o `?qr=` do link e jogar pelo link normal. Para valer de verdade, use `required: true`.
 * O jogo roda no navegador: alguém com conhecimento técnico consegue burlar a tela de aviso no próprio aparelho. O QR impede que o
   **mesmo link** seja passado adiante; não é uma trava contra fraude. Antes de premiar, confira a partida como em § 5.

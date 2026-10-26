@@ -124,7 +124,9 @@
       ['pointerdown', 'mousedown', 'touchstart', 'click', 'keydown'].forEach(t => addEventListener(t, guard, { capture: true, passive: false }));
       if (!tk) {
         if (q) return block('invalid');
-        if (cfg.required) return block('missing');
+        // admin (?admin=true) e testes locais (localhost/?livre) não precisam de QR
+        const free = url.searchParams.get('admin') === 'true' || (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && url.searchParams.has('livre'));
+        if (cfg.required && !free) return block('missing');
         return; // sem QR e sem exigência: jogo livre
       }
       ss.set(tk);
