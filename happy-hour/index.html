@@ -374,12 +374,14 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--red); }
 
 <script src="config.js"></script>
 <script src="analytics.js"></script>
+<script src="ticket.js"></script>
 <script>
 (() => {
 'use strict';
 const C = window.CONFIG;
 const K = C.storageKeys;
 const RA = window.RoverAnalytics || { init() {}, start() {}, progress() {}, level() {}, end() {}, saved() {}, event() {} };
+const TK = window.RoverTicket || { init() {}, allowStart: () => true };
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -791,6 +793,7 @@ function spawn(kind = chooseKind(), x = null) {
 }
 
 function newGame() {
+  if (!TK.allowStart()) return; // QR code de uso único (ticket.js)
   G = freshState('play');
   releaseAll(); showScreen(null); setHud(true); updateHud(true);
   Sound.unlock(); Sound.music(true); Sound.musicLevel(1);
@@ -1214,7 +1217,7 @@ function frame(now) {
 
 /* ======================= BOOT ======================= */
 (async function boot() {
-  RA.init(C);
+  RA.init(C); TK.init(C);
   const t0 = performance.now();
   await loadAssets(p => { $('#loadBar').style.width = Math.round(p * 100) + '%'; });
   bindDomAssets(); buildStatic(); resize();

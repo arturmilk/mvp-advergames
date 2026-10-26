@@ -74,6 +74,7 @@ Como divide o domínio com o "Rover — A Entrega" (que usa a chave `leaderboard
 | Placar | `leaderboardMax` (100), `publicTop` (50), `nickPattern`, `storageKeys` |
 | Filtro de apelidos | `nickFilter.contains` / `nickFilter.exact` |
 | Áudio | `musicVolume`, `sfxVolume`, `musicTempo` |
+| QR code de uso único | `ticket` → `required` (`false` = link normal livre; `true` = só abre com QR do dashboard), `oneGame` (cada QR vale 1 partida), `offline` (`'block'` ou `'allow'`), `texts` (textos das telas de aviso). Detalhes em `analytics/README.md` § 7 |
 
 Depois de editar, basta recarregar a página.
 
@@ -216,6 +217,7 @@ Executados no navegador em viewport mobile. Para repetir sem jogar à mão, abra
 | 16 | **Pausa automática** | Disparar `blur` no meio da partida | Abre a pausa e o tempo congela; "Continuar" retoma ✔ |
 | 17 | **Responsividade** | 360×740, 375×812, 430×932, 480×860 | Sem rolagem horizontal; título, tutorial, game over, salvo, ranking e pausa cabem numa tela; "Sobre" rola sem cortar o topo; nenhum botão visível abaixo de 44 px ✔ |
 | 18 | **Desempenho** | 120 quadros de update + render com 11 itens e partículas, canvas 960×1720 (DPR 2) | ~3 ms por quadro no computador de teste ✔ |
+| 19 | **QR code de uso único** | `analytics/dev_server.py`: o mesmo link aberto em dois aparelhos antes de alguém tocar; A toca em Jogar, depois B; A joga, termina e toca em "Jogar de novo" | A segue direto para o tutorial (o toque que queimou o código é repetido). B vê "QR code já usado". Com `oneGame: true`, o "Jogar de novo" mostra "Partida concluída" com botão Voltar. Sem `?qr=`, `__hh.newGame()` funciona como antes. 480 e 360 px sem rolagem, console limpo ✔ |
 
 Ainda não testado em aparelhos físicos (iPhone e Android médio): vale confirmar 60 fps, áudio depois do primeiro toque, safe-area do notch e multitoque.
 

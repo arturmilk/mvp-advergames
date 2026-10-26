@@ -109,6 +109,22 @@ const CONFIG = {
     milestones: [100, 250, 500, 1000, 1500, 2000, 3000, 4000, 5000]
   },
 
+  /* ---------- QR code de uso único (ticket.js) ----------
+     Links gerados no dashboard (?qr=código). O código é conferido ao abrir e queimado no PRIMEIRO TOQUE:
+     depois disso, quem abrir o mesmo link vê "QR code já usado". Precisa de analytics.endpoint preenchido.
+     required: true  = o jogo só abre com um QR code válido (o link sem ?qr= mostra "Precisa de um QR code")
+               false = o link normal continua livre; só os links com ?qr= são de uso único
+     oneGame:  true  = cada QR code vale UMA partida (o "jogar de novo" pede outro QR code)
+     offline:  'block' = sem internet não dá para conferir, e o jogo não abre | 'allow' = libera sem queimar o código
+     texts:    troque aqui qualquer texto das telas de aviso (veja os nomes no começo do ticket.js) */
+  ticket: {
+    required: false,
+    oneGame: true,
+    offline: 'block',
+    color: '#E30613',
+    texts: {}
+  },
+
   // Placar local (localStorage) do aparelho; o placar geral fica na planilha (analytics)
   leaderboardMax: 100,
   publicTop: 50,

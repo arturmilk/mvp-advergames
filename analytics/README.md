@@ -8,6 +8,7 @@ quanto tempo cada jogador leva para chegar a cada pontuação, etc. Tudo de todo
 analytics.js                 coletor (o mesmo arquivo está em happy-hour/analytics.js)
 analytics/apps-script/Code.gs  "servidor": Google Apps Script que grava na planilha e entrega os dados ao dashboard
 analytics/dev_server.py      servidor de TESTE local (mesma API, sem conta Google)
+ticket.js                    QR code de uso único (o mesmo arquivo está em happy-hour/ticket.js)
 dashboard/index.html         dashboard do dono (login com endereço + token)
 ```
 
@@ -71,6 +72,7 @@ Os dados **já estão no Google Sheets**: o botão **Abrir planilha no Google Sh
 | `Ranking` | fórmula: melhor pontuação por jogo e apelido |
 | `Resumo` | fórmulas: partidas, jogadores únicos, horas jogadas, médias, recorde, visitas, salvas no ranking (por jogo) |
 | `Tempo até pontuação` | fórmula: média/mínimo/máximo de segundos até cada pontuação |
+| `QR` | QR codes de uso único gerados no dashboard (§ 7) |
 
 Não edite as abas `Partidas`, `Marcos` e `Eventos` à mão (o script procura as partidas pela coluna A).
 Para fazer as suas análises, crie abas novas ou use **Arquivo › Fazer uma cópia**. Dá para baixar tudo em
@@ -115,3 +117,43 @@ python analytics/dev_server.py
 * Dashboard: <http://localhost:8790/dashboard/> (endereço `http://localhost:8790/exec`, token `teste`)
 
 O parâmetro `?analytics=` só funciona em `localhost`. Os dados de teste ficam em `analytics/dev_data.json` (fora do git); apague o arquivo para zerar.
+Os QR codes gerados no dashboard de teste já levam o `?analytics=` no link, então funcionam direto em `localhost`.
+
+## 7. QR codes de uso único
+
+No dashboard, o quadro **QR codes de uso único** gera um QR code (ou vários, até 50 de uma vez) para **A Entrega** ou **Happy Hour**,
+com uma nota opcional de onde vai ser usado (ex.: "Loja Centro"). Cada QR leva a um link com um código aleatório de 18 letras
+(`?qr=…`, 72 bits, impossível de adivinhar). Dá para mostrar na tela, copiar o link, baixar o PNG (com o nome do jogo embaixo) ou imprimir todos numa folha.
+
+**Como funciona no jogo** (`ticket.js`, o mesmo arquivo na raiz e em `happy-hour/`):
+
+1. Ao abrir o link, o jogo confere o código na planilha (`qr_check`) e tira o `?qr=` da barra de endereço.
+2. No **primeiro toque na tela**, o código é queimado (`qr_use`): a aba QR da planilha passa de `novo` para `usado`, com data,
+   `player_id` e um id aleatório da aba (`acesso`). O toque é repetido no botão tocado, para o jogador não precisar tocar duas vezes.
+3. Quem abrir o mesmo link depois (outro celular, outra aba, ou o mesmo link mandado no WhatsApp) vê **"QR code já usado"**.
+   Se duas pessoas abrirem antes de alguém tocar, quem tocar primeiro fica com ele; a outra vê o aviso.
+4. Recarregar a mesma aba não bloqueia (o id da aba fica no `sessionStorage`).
+
+Na lista do dashboard aparecem todos os códigos com a situação (disponível, usado, cancelado), quando foram usados e o botão
+**Cancelar** (para um QR impresso que se perdeu). Na planilha, a aba é `QR` (`codigo, jogo, status, criado, usado_em, player_id, acesso, nota`).
+
+Configuração em `config.js` › `ticket` (cada jogo):
+
+| Chave | Padrão | O que faz |
+|---|---|---|
+| `required` | `false` | `false`: o link normal do jogo continua livre e só os links com `?qr=` são de uso único. `true`: o jogo **só abre com QR** (sem código mostra "Precisa de um QR code") |
+| `oneGame` | `true` | Cada QR vale uma partida. No Happy Hour, "Jogar de novo" mostra "Partida concluída" (A Entrega já é 1 partida por abertura) |
+| `offline` | `'block'` | Sem internet não dá para conferir o código: `'block'` mostra "Sem conexão" com "Tentar de novo"; `'allow'` deixa jogar sem queimar |
+| `texts` | `{}` | Troca qualquer texto dos avisos (nomes no começo do `ticket.js`: `used`, `usedTitle`, `invalid`, `missing`, `offline`, `played`…) |
+
+**Limites:**
+
+* Precisa de internet no aparelho: a validação é na planilha. Sem internet, com `offline: 'block'`, o jogo não abre.
+* Quem já abriu e tocou pode manter a aba aberta (e recarregar) pelo tempo que quiser; o bloqueio vale para os **outros** acessos.
+* Com `required: false`, quem receber um QR já usado pode apagar o `?qr=` do link e jogar pelo link normal. Para valer de verdade, use `required: true`.
+* O jogo roda no navegador: alguém com conhecimento técnico consegue burlar a tela de aviso no próprio aparelho. O QR impede que o
+  **mesmo link** seja passado adiante; não é uma trava contra fraude. Antes de premiar, confira a partida como em § 5.
+
+**Depois de atualizar o `Code.gs`** (este recurso precisa da versão nova): cole o código novo, salve e use
+**Implantar › Gerenciar implantações › ✏️ › Versão: Nova versão › Implantar**. Não use "Nova implantação" (o URL `/exec` mudaria).
+A aba `QR` é criada sozinha no primeiro QR gerado. Sem a versão nova, o botão do dashboard avisa que o Apps Script precisa ser publicado.

@@ -72,6 +72,7 @@ server {
 | Tela "Como jogar" | `tutorial` → título, as 4 linhas, os 3 cards (imagem, rótulo, cor, texto alternativo) e o texto do botão |
 | Texto do WhatsApp | `share.text` (`{score}`, `{world}`, `{url}`) |
 | Política de privacidade externa | `privacyPolicyUrl` (vazio = abre o texto interno) |
+| QR code de uso único | `ticket` → `required` (`false` = link normal livre; `true` = só abre com QR do dashboard), `oneGame` (cada QR vale 1 partida), `offline` (`'block'` ou `'allow'`), `texts` (textos das telas de aviso). Detalhes em `analytics/README.md` § 7 |
 
 ---
 
@@ -228,6 +229,7 @@ o objeto `__rover` expõe `newGame()`, `step(segundos)` (avança a simulação d
 | 17 | **Uma partida por abertura** | Jogar até o fim → Menu → JOGAR; recarregar a página; simular nova abertura; encerrar pela pausa | Sem "Jogar de novo". Depois da partida, JOGAR fica desativado ("PARTIDA JÁ JOGADA"), inclusive após recarregar. Uma sessão nova libera. "Encerrar partida" pede confirmação e leva ao fim de jogo ✔ |
 | 18 | **Sem esconderijo nos cantos** | Dheep parado 40 s (2 rodadas) em cada canto e no meio de cada andar, sem invencibilidade | Antes da correção, o canto inferior esquerdo levava 0 batidas (o meio do chão levava 5). Agora: chão esq. 6,5 / dir. 3,5 / meio 4,0; 1º andar dir. 8,5 / meio 7,5; 2º andar esq. 10,5 / meio 10,0 ✔ |
 | 19 | **Obstáculos não se acumulam** | 3 minutos de lançamentos | Entre 7 e 13 obstáculos na tela, estável, e 47 saíram pela direita do chão ✔ |
+| 20 | **QR code de uso único** | `analytics/dev_server.py` + dashboard: gerar QR, abrir o link no aparelho A, tocar; abrir o mesmo link no aparelho B; corrida (A e B abertos antes do toque); recarregar A; código inexistente, cancelado, sem QR com `required: true`, sem internet | QR lido de volta = link. O 1º toque queima o código e já abre o menu (sem tocar 2×). B vê "QR code já usado" e continua bloqueado ao tocar; na corrida, quem toca depois é bloqueado. Recarregar A não bloqueia. Inexistente = "inválido", cancelado = "cancelado", sem QR = "Precisa de um QR code", sem internet = "Sem conexão" + "Tentar de novo". Sem `?qr=` e `required: false`, o jogo segue livre e `__rover` funciona. Aviso sem rolagem em 360/430/480 px, console limpo ✔ |
 
 Os testes 2 a 8 foram feitos na v1. O código do placar e do admin não mudou na v2.
 
