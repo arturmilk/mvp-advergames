@@ -250,7 +250,7 @@ window.CONFIG = {
      Passo a passo da instalação em analytics/README.md. */
   analytics: {
     game: 'rover',     // não troque: é a chave deste jogo na planilha
-    endpoint: 'https://script.google.com/macros/s/AKfycbx0PFw3yb2bkYEWdUClMtPj88nKMvgA59mvkNu2hmy8ZdC9Rg7jCN6_HE4dFTIqxz7KgA/exec',
+    endpoint: 'https://script.google.com/macros/s/AKfycbyOZORbDFYrL_rfN4JM_fgma4S2ReeeZjYA6e11ZdyVexaaIVB5ZD8KOt95Q3QTCNpJhA/exec',
     // Pontuações cujo tempo de jogo é registrado ("quanto tempo o jogador leva para chegar a X pontos")
     milestones: [100, 250, 500, 1000, 1500, 2500, 3500, 5000, 7500, 10000],
     // true = envia o WhatsApp do cadastro para a planilha (aba Eventos). Atualize os textos de consentimento/privacidade antes.
