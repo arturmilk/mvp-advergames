@@ -115,6 +115,14 @@ a { color: var(--s1); }
 .qr-tile .g { font-weight: 700; }
 .qr-tile .nt { color: var(--text-3); font-size: 12.5px; min-height: 18px; overflow-wrap: anywhere; }
 .qr-tile .lk { font-size: 11.5px; color: var(--text-3); overflow-wrap: anywhere; margin: 4px 0 8px; user-select: all; }
+.qr-tile { position: relative; transition: opacity .3s; }
+.qr-tile .stamp { display: none; position: absolute; left: 10px; right: 10px; top: 28%; padding: 10px 8px; border-radius: 10px; background: #c62828; color: #fff; font-weight: 800; font-size: 15px; line-height: 1.3; box-shadow: 0 4px 16px #0004; transform: rotate(-4deg); }
+.qr-tile .stamp small { display: block; font-weight: 500; font-size: 12.5px; opacity: .95; }
+.qr-tile.off img { opacity: .18; filter: grayscale(1); }
+.qr-tile.off .stamp { display: block; }
+.qr-tile.off.cancelado .stamp { background: #7c7a75; }
+.qr-tile .live { font-size: 12px; color: var(--good); margin-bottom: 6px; }
+.qr-tile.off .live { display: none; }
 .qr-tile .btns { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
 .qr-sum { color: var(--text-2); font-size: 13px; margin: 4px 0 6px; }
 @media print {
@@ -152,7 +160,6 @@ a { color: var(--s1); }
     <div class="logo">R</div>
     <div><h1>Dashboard dos jogos Rover</h1><div class="sub" id="h-sub">—</div></div>
     <div class="sp"></div>
-    <a class="btn" id="b-sheet" target="_blank" rel="noopener" hidden>Abrir planilha no Google Sheets</a>
     <a class="btn" href="#qr-card">Gerar QR code</a>
     <button class="btn" id="b-refresh">Atualizar</button>
     <button class="btn" id="b-logout">Sair</button>
@@ -179,7 +186,7 @@ a { color: var(--s1); }
   <div class="grid">
     <div class="card" id="qr-card">
       <h2>QR codes de uso único</h2>
-      <p class="d">Cada QR code abre o jogo para <b>uma pessoa só</b>: no primeiro toque na tela, o código é queimado e quem abrir o mesmo link depois vê “QR code já usado”. Funciona com internet (o jogo confere o código na planilha).</p>
+      <p class="d">Cada QR code abre o jogo para <b>uma pessoa só</b>: no primeiro toque na tela, o código é queimado e quem abrir o mesmo link depois vê “QR code já usado”. Esta tela se atualiza sozinha: quando alguém usa o QR, ele aparece aqui como <b>usado</b> em poucos segundos.</p>
       <div class="qr-form">
         <div class="seg" id="qr-game" role="group" aria-label="Jogo do QR code"><button data-v="rover" aria-pressed="true"><span class="dot" style="background:var(--s1)"></span>A Entrega</button><button data-v="happy-hour"><span class="dot" style="background:var(--s2)"></span>Happy Hour</button></div>
         <label>Quantidade <input class="search" id="qr-n" type="number" min="1" max="50" value="1" inputmode="numeric" style="width:72px"></label>
@@ -232,7 +239,7 @@ a { color: var(--s1); }
       <div id="bx-reasons"></div>
     </div>
     <div class="card c4">
-      <h2>Aparelhos e origem</h2><p class="d">Tipo de aparelho, sistema e de onde veio o jogador.</p>
+      <h2>De onde vêm os jogadores</h2><p class="d">Link de origem (WhatsApp, Instagram, link direto ou <code>utm_source</code>).</p>
       <div id="bx-devices"></div>
     </div>
 
@@ -262,8 +269,8 @@ a { color: var(--s1); }
     </div>
 
     <div class="card">
-      <h2>Exportar para o Google Sheets</h2>
-      <p class="d">Os dados já ficam gravados na planilha Google ligada ao jogo (botão “Abrir planilha”, no topo). Para levar um recorte para outra planilha, baixe o CSV (respeita os filtros acima) e, no Google Sheets, use <b>Arquivo › Importar › Fazer upload</b>. Datas no formato AAAA-MM-DD HH:MM:SS e números sem casas decimais, para o Sheets reconhecer em qualquer idioma.</p>
+      <h2>Baixar os dados</h2>
+      <p class="d">Tudo o que aparece aqui pode ser baixado em CSV (respeita os filtros acima) e aberto no Excel ou no Google Sheets.</p>
       <div class="exports">
         <button class="btn" data-csv="sessions">Partidas</button>
         <button class="btn" data-csv="milestones">Tempo até cada pontuação</button>
@@ -293,7 +300,9 @@ const dur = s => { s = Math.round(s || 0); if (s < 60) return s + ' s'; const h 
 const pad = n => String(n).padStart(2, '0');
 const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const dtStr = d => d ? `${dayKey(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` : '';
-const brDate = d => d ? d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+// horário com segundos; a data completa aparece ao passar o mouse
+const hms = d => d ? `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` : '';
+const brDate = d => d ? `<span title="${d.toLocaleString('pt-BR')}">${hms(d)}</span>` : '';
 const quant = (a, q) => { if (!a.length) return 0; const s = [...a].sort((x, y) => x - y), i = (s.length - 1) * q, lo = Math.floor(i); return s[lo] + (s[Math.ceil(i)] - s[lo]) * (i - lo); };
 const N = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
 const D = v => { if (!v) return null; const d = new Date(v); return isNaN(d) ? null : d; };
@@ -339,8 +348,7 @@ function prepare() {
   for (const s of sessions) if (!s.level) s.level = 1;
   const events = (RAW.eventos || []).map(e => ({ id: e.event_id, type: e.tipo, game: e.jogo, sid: e.session_id, pid: e.player_id, nick: e.apelido, date: D(e.data), detail: e.detalhe }));
   DATA = { sessions, byId, marcos, events };
-  const sheet = $('#b-sheet'); sheet.hidden = !RAW.sheetUrl; if (RAW.sheetUrl) sheet.href = RAW.sheetUrl;
-  $('#status').textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + (demo ? '' : ' · atualiza sozinho a cada minuto');
+  $('#status').textContent = 'Atualizado às ' + hms(new Date()) + (demo ? '' : ' · atualiza sozinho');
   render();
 }
 
@@ -523,7 +531,7 @@ function render() {
 
   // aparelhos
   const cnt = f => { const o = {}; S.forEach(s => { const v = f(s) || 'não informado'; o[v] = (o[v] || 0) + 1; }); return Object.entries(o).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k, v]) => [k, v, pct(v, S.length)]); };
-  $('#bx-devices').innerHTML = S.length ? `<div class="sub-h">Aparelho</div>${hbars(cnt(s => s.device), 'var(--s1)')}<div class="sub-h">Sistema</div>${hbars(cnt(s => s.os), 'var(--s1)')}<div class="sub-h">Origem</div>${hbars(cnt(s => s.utm || s.ref || 'link direto'), 'var(--s1)')}` : '<div class="empty">Sem partidas.</div>';
+  $('#bx-devices').innerHTML = S.length ? hbars(cnt(s => s.utm || s.ref || 'link direto'), 'var(--s1)') : '<div class="empty">Sem partidas.</div>';
 
   // ranking
   $$('#f-rank button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === F.rank));
@@ -542,11 +550,11 @@ function render() {
   const q = F.q.trim().toUpperCase();
   const ps = S.filter(s => !q || s.nick.toUpperCase().includes(q)).sort((a, b) => b.start - a.start);
   const st = { finalizada: '<span class="pill ok">finalizada</span>', abandonada: '<span class="pill ab">abandonada</span>', jogando: '<span class="pill">jogando</span>' };
-  $('#tb-sessions').innerHTML = ps.length ? `<table class="tbl"><thead><tr><th>Início</th>${F.game === 'all' ? '<th>Jogo</th>' : ''}<th>Apelido</th><th class="n">Pontos</th><th class="n">Duração</th><th class="n">Mundo/nível</th><th>Situação</th><th>Ranking</th><th>Aparelho</th></tr></thead><tbody>` +
-    ps.slice(0, 300).map(s => `<tr><td>${brDate(s.start)}</td>${F.game === 'all' ? `<td><span class="dot" style="background:${GAME[s.game].color}"></span>${GAME[s.game].short}</td>` : ''}<td><b>${esc(s.nick || '—')}</b></td><td class="n">${nf(s.score)}</td><td class="n">${dur(s.sec)}</td><td class="n">${s.level}</td><td>${st[s.status]}</td><td>${s.saved ? (s.rank ? '#' + s.rank + ' no aparelho' : 'salvou') : ''}</td><td>${esc([s.device, s.os].filter(Boolean).join(' · '))}</td></tr>`).join('') + '</tbody></table>'
+  $('#tb-sessions').innerHTML = ps.length ? `<table class="tbl"><thead><tr><th>Início</th><th>Fim</th>${F.game === 'all' ? '<th>Jogo</th>' : ''}<th>Apelido</th><th class="n">Pontos</th><th class="n">Duração</th><th class="n">Mundo/nível</th><th>Situação</th><th>Ranking</th></tr></thead><tbody>` +
+    ps.slice(0, 300).map(s => `<tr><td>${brDate(s.start)}</td><td>${brDate(s.end)}</td>${F.game === 'all' ? `<td><span class="dot" style="background:${GAME[s.game].color}"></span>${GAME[s.game].short}</td>` : ''}<td><b>${esc(s.nick || '—')}</b></td><td class="n">${nf(s.score)}</td><td class="n">${dur(s.sec)}</td><td class="n">${s.level}</td><td>${st[s.status]}</td><td>${s.saved ? (s.rank ? '#' + s.rank + ' no aparelho' : 'salvou') : ''}</td></tr>`).join('') + '</tbody></table>'
     : '<div class="empty">Nenhuma partida.</div>';
 
-  renderQr();
+  renderQr(); markQr(); if ($('#v-dash') && !$('#v-dash').hidden) setPoll();
 
   $('#h-sub').textContent = `${nf(DATA.sessions.length)} partidas registradas · ${new Set(DATA.sessions.map(s => s.pid)).size.toLocaleString('pt-BR')} jogadores no total`;
 }
@@ -575,8 +583,8 @@ const R0 = v => Math.round(v || 0);
 const EXPORTS = {
   sessions() {
     const { S } = filtered();
-    csv('partidas', ['inicio', 'fim', 'jogo', 'apelido', 'player_id', 'session_id', 'situacao', 'pontos', 'duracao_s', 'mundo_nivel', 'titulo', 'motivo_fim', 'entregas', 'combo_max', 'itens', 'erros', 'salvo_ranking', 'dispositivo', 'sistema', 'tela', 'origem', 'utm_source', 'utm_campaign', 'versao'],
-      S.sort((a, b) => a.start - b.start).map(s => [dtStr(s.start), dtStr(s.end), s.game, s.nick, s.pid, s.id, s.status, R0(s.score), R0(s.sec), s.level, s.title, s.reason, s.deliveries ?? '', s.combo ?? '', s.items ?? '', s.misses ?? '', s.saved ? 'sim' : 'nao', s.device, s.os, s.screen, s.ref, s.utm, s.camp, s.version]));
+    csv('partidas', ['inicio', 'fim', 'jogo', 'apelido', 'player_id', 'session_id', 'situacao', 'pontos', 'duracao_s', 'mundo_nivel', 'motivo_fim', 'entregas', 'combo_max', 'itens', 'erros', 'salvo_ranking', 'origem', 'utm_source', 'utm_campaign', 'versao'],
+      S.sort((a, b) => a.start - b.start).map(s => [dtStr(s.start), dtStr(s.end), s.game, s.nick, s.pid, s.id, s.status, R0(s.score), R0(s.sec), s.level, s.reason, s.deliveries ?? '', s.combo ?? '', s.items ?? '', s.misses ?? '', s.saved ? 'sim' : 'nao', s.ref, s.utm, s.camp, s.version]));
   },
   milestones() {
     const { S, M } = filtered();
@@ -751,7 +759,7 @@ async function qrApi(params) {
   const ep = LS.get('rd_ep'), tk = LS.get('rd_tk');
   const r = await fetch(ep + (ep.includes('?') ? '&' : '?') + new URLSearchParams(Object.assign({}, params, { token: tk, _: Date.now() })), { cache: 'no-store' });
   const j = await r.json();
-  if (!j.ok) throw new Error(j.error === 'token' ? 'Token incorreto.' : j.error === 'busy' ? 'A planilha está ocupada. Tente de novo em alguns segundos.' : 'Erro: ' + (j.error || 'desconhecido'));
+  if (!j.ok) throw new Error(j.error === 'token' ? 'Token incorreto.' : j.error === 'busy' ? 'O servidor está ocupado. Tente de novo em alguns segundos.' : 'Erro: ' + (j.error || 'desconhecido'));
   return j;
 }
 function qrRows() {
@@ -762,9 +770,31 @@ function showQr(rows) {
   qrShown = rows;
   $('#qr-bar').hidden = !rows.length;
   $('#qr-bar-t').textContent = rows.length === 1 ? 'Mostre na tela, mande o link ou imprima.' : `${rows.length} QR codes. Use “Imprimir” para ter todos numa folha.`;
-  $('#qr-out').innerHTML = rows.map((r, i) => `<div class="qr-tile"><img src="${qrPng(r, 8)}" alt="QR code de ${esc(GAME[r.jogo].name)}">
+  $('#qr-out').innerHTML = rows.map((r, i) => `<div class="qr-tile" data-code="${esc(r.codigo)}"><img src="${qrPng(r, 8)}" alt="QR code de ${esc(GAME[r.jogo].name)}">
+    <div class="stamp"></div><div class="live">● disponível · esperando a leitura</div>
     <div class="g">${esc(GAME[r.jogo].name)}</div><div class="nt">${esc(r.nota || '')}</div><div class="lk">${esc(gameLink(r.jogo, r.codigo))}</div>
     <div class="btns"><button class="btn small" data-qr-copy="${i}">Copiar link</button><button class="btn small" data-qr-png="${i}">Baixar PNG</button></div></div>`).join('');
+  markQr(); setPoll();
+}
+// Mostra em cima de cada QR na tela se ele já foi usado ou cancelado (sem precisar recarregar a página)
+function markQr() {
+  const by = new Map(qrRows().map(r => [r.codigo, r]));
+  $$('#qr-out .qr-tile').forEach(t => {
+    const r = by.get(t.dataset.code); if (!r) return;
+    const off = r.status !== 'novo';
+    t.classList.toggle('off', off); t.classList.toggle('cancelado', r.status === 'cancelado');
+    if (off) t.querySelector('.stamp').innerHTML = r.status === 'usado'
+      ? `✓ QR CODE USADO<small>às ${hms(r.usadoD) || '—'} · não funciona mais</small>` : `QR CODE CANCELADO<small>não funciona mais</small>`;
+  });
+}
+// Com QR disponível na tela, confere a cada 10 s; sem, a cada minuto
+let pollEvery = 0;
+function setPoll() {
+  const fast = !demo && qrShown.some(r => { const x = qrRows().find(y => y.codigo === r.codigo); return x && x.status === 'novo'; });
+  const ms = demo ? 0 : fast ? 10000 : 60000;
+  if (ms === pollEvery && timer) return;
+  clearInterval(timer); timer = null; pollEvery = ms;
+  if (ms) timer = setInterval(() => { if (!document.hidden) load(true); }, ms);
 }
 function renderQr() {
   const all = qrRows(), rows = all.filter(r => gameOk(r.jogo)), cnt = st => rows.filter(r => r.status === st).length;
@@ -863,7 +893,7 @@ function showLogin() {
 }
 function showDash() {
   $('#v-login').hidden = true; $('#v-dash').hidden = false; $('#demo').hidden = !demo;
-  clearInterval(timer); if (!demo) timer = setInterval(() => { if (!document.hidden) load(true); }, 60000);
+  clearInterval(timer); timer = null; pollEvery = 0; setPoll();
   load();
 }
 $('#f-login').addEventListener('submit', async e => {
