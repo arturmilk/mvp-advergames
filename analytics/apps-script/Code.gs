@@ -268,7 +268,7 @@ function qrCancel_(p) {
 }
 // status devolvido ao jogo: novo | ok (esta aba já queimou) | usado | cancelado | invalido
 function qrGame_(p, use) {
-  var code = String(p.qr || ''), g = String(p.g || ''), acc = /^[a-z0-9]{8,40}$/i.test(p.c || '') ? p.c : '';
+  var code = String(p.qr || ''), g = String(p.g || ''), accIn = p.acc || p.c || '', acc = /^[a-z0-9]{8,40}$/i.test(accIn) ? accIn : '';
   if (!QR_RE.test(code) || !GAMES[g]) return { ok: true, status: 'invalido' };
   var lock = null;
   if (use) {
