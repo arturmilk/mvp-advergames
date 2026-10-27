@@ -47,7 +47,7 @@ Faça com a conta Google **da Rover** (é ela que vai ser dona dos dados).
 
 ## 2. O que o dashboard mostra
 
-Filtros por jogo (todos / A Entrega / Happy Hour) e período (hoje, 7 dias, 30 dias, tudo). Atualiza sozinho a cada minuto.
+Filtros por jogo (todos / A Entrega / Happy Hour) e período (hoje, 7 dias, 30 dias, tudo). Atualiza sozinho a cada minuto (a cada 10 s enquanto houver um QR disponível na tela). O dono não precisa abrir a planilha: tudo aparece no dashboard e sai em CSV. Horários aparecem com hora, minuto e segundo (a data completa fica no balão ao passar o mouse).
 
 * **Números do topo:** jogadores únicos, partidas, tempo total jogado, duração média e mediana, pontuação média, recorde (com apelido),
   visitas e quantas viraram partida, partidas salvas no ranking.
@@ -56,13 +56,13 @@ Filtros por jogo (todos / A Entrega / Happy Hour) e período (hoje, 7 dias, 30 d
   a mediana, a média, o mais rápido (com apelido) e a faixa típica (25%–75%). O tempo é de jogo, sem contar pausas.
 * **Distribuição de pontuação** e **duração das partidas**.
 * **Até onde chegam** (mundo na A Entrega, nível no Happy Hour), **como as partidas terminam** (vidas, itens, tempo, encerrou, abandonou)
-  e **aparelhos/origem** (celular/computador, Android/iOS, WhatsApp/Instagram/link direto/`utm_source`).
+  e **de onde vêm os jogadores** (WhatsApp/Instagram/link direto/`utm_source`). As colunas `meta`, `dispositivo`, `sistema`, `tela` e `idioma` continuam sendo gravadas na planilha, mas o dashboard não as mostra.
 * **Ranking geral** (melhor pontuação de cada jogador, todos os aparelhos), **jogadores** e **lista de partidas** com busca por apelido.
 * Botão **Ver com dados de exemplo** na tela de login, para conhecer o painel antes de ter dados reais.
 
 ## 3. Google Sheets e exportação
 
-Os dados **já estão no Google Sheets**: o botão **Abrir planilha no Google Sheets** (topo do dashboard) leva direto para ela.
+Os dados ficam no Google Sheets da conta do Apps Script (o dashboard não tem link para ela; o dono não precisa abri-la).
 
 | Aba | Conteúdo |
 |---|---|
@@ -135,7 +135,7 @@ com uma nota opcional de onde vai ser usado (ex.: "Loja Centro"). Cada QR leva a
 4. Recarregar a mesma aba não bloqueia (o id da aba fica no `sessionStorage`).
 
 Na lista do dashboard aparecem todos os códigos com a situação (disponível, usado, cancelado), quando foram usados e o botão
-**Cancelar** (para um QR impresso que se perdeu). Na planilha, a aba é `QR` (`codigo, jogo, status, criado, usado_em, player_id, acesso, nota`).
+**Cancelar** (para um QR impresso que se perdeu). Os QR mostrados na tela ganham o carimbo **"QR CODE USADO às HH:MM:SS"** sozinhos, em até 10 s depois do primeiro toque, sem recarregar a página. Na planilha, a aba é `QR` (`codigo, jogo, status, criado, usado_em, player_id, acesso, nota`).
 
 Configuração em `config.js` › `ticket` (cada jogo):
 
