@@ -135,7 +135,7 @@ def handle(db, ev):
 
 
 def qr_game(db, q, use):
-    code, g, acc = q.get('qr', ''), q.get('g', ''), q.get('c', '')
+    code, g, acc = q.get('qr', ''), q.get('g', ''), q.get('acc', q.get('c', ''))
     acc = acc if ID_RE.match(acc) else ''
     if not QR_RE.match(code) or g not in GAMES or (use and not acc):
         return {'ok': True, 'status': 'invalido'}

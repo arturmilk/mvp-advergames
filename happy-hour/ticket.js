@@ -39,10 +39,11 @@
   const rid = () => { const a = new Uint8Array(12); crypto.getRandomValues(a); return Array.from(a, b => (b % 36).toString(36)).join(''); };
   const RA = () => window.RoverAnalytics || {};
 
+  // "acc", não "c": o Google recusa (400, sem CORS) o parâmetro c nos Web Apps do Apps Script
   function api(action) {
     const ep = RA().endpoint || '';
     if (!ep) return Promise.reject(new Error('sem endpoint'));
-    const q = new URLSearchParams({ action: 'qr_' + action, g: game, qr: tk.code, c: tk.acc, p: RA().playerId || '', _: Date.now() });
+    const q = new URLSearchParams({ action: 'qr_' + action, g: game, qr: tk.code, acc: tk.acc, p: RA().playerId || '', _: Date.now() });
     const ctl = window.AbortController ? new AbortController() : null, to = ctl && setTimeout(() => ctl.abort(), 12000);
     return fetch(ep + (ep.includes('?') ? '&' : '?') + q, { cache: 'no-store', signal: ctl ? ctl.signal : undefined })
       .then(r => r.json()).then(j => { clearTimeout(to); if (!j || !j.ok) throw new Error((j && j.error) || 'erro'); return j.status; })
