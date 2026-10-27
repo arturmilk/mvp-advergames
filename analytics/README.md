@@ -1,7 +1,7 @@
 # Dados dos jogos: planilha Google + dashboard do dono
 
-Os dois jogos (**Rover — A Entrega** e **Rover Happy Hour**) mandam os dados de cada partida para uma **planilha do Google Sheets**
-da Rover. O **dashboard** (`dashboard/index.html`) lê essa planilha e mostra ranking, jogadores, tempo jogado,
+Os jogos (hoje **Rover — A Entrega** e **Rover Happy Hour**) mandam os dados de cada partida para uma **planilha do Google Sheets**
+do cliente. O **dashboard** (`dashboard/index.html`, identidade visual da Montaggio) lê essa planilha e mostra ranking, jogadores, tempo jogado,
 quanto tempo cada jogador leva para chegar a cada pontuação, etc. Tudo de todos os aparelhos, não só de um.
 
 ```
@@ -10,17 +10,18 @@ analytics/apps-script/Code.gs  "servidor": Google Apps Script que grava na plani
 analytics/dev_server.py      servidor de TESTE local (mesma API, sem conta Google)
 ticket.js                    QR code de uso único (o mesmo arquivo está em happy-hour/ticket.js)
 dashboard/index.html         dashboard do dono (login com endereço + token)
+dashboard/config.js          nome do cliente e lista de jogos do dashboard (público: nada de token aqui)
 ```
 
-Não há servidor para manter: a planilha e o script ficam na conta Google da Rover, de graça.
+Não há servidor para manter: a planilha e o script ficam na conta Google do cliente, de graça.
 
 ---
 
 ## 1. Instalação (uma vez, uns 10 minutos)
 
-Faça com a conta Google **da Rover** (é ela que vai ser dona dos dados).
+Faça com a conta Google **do cliente** (é ela que vai ser dona dos dados).
 
-1. Crie uma planilha nova em <https://sheets.new> e dê um nome (ex.: "Jogos Rover — dados").
+1. Crie uma planilha nova em <https://sheets.new> e dê um nome (ex.: "Jogos — dados").
 2. Na planilha: **Extensões › Apps Script**. Apague o que estiver no editor, cole todo o conteúdo de
    `analytics/apps-script/Code.gs` e salve (ícone de disquete).
 3. No topo do editor, escolha a função **`setup`** e clique em **Executar**. O Google pede autorização
@@ -47,18 +48,41 @@ Faça com a conta Google **da Rover** (é ela que vai ser dona dos dados).
 
 ## 2. O que o dashboard mostra
 
-Filtros por jogo (todos / A Entrega / Happy Hour) e período (hoje, 7 dias, 30 dias, tudo). Atualiza sozinho a cada minuto (a cada 10 s enquanto houver um QR disponível na tela). O dono não precisa abrir a planilha: tudo aparece no dashboard e sai em CSV. Horários aparecem com hora, minuto e segundo (a data completa fica no balão ao passar o mouse).
+Visual da Montaggio (creme, tinta preta, laranja e verde-limão; fontes Bricolage Grotesque e JetBrains Mono, do Google Fonts), em tela clara ou escura conforme o aparelho. Funciona no computador e no celular (testado em 360, 430, 480 e 1280 px, sem rolagem lateral; tabelas largas rolam dentro do próprio quadro).
 
-* **Números do topo:** jogadores únicos, partidas, tempo total jogado, duração média e mediana, pontuação média, recorde (com apelido),
-  visitas e quantas viraram partida, partidas salvas no ranking.
-* **Partidas por dia** e **horário das partidas**.
-* **Quanto tempo leva para chegar a cada pontuação:** para cada marco (100, 250, 500, 1.000 pts…), quantas partidas chegaram lá,
-  a mediana, a média, o mais rápido (com apelido) e a faixa típica (25%–75%). O tempo é de jogo, sem contar pausas.
-* **Distribuição de pontuação** e **duração das partidas**.
-* **Até onde chegam** (mundo na A Entrega, nível no Happy Hour), **como as partidas terminam** (vidas, itens, tempo, encerrou, abandonou)
-  e **de onde vêm os jogadores** (WhatsApp/Instagram/link direto/`utm_source`). As colunas `meta`, `dispositivo`, `sistema`, `tela` e `idioma` continuam sendo gravadas na planilha, mas o dashboard não as mostra.
-* **Ranking geral** (melhor pontuação de cada jogador, todos os aparelhos), **jogadores** e **lista de partidas** com busca por apelido.
-* Botão **Ver com dados de exemplo** na tela de login, para conhecer o painel antes de ter dados reais.
+Filtros por jogo (todos ou um) e período (hoje, 7 dias, 30 dias, tudo). Atualiza sozinho a cada minuto (a cada 10 s enquanto houver um QR disponível na tela). O dono não precisa abrir a planilha: tudo aparece no dashboard e sai em CSV. Horários aparecem com hora, minuto e segundo (a data completa fica no balão ao passar o mouse). No celular, tocar num pedaço de gráfico mostra o balão.
+
+De cima para baixo, do mais importante para o mais específico:
+
+1. **Visão geral:** uma frase-resumo ("28 pessoas jogaram 420 partidas nos últimos 7 dias"), quatro números grandes
+   (jogadores únicos, partidas e quantas estão acontecendo agora, tempo jogado, visita que vira partida) e quatro menores
+   (duração média e mediana, recorde de cada jogo com apelido, partidas salvas no ranking, QR codes usados no período).
+   Logo abaixo: **partidas por dia** (barras por jogo) e quatro roscas: **como as partidas terminam**, **partidas por jogo**,
+   **quem volta a jogar** (1, 2 a 4, 5 a 9, 10 ou mais partidas por jogador) e **de onde vêm** (WhatsApp, Instagram, link direto ou `utm_source`).
+2. **QR codes de uso único** (§ 7): contadores, gerador e lista.
+3. **Ranking e jogadores:** ranking geral (melhor pontuação de cada jogador, todos os aparelhos), jogadores e lista de partidas com busca por apelido.
+4. **Detalhes das partidas:** horário das partidas, até onde chegam (mundo/nível), quanto tempo leva para chegar a cada pontuação
+   (quantas partidas chegaram, mediana, média, o mais rápido com apelido e a faixa 25%–75%; tempo de jogo, sem pausas),
+   distribuição de pontuação e de duração, e os botões de CSV.
+
+As colunas `meta`, `dispositivo`, `sistema`, `tela` e `idioma` continuam sendo gravadas na planilha, mas o dashboard não as mostra.
+O botão **Ver com dados de exemplo** na tela de entrada (ou `?demo` no endereço) mostra o painel com dados inventados.
+
+### Usar com outro cliente (`dashboard/config.js`)
+
+O dashboard não tem o nome de nenhum cliente no código. Tudo o que muda de um cliente para outro fica em `dashboard/config.js`:
+
+| Chave | O que faz |
+|---|---|
+| `client` | nome do cliente no topo e na tela de entrada (vazio = só o título) |
+| `title` | título do painel (padrão "Painel dos jogos") |
+| `filePrefix` | começo do nome dos CSV e PNG (vazio = nome do cliente ou `jogos`) |
+| `siteUrl` | site dos jogos, usado só quando o dashboard é aberto direto do arquivo |
+| `games` | um item por jogo, na ordem dos filtros e das cores: `short` (nome curto), `path` (pasta do jogo), `levelLabel` (Mundo, Nível, Fase…). A chave é o id do jogo no `Code.gs` |
+| `endReasons` | texto de cada motivo de fim de partida (`vidas`, `tempo`…) |
+
+O nome completo de cada jogo vem do Apps Script (constante `GAMES` do `Code.gs`), então um jogo novo aparece no dashboard assim que o
+`Code.gs` o conhece, mesmo antes de entrar no `config.js` (com a pasta `<id>/`). O arquivo é público: nunca coloque o token nele.
 
 ## 3. Google Sheets e exportação
 
@@ -118,6 +142,11 @@ python analytics/dev_server.py
 
 O parâmetro `?analytics=` só funciona em `localhost`. Os dados de teste ficam em `analytics/dev_data.json` (fora do git); apague o arquivo para zerar.
 Os QR codes gerados no dashboard de teste já levam o `?analytics=` no link, então funcionam direto em `localhost`.
+
+**Testes do dashboard (27/10/2026, Chromium oculto):** em 360, 430, 480 e 1280 px, com dados de exemplo e com o servidor de teste
+(6 partidas enviadas pelo contrato dos jogos), sem rolagem lateral e com o console limpo; entrar com `teste`, filtros por jogo,
+gerar QR, queimar com `qr_use` e ver o carimbo "QR CODE USADO" aparecer sozinho em até 10 s; tema escuro conferido no computador.
+Não testado em celular físico.
 
 ## 7. QR codes de uso único
 
