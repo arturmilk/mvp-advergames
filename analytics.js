@@ -79,6 +79,8 @@
   const RA = {
     get enabled() { return !!endpoint; },
     get sessionId() { return sess ? sess.id : ''; },
+    get endpoint() { return endpoint; },   // usado também pelo ticket.js (QR code de uso único)
+    get playerId() { return pid; },
     init(c) {
       cfg = (c && c.analytics) || {};
       game = cfg.game || ''; version = (c && c.version) || '';

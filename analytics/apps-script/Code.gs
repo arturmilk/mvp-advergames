@@ -6,6 +6,7 @@
  *   Marcos    quando cada partida alcançou cada pontuação/nível (tempo de jogo em segundos)
  *   Eventos   visitas, cadastros, compartilhamentos
  *   Ranking / Resumo / Tempo até pontuação   abas com fórmulas que se atualizam sozinhas
+ *   QR        QR codes de uso único gerados no dashboard (novo → usado no primeiro toque do jogo)
  *
  * O dashboard (dashboard/index.html) lê os dados por GET com o token secreto.
  * Instalação passo a passo: analytics/README.md
@@ -17,7 +18,8 @@ var COLS = {
     'motivo_fim', 'entregas', 'combo_max', 'itens', 'erros', 'salvo_ranking', 'apelido_ranking', 'posicao_ranking',
     'dispositivo', 'sistema', 'tela', 'idioma', 'origem', 'utm_source', 'utm_campaign', 'versao', 'atualizado'],
   Marcos: ['event_id', 'session_id', 'jogo', 'player_id', 'tipo', 'valor', 'segundos', 'pontos', 'data'],
-  Eventos: ['event_id', 'tipo', 'jogo', 'session_id', 'player_id', 'apelido', 'data', 'detalhe']
+  Eventos: ['event_id', 'tipo', 'jogo', 'session_id', 'player_id', 'apelido', 'data', 'detalhe'],
+  QR: ['codigo', 'jogo', 'status', 'criado', 'usado_em', 'player_id', 'acesso', 'nota']
 };
 var SIMPLE_EVENTS = ['visit', 'register', 'share', 'tutorial'];
 
@@ -201,8 +203,11 @@ function date_(v) {
 function doGet(e) {
   var p = (e && e.parameter) || {};
   if (p.action === 'ping') return json_({ ok: true, games: GAMES });
+  if (p.action === 'qr_check' || p.action === 'qr_use') return json_(qrGame_(p, p.action === 'qr_use'));
   var token = PropertiesService.getScriptProperties().getProperty('DASHBOARD_TOKEN');
   if (!token || p.token !== token) return json_({ ok: false, error: 'token' });
+  if (p.action === 'qr_new') return json_(qrNew_(p));
+  if (p.action === 'qr_cancel') return json_(qrCancel_(p));
   var ss = SpreadsheetApp.getActiveSpreadsheet(), out = { ok: true, sheetUrl: ss.getUrl(), now: new Date().toISOString(), games: GAMES };
   Object.keys(COLS).forEach(function (name) {
     var sh = ss.getSheetByName(name);
@@ -218,4 +223,70 @@ function rows_(sh, cols) {
     cols.forEach(function (c, i) { o[c] = r[i] instanceof Date ? r[i].toISOString() : r[i]; });
     return o;
   });
+}
+
+/* ======================= QR CODE DE USO ÚNICO ======================= */
+// O dashboard gera (qr_new, com o token). O jogo confere ao abrir (qr_check) e queima no primeiro toque (qr_use).
+// "acesso" = id aleatório da aba que queimou o código: a mesma aba pode recarregar; qualquer outra vê "usado".
+var QR_RE = /^[a-p]{18}$/;
+function qrCode_() {
+  // 18 letras a–p (4 bits cada, 72 bits) tiradas de UUIDs aleatórios, sem os dígitos fixos de versão/variante
+  var h = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, ''), out = '';
+  for (var i = 0; i < h.length && out.length < 18; i++) if (i !== 12 && i !== 16 && i !== 44 && i !== 48) out += String.fromCharCode(97 + parseInt(h[i], 16));
+  return out;
+}
+function qrFind_(sh, code) {
+  var hit = sh.getRange('A:A').createTextFinder(code).matchEntireCell(true).findNext();
+  return hit ? hit.getRow() : 0;
+}
+function qrNew_(p) {
+  var g = String(p.g || '');
+  if (!GAMES[g]) return { ok: false, error: 'jogo' };
+  var n = Math.max(1, Math.min(50, Math.round(Number(p.n) || 1))), nota = txt_(p.nota, 80), now = new Date();
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(20000); } catch (err) { return { ok: false, error: 'busy' }; }
+  try {
+    var sh = sheet_(SpreadsheetApp.getActiveSpreadsheet(), 'QR'), rows = [];
+    for (var i = 0; i < n; i++) rows.push([qrCode_(), g, 'novo', now, '', '', '', nota]);
+    sh.getRange(sh.getLastRow() + 1, 1, n, rows[0].length).setValues(rows);
+    SpreadsheetApp.flush();
+    return { ok: true, qr: rows.map(function (r) { return { codigo: r[0], jogo: g, status: 'novo', criado: now.toISOString(), nota: nota }; }) };
+  } finally { lock.releaseLock(); }
+}
+function qrCancel_(p) {
+  var code = String(p.qr || '');
+  if (!QR_RE.test(code)) return { ok: false, error: 'codigo' };
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(20000); } catch (err) { return { ok: false, error: 'busy' }; }
+  try {
+    var sh = sheet_(SpreadsheetApp.getActiveSpreadsheet(), 'QR'), r = qrFind_(sh, code);
+    if (!r) return { ok: false, error: 'codigo' };
+    var st = sh.getRange(r, 3).getValue();
+    if (st === 'novo') sh.getRange(r, 3).setValue('cancelado');
+    return { ok: true, status: st === 'novo' ? 'cancelado' : st };
+  } finally { lock.releaseLock(); }
+}
+// status devolvido ao jogo: novo | ok (esta aba já queimou) | usado | cancelado | invalido
+function qrGame_(p, use) {
+  var code = String(p.qr || ''), g = String(p.g || ''), acc = /^[a-z0-9]{8,40}$/i.test(p.c || '') ? p.c : '';
+  if (!QR_RE.test(code) || !GAMES[g]) return { ok: true, status: 'invalido' };
+  var lock = null;
+  if (use) {
+    if (!acc) return { ok: true, status: 'invalido' };
+    lock = LockService.getScriptLock();
+    try { lock.waitLock(20000); } catch (err) { return { ok: false, error: 'busy' }; }
+  }
+  try {
+    var sh = sheet_(SpreadsheetApp.getActiveSpreadsheet(), 'QR'), r = qrFind_(sh, code);
+    if (!r) return { ok: true, status: 'invalido' };
+    var row = sh.getRange(r, 1, 1, COLS.QR.length).getValues()[0];
+    if (row[1] !== g) return { ok: true, status: 'invalido' };
+    if (row[2] === 'usado') return { ok: true, status: acc && row[6] === acc ? 'ok' : 'usado' };
+    if (row[2] !== 'novo') return { ok: true, status: 'cancelado' };
+    if (!use) return { ok: true, status: 'novo' };
+    var pid = /^[a-z0-9]{8,40}$/i.test(p.p || '') ? p.p : '';
+    sh.getRange(r, 3, 1, 5).setValues([['usado', row[3], new Date(), pid, acc]]); // status, criado, usado_em, player_id, acesso
+    SpreadsheetApp.flush();
+    return { ok: true, status: 'ok' };
+  } finally { if (lock) lock.releaseLock(); }
 }

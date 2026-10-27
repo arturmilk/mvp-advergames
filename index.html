@@ -12,6 +12,7 @@
 <link rel="icon" href="assets/icon-192.png">
 <script src="config.js"></script>
 <script src="analytics.js"></script>
+<script src="ticket.js"></script>
 <style>
 :root{
   --red:#E30613; --orange:#FF6A13; --yellow:#FFD21F; --graphite:#2B2B2B; --amber:#FFA726;
@@ -368,6 +369,7 @@ table.lb td.n{text-align:right}
 const C = window.CONFIG;
 const K = C.storageKeys;
 const RA = window.RoverAnalytics || { init() {}, start() {}, progress() {}, level() {}, end() {}, saved() {}, event() {} };
+const TK = window.RoverTicket || { init() {}, allowStart: () => true };
 const W = 216, H = 300;
 const $ = s => document.querySelector(s);
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -1319,6 +1321,7 @@ function startPlay() {
 }
 function beginGame() {
   if (hasPlayed()) return goTitle();
+  if (!TK.allowStart()) return; // QR code de uso único (ticket.js)
   markPlayed(); show(null); paused = false; newGame();
   const pl = player(); RA.start({ nick: pl ? pl.nick : '' });
 }
@@ -1508,7 +1511,7 @@ function applyAsset(a, im) {
 }
 
 async function boot() {
-  RA.init(C);
+  RA.init(C); TK.init(C);
   buildSprites();
   layout(); addEventListener('resize', layout); addEventListener('orientationchange', () => setTimeout(layout, 200));
   if (window.ResizeObserver) new ResizeObserver(layout).observe($('#stage'));

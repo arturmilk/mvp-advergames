@@ -88,6 +88,7 @@ a { color: var(--s1); }
 .hbar .val { color: var(--text); font-variant-numeric: tabular-nums; min-width: 64px; text-align: right; }
 .sub-h { font-size: 12.5px; font-weight: 600; margin: 10px 0 4px; color: var(--text-2); }
 .exports { display: flex; gap: 8px; flex-wrap: wrap; }
+.exports .btn { white-space: normal; text-align: left; }
 .search { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 5px 10px; min-width: 160px; }
 .pill { font-size: 11.5px; padding: 1px 7px; border-radius: 99px; background: var(--surface-2); color: var(--text-2); }
 .pill.ok { color: var(--good); } .pill.ab { color: var(--warn); }
@@ -101,6 +102,28 @@ a { color: var(--s1); }
 .login .row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
 .err { color: #c62828; font-size: 13px; min-height: 18px; margin-top: 8px; }
 [hidden] { display: none !important; }
+/* QR codes */
+.qr-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 4px; }
+.qr-form label { display: inline-flex; gap: 6px; align-items: center; color: var(--text-2); font-size: 13px; }
+.qr-form .search { min-width: 0; }
+#qr-note { flex: 1 1 200px; }
+.qr-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 6px 0 10px; }
+.qr-bar .t { color: var(--text-2); font-size: 13px; flex: 1 1 200px; }
+.qr-out { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.qr-tile { border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; background: var(--surface); min-width: 0; }
+.qr-tile img { width: 100%; max-width: 220px; height: auto; display: block; margin: 0 auto 6px; image-rendering: pixelated; border-radius: 6px; }
+.qr-tile .g { font-weight: 700; }
+.qr-tile .nt { color: var(--text-3); font-size: 12.5px; min-height: 18px; overflow-wrap: anywhere; }
+.qr-tile .lk { font-size: 11.5px; color: var(--text-3); overflow-wrap: anywhere; margin: 4px 0 8px; user-select: all; }
+.qr-tile .btns { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.qr-sum { color: var(--text-2); font-size: 13px; margin: 4px 0 6px; }
+@media print {
+  body * { visibility: hidden; }
+  #qr-out, #qr-out * { visibility: visible; }
+  #qr-out { position: absolute; left: 0; top: 0; width: 100%; grid-template-columns: repeat(3, 1fr); }
+  .qr-tile { break-inside: avoid; border-color: #999; background: #fff; color: #000; }
+  .qr-tile .btns { display: none; }
+}
 </style>
 </head>
 <body>
@@ -130,6 +153,7 @@ a { color: var(--s1); }
     <div><h1>Dashboard dos jogos Rover</h1><div class="sub" id="h-sub">—</div></div>
     <div class="sp"></div>
     <a class="btn" id="b-sheet" target="_blank" rel="noopener" hidden>Abrir planilha no Google Sheets</a>
+    <a class="btn" href="#qr-card">Gerar QR code</a>
     <button class="btn" id="b-refresh">Atualizar</button>
     <button class="btn" id="b-logout">Sair</button>
   </header>
@@ -153,6 +177,22 @@ a { color: var(--s1); }
   <section class="kpis" id="kpis"></section>
 
   <div class="grid">
+    <div class="card" id="qr-card">
+      <h2>QR codes de uso único</h2>
+      <p class="d">Cada QR code abre o jogo para <b>uma pessoa só</b>: no primeiro toque na tela, o código é queimado e quem abrir o mesmo link depois vê “QR code já usado”. Funciona com internet (o jogo confere o código na planilha).</p>
+      <div class="qr-form">
+        <div class="seg" id="qr-game" role="group" aria-label="Jogo do QR code"><button data-v="rover" aria-pressed="true"><span class="dot" style="background:var(--s1)"></span>A Entrega</button><button data-v="happy-hour"><span class="dot" style="background:var(--s2)"></span>Happy Hour</button></div>
+        <label>Quantidade <input class="search" id="qr-n" type="number" min="1" max="50" value="1" inputmode="numeric" style="width:72px"></label>
+        <input class="search" id="qr-note" maxlength="80" placeholder="Onde vai ser usado (opcional, ex.: Loja Centro)" aria-label="Onde vai ser usado">
+        <button class="btn primary" id="qr-gen">Gerar QR code</button>
+      </div>
+      <div class="err" id="qr-err"></div>
+      <div class="qr-bar" id="qr-bar" hidden><span class="t" id="qr-bar-t"></span><button class="btn small" id="qr-print">Imprimir</button><button class="btn small" id="qr-clear">Fechar</button></div>
+      <div class="qr-out" id="qr-out"></div>
+      <div class="hd"><div><div class="sub-h" style="margin-top:0">Gerados</div><div class="qr-sum" id="qr-sum"></div></div><button class="btn small" data-csv="qr">Baixar CSV</button></div>
+      <div class="scroll" id="tb-qr" style="max-height:340px"></div>
+    </div>
+
     <div class="card c8">
       <h2>Partidas por dia</h2><p class="d">Quantas partidas começaram em cada dia.</p>
       <div class="legend" id="lg-daily"></div>
@@ -506,6 +546,8 @@ function render() {
     ps.slice(0, 300).map(s => `<tr><td>${brDate(s.start)}</td>${F.game === 'all' ? `<td><span class="dot" style="background:${GAME[s.game].color}"></span>${GAME[s.game].short}</td>` : ''}<td><b>${esc(s.nick || '—')}</b></td><td class="n">${nf(s.score)}</td><td class="n">${dur(s.sec)}</td><td class="n">${s.level}</td><td>${st[s.status]}</td><td>${s.saved ? (s.rank ? '#' + s.rank + ' no aparelho' : 'salvou') : ''}</td><td>${esc([s.device, s.os].filter(Boolean).join(' · '))}</td></tr>`).join('') + '</tbody></table>'
     : '<div class="empty">Nenhuma partida.</div>';
 
+  renderQr();
+
   $('#h-sub').textContent = `${nf(DATA.sessions.length)} partidas registradas · ${new Set(DATA.sessions.map(s => s.pid)).size.toLocaleString('pt-BR')} jogadores no total`;
 }
 function histo(el, S, f, gs, unit, fmtL) {
@@ -561,11 +603,221 @@ const EXPORTS = {
     for (const r of dailyRows(S, E)) for (const g of games()) { const c = r.perGame[g]; rows.push([r.day, g, c.visits, c.games, c.players.size, R0(c.sec), c.games ? R0(c.sec / c.games) : 0, c.games ? R0(c.score / c.games) : 0, R0(c.best)]); }
     csv('resumo_diario', ['dia', 'jogo', 'visitas', 'partidas', 'jogadores', 'tempo_total_s', 'duracao_media_s', 'pontuacao_media', 'melhor_pontuacao'], rows);
   },
+  qr() {
+    csv('qr_codes', ['criado', 'jogo', 'onde', 'codigo', 'situacao', 'usado_em', 'player_id', 'link'],
+      qrRows().filter(r => gameOk(r.jogo)).reverse().map(r => [dtStr(r.criadoD), r.jogo, String(r.nota || '').replace(/^'/, ''), r.codigo, r.status, dtStr(r.usadoD), r.player_id || '', gameLink(r.jogo, r.codigo)]));
+  },
   events() {
     const { E } = filtered();
     csv('eventos', ['data', 'tipo', 'jogo', 'apelido', 'player_id', 'session_id', 'detalhe'], E.sort((a, b) => (a.date || 0) - (b.date || 0)).map(e => [dtStr(e.date), e.type, e.game, e.nick, e.pid, e.sid, e.detail]));
   }
 };
+
+/* ---------------- QR code (gerador próprio, sem bibliotecas) ----------------
+   Modo byte, correção de erro M (~15%), versões 1 a 40, máscara escolhida pela penalidade da norma ISO/IEC 18004.
+   Algoritmo segundo o gerador de referência do Project Nayuki (MIT). qrMatrix(texto) -> matriz de booleanos (true = escuro). */
+const qrMatrix = (() => {
+  const ECC = [-1, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26, 30, 22, 22, 24, 24, 28, 28, 26, 26, 26, 26, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28];
+  const BLOCKS = [-1, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5, 5, 8, 9, 9, 10, 10, 11, 13, 14, 16, 17, 17, 18, 20, 21, 23, 25, 26, 28, 29, 31, 33, 35, 37, 38, 40, 43, 45, 47, 49];
+  const rawModules = v => { let r = (16 * v + 128) * v + 64; if (v >= 2) { const n = Math.floor(v / 7) + 2; r -= (25 * n - 10) * n - 55; if (v >= 7) r -= 36; } return r; };
+  const dataCodewords = v => Math.floor(rawModules(v) / 8) - ECC[v] * BLOCKS[v];
+  const bit = (x, i) => ((x >>> i) & 1) !== 0;
+  const gmul = (x, y) => { let z = 0; for (let i = 7; i >= 0; i--) { z = (z << 1) ^ ((z >>> 7) * 0x11D); z ^= ((y >>> i) & 1) * x; } return z & 0xFF; };
+  function rsDivisor(deg) {
+    const r = new Array(deg).fill(0); r[deg - 1] = 1; let root = 1;
+    for (let i = 0; i < deg; i++) { for (let j = 0; j < deg; j++) { r[j] = gmul(r[j], root); if (j + 1 < deg) r[j] ^= r[j + 1]; } root = gmul(root, 2); }
+    return r;
+  }
+  function rsRemainder(data, div) {
+    const r = div.map(() => 0);
+    for (const b of data) { const f = b ^ r.shift(); r.push(0); div.forEach((c, i) => r[i] ^= gmul(c, f)); }
+    return r;
+  }
+  return function (text) {
+    const bytes = Array.from(new TextEncoder().encode(text));
+    let ver = 1;
+    for (; ver <= 40; ver++) if (4 + (ver <= 9 ? 8 : 16) + bytes.length * 8 <= dataCodewords(ver) * 8) break;
+    if (ver > 40) throw new Error('Texto longo demais para um QR code');
+    // bits de dados: modo byte (0100), tamanho, bytes, terminador e preenchimento
+    const bits = [], put = (v, n) => { for (let i = n - 1; i >= 0; i--) bits.push((v >>> i) & 1); };
+    put(4, 4); put(bytes.length, ver <= 9 ? 8 : 16); bytes.forEach(b => put(b, 8));
+    const cap = dataCodewords(ver) * 8;
+    put(0, Math.min(4, cap - bits.length)); put(0, (8 - bits.length % 8) % 8);
+    for (let p = 0xEC; bits.length < cap; p ^= 0xEC ^ 0x11) put(p, 8);
+    const data = []; for (let i = 0; i < bits.length; i += 8) data.push(bits.slice(i, i + 8).reduce((a, b) => a << 1 | b, 0));
+    // blocos com correção Reed-Solomon, intercalados
+    const nb = BLOCKS[ver], el = ECC[ver], raw = Math.floor(rawModules(ver) / 8), nShort = nb - raw % nb, shortLen = Math.floor(raw / nb), div = rsDivisor(el);
+    const blocks = [];
+    for (let i = 0, k = 0; i < nb; i++) {
+      const dat = data.slice(k, k + shortLen - el + (i < nShort ? 0 : 1)); k += dat.length;
+      const ecc = rsRemainder(dat, div); if (i < nShort) dat.push(0);
+      blocks.push(dat.concat(ecc));
+    }
+    const words = [];
+    for (let i = 0; i < blocks[0].length; i++) blocks.forEach((b, j) => { if (i !== shortLen - el || j >= nShort) words.push(b[i]); });
+    // matriz
+    const size = ver * 4 + 17, M = Array.from({ length: size }, () => new Array(size).fill(false)), F = Array.from({ length: size }, () => new Array(size).fill(false));
+    const fn = (x, y, d) => { M[y][x] = d; F[y][x] = true; };
+    for (let i = 0; i < size; i++) { fn(6, i, i % 2 === 0); fn(i, 6, i % 2 === 0); }
+    const finder = (cx, cy) => { for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) { const d = Math.max(Math.abs(dx), Math.abs(dy)), x = cx + dx, y = cy + dy; if (x >= 0 && x < size && y >= 0 && y < size) fn(x, y, d !== 2 && d !== 4); } };
+    finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+    const al = [];
+    if (ver > 1) { const n = Math.floor(ver / 7) + 2, step = ver === 32 ? 26 : Math.ceil((ver * 4 + 4) / (n * 2 - 2)) * 2; al.push(6); for (let p = size - 7; al.length < n; p -= step) al.splice(1, 0, p); }
+    al.forEach((x, i) => al.forEach((y, j) => { if ((i === 0 && j === 0) || (i === 0 && j === al.length - 1) || (i === al.length - 1 && j === 0)) return; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) fn(x + dx, y + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1); }));
+    const format = mask => {
+      const d = (0 << 3) | mask; let r = d; for (let i = 0; i < 10; i++) r = (r << 1) ^ ((r >>> 9) * 0x537);
+      const b = ((d << 10) | r) ^ 0x5412;
+      for (let i = 0; i <= 5; i++) fn(8, i, bit(b, i));
+      fn(8, 7, bit(b, 6)); fn(8, 8, bit(b, 7)); fn(7, 8, bit(b, 8));
+      for (let i = 9; i < 15; i++) fn(14 - i, 8, bit(b, i));
+      for (let i = 0; i < 8; i++) fn(size - 1 - i, 8, bit(b, i));
+      for (let i = 8; i < 15; i++) fn(8, size - 15 + i, bit(b, i));
+      fn(8, size - 8, true);
+    };
+    format(0);
+    if (ver >= 7) {
+      let r = ver; for (let i = 0; i < 12; i++) r = (r << 1) ^ ((r >>> 11) * 0x1F25);
+      const b = ver << 12 | r;
+      for (let i = 0; i < 18; i++) { const a = size - 11 + i % 3, c = Math.floor(i / 3); fn(a, c, bit(b, i)); fn(c, a, bit(b, i)); }
+    }
+    // dados em zigue-zague
+    let i = 0;
+    for (let right = size - 1; right >= 1; right -= 2) {
+      if (right === 6) right = 5;
+      for (let v = 0; v < size; v++) for (let j = 0; j < 2; j++) {
+        const x = right - j, up = ((right + 1) & 2) === 0, y = up ? size - 1 - v : v;
+        if (!F[y][x] && i < words.length * 8) { M[y][x] = bit(words[i >>> 3], 7 - (i & 7)); i++; }
+      }
+    }
+    const MASKS = [(x, y) => (x + y) % 2 === 0, (x, y) => y % 2 === 0, x => x % 3 === 0, (x, y) => (x + y) % 3 === 0,
+      (x, y) => (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0, (x, y) => x * y % 2 + x * y % 3 === 0,
+      (x, y) => (x * y % 2 + x * y % 3) % 2 === 0, (x, y) => ((x + y) % 2 + x * y % 3) % 2 === 0];
+    const applyMask = m => { for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (!F[y][x] && MASKS[m](x, y)) M[y][x] = !M[y][x]; };
+    const penalty = () => {
+      let p = 0, dark = 0;
+      const line = get => {
+        let run = 1;
+        for (let k = 1; k <= size; k++) {
+          if (k < size && get(k) === get(k - 1)) run++;
+          else { if (run >= 5) p += 3 + run - 5; run = 1; }
+        }
+        // padrão parecido com o localizador (1:1:3:1:1 com 4 claros de um lado)
+        for (let k = 0; k + 7 <= size; k++) {
+          if (get(k) && !get(k + 1) && get(k + 2) && get(k + 3) && get(k + 4) && !get(k + 5) && get(k + 6)) {
+            const before = [1, 2, 3, 4].every(d => k - d < 0 || !get(k - d)), after = [7, 8, 9, 10].every(d => k + d >= size || !get(k + d));
+            if (before || after) p += 40;
+          }
+        }
+      };
+      for (let y = 0; y < size; y++) line(x => M[y][x]);
+      for (let x = 0; x < size; x++) line(y => M[y][x]);
+      for (let y = 0; y < size - 1; y++) for (let x = 0; x < size - 1; x++) { const c = M[y][x]; if (c === M[y][x + 1] && c === M[y + 1][x] && c === M[y + 1][x + 1]) p += 3; }
+      for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (M[y][x]) dark++;
+      const total = size * size; p += (Math.ceil(Math.abs(dark * 20 - total * 10) / total) - 1) * 10;
+      return p;
+    };
+    let best = 0, bestP = Infinity;
+    for (let m = 0; m < 8; m++) { applyMask(m); format(m); const pp = penalty(); if (pp < bestP) { bestP = pp; best = m; } applyMask(m); }
+    applyMask(best); format(best);
+    return M;
+  };
+})();
+
+/* ---------------- QR codes de uso único ---------------- */
+// Os jogos ficam ao lado do dashboard no mesmo site (../ e ../happy-hour/). Aberto como arquivo, usa o site publicado.
+const GAME_PATH = { rover: '', 'happy-hour': 'happy-hour/' };
+const SITE = 'https://arturmilk.github.io/mvp-advergames/';
+const QR_ST = { novo: '<span class="pill ok">disponível</span>', usado: '<span class="pill">usado</span>', cancelado: '<span class="pill ab">cancelado</span>' };
+let qrGame = 'rover', qrShown = [], qrLocal = [];
+function gameLink(g, code) {
+  const u = new URL(GAME_PATH[g], /^https?:$/.test(location.protocol) ? new URL('../', location.href) : SITE);
+  u.searchParams.set('qr', code);
+  // teste local (analytics/dev_server.py): o jogo precisa saber o endereço do servidor de teste
+  const ep = LS.get('rd_ep') || '';
+  if (/^(localhost|127\.0\.0\.1)$/.test(u.hostname) && /^https?:\/\/(localhost|127\.0\.0\.1)[:/]/.test(ep)) u.searchParams.set('analytics', ep);
+  return u.href;
+}
+// PNG do QR com o nome do jogo embaixo (bom para imprimir ou mandar no WhatsApp)
+function qrPng(r, scale) {
+  const M = qrMatrix(gameLink(r.jogo, r.codigo)), n = M.length, q = 4, W = (n + 2 * q) * scale, cap = Math.round(scale * 7);
+  const c = document.createElement('canvas'); c.width = W; c.height = W + cap;
+  const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.fillStyle = '#000';
+  for (let y = 0; y < n; y++) for (let i = 0; i < n; i++) if (M[y][i]) x.fillRect((i + q) * scale, (y + q) * scale, scale, scale);
+  x.textAlign = 'center'; x.font = `700 ${Math.round(cap * .42)}px system-ui, sans-serif`;
+  x.fillText(`${GAME[r.jogo].name} · uso único`, W / 2, W + cap * .28);
+  return c.toDataURL('image/png');
+}
+async function qrApi(params) {
+  const ep = LS.get('rd_ep'), tk = LS.get('rd_tk');
+  const r = await fetch(ep + (ep.includes('?') ? '&' : '?') + new URLSearchParams(Object.assign({}, params, { token: tk, _: Date.now() })), { cache: 'no-store' });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error === 'token' ? 'Token incorreto.' : j.error === 'busy' ? 'A planilha está ocupada. Tente de novo em alguns segundos.' : 'Erro: ' + (j.error || 'desconhecido'));
+  return j;
+}
+function qrRows() {
+  const rows = (demo ? qrLocal : (RAW && RAW.qr) || []).filter(r => GAME[r.jogo]).map(r => Object.assign({}, r, { criadoD: D(r.criado), usadoD: D(r.usado_em) }));
+  return rows.sort((a, b) => (b.criadoD || 0) - (a.criadoD || 0));
+}
+function showQr(rows) {
+  qrShown = rows;
+  $('#qr-bar').hidden = !rows.length;
+  $('#qr-bar-t').textContent = rows.length === 1 ? 'Mostre na tela, mande o link ou imprima.' : `${rows.length} QR codes. Use “Imprimir” para ter todos numa folha.`;
+  $('#qr-out').innerHTML = rows.map((r, i) => `<div class="qr-tile"><img src="${qrPng(r, 8)}" alt="QR code de ${esc(GAME[r.jogo].name)}">
+    <div class="g">${esc(GAME[r.jogo].name)}</div><div class="nt">${esc(r.nota || '')}</div><div class="lk">${esc(gameLink(r.jogo, r.codigo))}</div>
+    <div class="btns"><button class="btn small" data-qr-copy="${i}">Copiar link</button><button class="btn small" data-qr-png="${i}">Baixar PNG</button></div></div>`).join('');
+}
+function renderQr() {
+  const all = qrRows(), rows = all.filter(r => gameOk(r.jogo)), cnt = st => rows.filter(r => r.status === st).length;
+  $('#qr-sum').textContent = rows.length ? `${nf(rows.length)} gerados · ${nf(cnt('usado'))} usados · ${nf(cnt('novo'))} disponíveis${cnt('cancelado') ? ' · ' + nf(cnt('cancelado')) + ' cancelados' : ''}` : '';
+  $('#tb-qr').innerHTML = rows.length ? `<table class="tbl"><thead><tr><th>Criado</th>${F.game === 'all' ? '<th>Jogo</th>' : ''}<th>Onde</th><th>Código</th><th>Situação</th><th>Usado em</th><th></th></tr></thead><tbody>` +
+    rows.slice(0, 300).map(r => `<tr><td>${brDate(r.criadoD)}</td>${F.game === 'all' ? `<td><span class="dot" style="background:${GAME[r.jogo].color}"></span>${GAME[r.jogo].short}</td>` : ''}<td>${esc(String(r.nota || '').replace(/^'/, ''))}</td><td><code>…${esc(r.codigo.slice(-6))}</code></td><td>${QR_ST[r.status] || esc(r.status)}</td><td>${brDate(r.usadoD)}</td>` +
+      `<td>${r.status === 'novo' ? `<button class="btn small" data-qr-show="${esc(r.codigo)}">Ver QR</button> <button class="btn small" data-qr-cancel="${esc(r.codigo)}">Cancelar</button>` : ''}</td></tr>`).join('') + '</tbody></table>'
+    : '<div class="empty">Nenhum QR code gerado ainda.</div>';
+}
+$$('#qr-game button').forEach(b => b.onclick = () => { qrGame = b.dataset.v; $$('#qr-game button').forEach(x => x.setAttribute('aria-pressed', x === b)); });
+$('#qr-gen').onclick = async () => {
+  const n = Math.max(1, Math.min(50, Math.round(+$('#qr-n').value || 1))), nota = $('#qr-note').value.trim().slice(0, 80), err = $('#qr-err'), b = $('#qr-gen');
+  err.textContent = ''; b.disabled = true; b.textContent = 'Gerando…';
+  try {
+    let rows;
+    if (demo) {
+      // exemplo: códigos só neste navegador, não funcionam no jogo
+      rows = Array.from({ length: n }, () => ({ codigo: Array.from(crypto.getRandomValues(new Uint8Array(18)), v => String.fromCharCode(97 + v % 16)).join(''), jogo: qrGame, status: 'novo', criado: new Date().toISOString(), usado_em: '', nota }));
+      qrLocal.push(...rows);
+    } else {
+      const j = await qrApi({ action: 'qr_new', g: qrGame, n, nota });
+      if (!Array.isArray(j.qr)) throw new Error('O Apps Script publicado ainda não tem os QR codes. Cole o Code.gs novo e publique em Implantar › Gerenciar implantações › Nova versão.');
+      rows = j.qr;
+      if (RAW) RAW.qr = (RAW.qr || []).concat(rows);
+    }
+    showQr(rows); renderQr();
+    $('#qr-bar').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (x) { err.textContent = x.message.startsWith('Erro') || x.message.includes('Apps Script') || x.message.includes('Token') || x.message.includes('ocupada') ? x.message : 'Não foi possível gerar: ' + x.message; }
+  b.disabled = false; b.textContent = 'Gerar QR code';
+};
+$('#qr-print').onclick = () => print();
+$('#qr-clear').onclick = () => showQr([]);
+document.addEventListener('click', async e => {
+  const t = e.target.closest('[data-qr-copy],[data-qr-png],[data-qr-show],[data-qr-cancel]'); if (!t) return;
+  if (t.dataset.qrCopy != null) {
+    const r = qrShown[+t.dataset.qrCopy], url = gameLink(r.jogo, r.codigo);
+    try { await navigator.clipboard.writeText(url); t.textContent = 'Copiado!'; } catch (x) { prompt('Copie o link:', url); }
+    setTimeout(() => t.textContent = 'Copiar link', 1500);
+  } else if (t.dataset.qrPng != null) {
+    const r = qrShown[+t.dataset.qrPng], a = document.createElement('a');
+    a.href = qrPng(r, 16); a.download = `rover_qr_${r.jogo}_${r.codigo.slice(-6)}.png`; document.body.appendChild(a); a.click(); a.remove();
+  } else if (t.dataset.qrShow) {
+    const r = qrRows().find(x => x.codigo === t.dataset.qrShow); if (r) { showQr([r]); $('#qr-bar').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  } else if (t.dataset.qrCancel) {
+    const code = t.dataset.qrCancel;
+    if (!confirm('Cancelar este QR code? Quem tentar usar vai ver “QR code cancelado”. Não dá para desfazer.')) return;
+    try {
+      if (!demo) await qrApi({ action: 'qr_cancel', qr: code });
+      const r = (demo ? qrLocal : RAW.qr || []).find(x => x.codigo === code); if (r && r.status === 'novo') r.status = 'cancelado';
+      showQr(qrShown.filter(x => x.codigo !== code)); renderQr();
+    } catch (x) { $('#qr-err').textContent = x.message; }
+  }
+});
 
 /* ---------------- dados de exemplo ---------------- */
 function demoData() {
@@ -596,6 +848,11 @@ function demoData() {
     for (let v = 0; v < 1 + Math.floor(rnd() * 2); v++) Ev.push({ event_id: id(), tipo: 'visit', jogo: g, session_id: '', player_id: p.pid, apelido: '', data: new Date(+st - 60000).toISOString(), detalhe: '{}' });
     if (rnd() < .15) Ev.push({ event_id: id(), tipo: 'share', jogo: g, session_id: sid, player_id: p.pid, apelido: '', data: st.toISOString(), detalhe: '{}' });
   }
+  if (!qrLocal.length) for (let i = 0; i < 14; i++) {
+    const cr = new Date(now - (14 - i) * 864e5 * 1.5), st = i < 9 ? 'usado' : i === 9 ? 'cancelado' : 'novo';
+    qrLocal.push({ codigo: Array.from({ length: 18 }, () => String.fromCharCode(97 + Math.floor(rnd() * 16))).join(''), jogo: i % 3 ? 'rover' : 'happy-hour', status: st, criado: cr.toISOString(),
+      usado_em: st === 'usado' ? new Date(+cr + rnd() * 864e5).toISOString() : '', player_id: st === 'usado' ? players[i].pid : '', nota: ['Loja Centro', 'Atacarejo', 'Evento'][i % 3] });
+  }
   return { ok: true, sheetUrl: '', partidas: P, marcos: Mk, eventos: Ev };
 }
 
@@ -618,8 +875,8 @@ $('#f-login').addEventListener('submit', async e => {
   $('#b-login').disabled = false; $('#b-login').textContent = 'Entrar';
 });
 $('#b-demo').onclick = () => { demo = true; showDash(); };
-$('#b-demo-exit').onclick = e => { e.preventDefault(); demo = false; DATA = null; LS.get('rd_tk') ? showDash() : showLogin(); };
-$('#b-logout').onclick = () => { demo = false; DATA = null; LS.set('rd_tk', null); showLogin(); };
+$('#b-demo-exit').onclick = e => { e.preventDefault(); demo = false; DATA = null; showQr([]); LS.get('rd_tk') ? showDash() : showLogin(); };
+$('#b-logout').onclick = () => { demo = false; DATA = null; showQr([]); LS.set('rd_tk', null); showLogin(); };
 $('#b-refresh').onclick = () => load();
 const seg = (sel, key, num) => $$(sel + ' button').forEach(b => b.onclick = () => { F[key] = num ? +b.dataset.v : b.dataset.v; $$(sel + ' button').forEach(x => x.setAttribute('aria-pressed', x === b)); if (key === 'game' && F.game !== 'all') F.rank = F.game; render(); });
 seg('#f-game', 'game'); seg('#f-range', 'range', true); seg('#f-rank', 'rank');

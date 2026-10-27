@@ -2,7 +2,9 @@
 
 Implementa o mesmo contrato do analytics/apps-script/Code.gs:
   POST /exec            recebe {"v":1,"events":[...]} dos jogos
-  GET  /exec?action=data&token=...   devolve partidas/marcos/eventos para o dashboard
+  GET  /exec?action=data&token=...   devolve partidas/marcos/eventos/qr para o dashboard
+  GET  /exec?action=qr_new|qr_cancel&token=...   QR codes de uso único (dashboard)
+  GET  /exec?action=qr_check|qr_use&qr=...&g=...&c=...   conferir/queimar o QR (jogos)
 e serve os arquivos do repositório (jogos e dashboard) na mesma porta.
 
     python analytics/dev_server.py            -> http://localhost:8790/
@@ -16,6 +18,7 @@ import datetime as dt
 import json
 import os
 import re
+import secrets
 import sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from threading import Lock
@@ -31,8 +34,10 @@ COLS = {
                  'dispositivo', 'sistema', 'tela', 'idioma', 'origem', 'utm_source', 'utm_campaign', 'versao', 'atualizado'],
     'Marcos': ['event_id', 'session_id', 'jogo', 'player_id', 'tipo', 'valor', 'segundos', 'pontos', 'data'],
     'Eventos': ['event_id', 'tipo', 'jogo', 'session_id', 'player_id', 'apelido', 'data', 'detalhe'],
+    'QR': ['codigo', 'jogo', 'status', 'criado', 'usado_em', 'player_id', 'acesso', 'nota'],
 }
 ID_RE = re.compile(r'^[a-z0-9]{8,40}$', re.I)
+QR_RE = re.compile(r'^[a-p]{18}$')
 lock = Lock()
 
 
@@ -41,7 +46,7 @@ def load():
         with open(DATA, encoding='utf-8') as f:
             return json.load(f)
     except (OSError, ValueError):
-        return {'partidas': [], 'marcos': [], 'eventos': [], 'seen': []}
+        return {'partidas': [], 'marcos': [], 'eventos': [], 'qr': [], 'seen': []}
 
 
 def save(db):
@@ -129,6 +134,25 @@ def handle(db, ev):
     return True
 
 
+def qr_game(db, q, use):
+    code, g, acc = q.get('qr', ''), q.get('g', ''), q.get('c', '')
+    acc = acc if ID_RE.match(acc) else ''
+    if not QR_RE.match(code) or g not in GAMES or (use and not acc):
+        return {'ok': True, 'status': 'invalido'}
+    row = next((r for r in db.setdefault('qr', []) if r['codigo'] == code), None)
+    if row is None or row['jogo'] != g:
+        return {'ok': True, 'status': 'invalido'}
+    if row['status'] == 'usado':
+        return {'ok': True, 'status': 'ok' if acc and row['acesso'] == acc else 'usado'}
+    if row['status'] != 'novo':
+        return {'ok': True, 'status': 'cancelado'}
+    if not use:
+        return {'ok': True, 'status': 'novo'}
+    pid = q.get('p', '')
+    row.update(status='usado', usado_em=now_iso(), player_id=pid if ID_RE.match(pid) else '', acesso=acc)
+    return {'ok': True, 'status': 'ok'}
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=ROOT, **kw)
@@ -172,14 +196,47 @@ class Handler(SimpleHTTPRequestHandler):
         if u.path != '/exec':
             return super().do_GET()
         q = {k: v[0] for k, v in parse_qs(u.query).items()}
-        if q.get('action') == 'ping':
+        act = q.get('action')
+        if act == 'ping':
             return self.send_json({'ok': True, 'games': GAMES})
+        if act in ('qr_check', 'qr_use'):
+            with lock:
+                db = load()
+                res = qr_game(db, q, act == 'qr_use')
+                if act == 'qr_use':
+                    save(db)
+            return self.send_json(res)
         if q.get('token') != TOKEN:
             return self.send_json({'ok': False, 'error': 'token'})
+        if act == 'qr_new':
+            g = q.get('g', '')
+            if g not in GAMES:
+                return self.send_json({'ok': False, 'error': 'jogo'})
+            try:
+                n = max(1, min(50, int(float(q.get('n') or 1))))
+            except ValueError:
+                n = 1
+            rows = [{'codigo': ''.join(chr(97 + secrets.randbelow(16)) for _ in range(18)), 'jogo': g, 'status': 'novo',
+                     'criado': now_iso(), 'usado_em': '', 'player_id': '', 'acesso': '', 'nota': txt(q.get('nota'), 80)} for _ in range(n)]
+            with lock:
+                db = load()
+                db.setdefault('qr', []).extend(rows)
+                save(db)
+            return self.send_json({'ok': True, 'qr': rows})
+        if act == 'qr_cancel':
+            with lock:
+                db = load()
+                row = next((r for r in db.setdefault('qr', []) if r['codigo'] == q.get('qr')), None)
+                if row is None:
+                    return self.send_json({'ok': False, 'error': 'codigo'})
+                if row['status'] == 'novo':
+                    row['status'] = 'cancelado'
+                    save(db)
+            return self.send_json({'ok': True, 'status': row['status']})
         with lock:
             db = load()
         self.send_json({'ok': True, 'sheetUrl': '', 'now': now_iso(), 'games': GAMES,
-                        'partidas': db['partidas'], 'marcos': db['marcos'], 'eventos': db['eventos']})
+                        'partidas': db['partidas'], 'marcos': db['marcos'], 'eventos': db['eventos'], 'qr': db.get('qr', [])})
 
     def log_message(self, fmt, *args):
         if '/exec' in (args[0] if args else ''):
