@@ -1,6 +1,6 @@
 # Dados dos jogos: planilha Google + dashboard do dono
 
-Os jogos (hoje **Rover — A Entrega** e **Rover Happy Hour**) mandam os dados de cada partida para uma **planilha do Google Sheets**
+Os jogos (hoje **Rover — A Entrega**, **Rover Happy Hour** e **Máquina do Mal em: Fuga do Poser**) mandam os dados de cada partida para uma **planilha do Google Sheets**
 do cliente. O **dashboard** (`dashboard/index.html`, identidade visual da Montaggio) lê essa planilha e mostra ranking, jogadores, tempo jogado,
 quanto tempo cada jogador leva para chegar a cada pontuação, etc. Tudo de todos os aparelhos, não só de um.
 
@@ -138,6 +138,7 @@ python analytics/dev_server.py
 
 * Jogo: <http://localhost:8790/?analytics=http://localhost:8790/exec>
 * Happy Hour: <http://localhost:8790/happy-hour/?analytics=http://localhost:8790/exec>
+* Fuga do Poser: <http://localhost:8790/fuga-do-poser/?analytics=http://localhost:8790/exec>
 * Dashboard: <http://localhost:8790/dashboard/> (endereço `http://localhost:8790/exec`, token `teste`)
 
 O parâmetro `?analytics=` só funciona em `localhost`. Os dados de teste ficam em `analytics/dev_data.json` (fora do git); apague o arquivo para zerar.

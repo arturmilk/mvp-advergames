@@ -1,0 +1,261 @@
+{
+  "version": 1,
+  "generator": "gpt_image_2_5 (Higgsfield), quality=high, resolution=1k, aspect_ratio=3:2, background=transparent",
+  "style": "Retro 1990s hand-drawn theatrical cartoon animation style, bold squash-and-stretch, thick black ink outlines, flat cel shading with one soft shadow tone, satirical caricature, no text, no logos, no brand marks. Fully transparent background.",
+  "note": "Assets ausentes caem no desenho provisório procedural de mesmo id (index.html). O modelo não aceita seed fixa: para manter a identidade, regenere usando o job anterior como imagem de referência.",
+  "assets": [
+    {
+      "id": "hero",
+      "file": "hero.png",
+      "w": 1458,
+      "h": 262,
+      "frames": 6,
+      "usage": "Protagonista (headbanger). Quadros: corrida 1-3, pulo, deslize, derrota. Ancorado pelos pés.",
+      "source": "assets/_raw/hero_sheet.png",
+      "higgsfieldJob": "792ccd6b-567c-469f-a72b-495ee63377da",
+      "prompt": "6 poses of the SAME character in ONE horizontal row, side view facing RIGHT, same ground line. Skinny young black metal headbanger, classic corpsepaint, long black hair, black studded leather vest over a plain black t-shirt with no print, ripped black jeans, tall combat boots, spiked wristbands. Poses: run 1, run 2, run looking back panicked, jump tucked, low slide feet first, defeated/bored.",
+      "frameW": 243,
+      "frameH": 262,
+      "frameNames": [
+        "run1",
+        "run2",
+        "run3",
+        "jump",
+        "slide",
+        "defeat"
+      ],
+      "anchor": "bottom-center"
+    },
+    {
+      "id": "poser",
+      "file": "poser.png",
+      "w": 855,
+      "h": 282,
+      "frames": 5,
+      "usage": "O Poser (perseguidor). Quadros: andar 1-3, explicando, derrotado.",
+      "source": "assets/_raw/poser_sheet.png",
+      "higgsfieldJob": "3fadc731-c916-4753-acfb-8d2ad8e5671b",
+      "prompt": "5 poses of the SAME character in ONE horizontal row, side view facing RIGHT. Cheesy middle-aged rock poser, goatee, smug, sunglasses on the BACK of his head, black t-shirt with a generic red rose graphic and NO lettering, khaki cargo shorts, white tube socks, chunky sneakers. Poses: walk, walk pointing, walk talking, finger raised explaining, blasted backwards dizzy.",
+      "frameW": 171,
+      "frameH": 282,
+      "frameNames": [
+        "walk1",
+        "walk2",
+        "walk3",
+        "talk",
+        "blasted"
+      ],
+      "anchor": "bottom-center"
+    },
+    {
+      "id": "bus",
+      "file": "bus.png",
+      "w": 900,
+      "h": 365,
+      "frames": 1,
+      "usage": "Ônibus da Máquina do Mal (intro de 2 s). A porta aberta fica a ~89% da largura.",
+      "source": "assets/_raw/bus.png",
+      "higgsfieldJob": "2ee8185d-aaae-42fa-8b41-d5a106429a83",
+      "prompt": "Long sinister black heavy metal tour bus, side view facing RIGHT, chrome trim, red/orange flame stripes, front door OPEN with steps, silver sign panel with \"Máquina do Mal\" in gothic blackletter chrome (adaptado da foto do ônibus enviada pelo cliente).",
+      "doorX": 0.89
+    },
+    {
+      "id": "ob_amps",
+      "file": "ob_amps.png",
+      "w": 166,
+      "h": 286,
+      "frames": 1,
+      "usage": "Obstáculo: amplificadores empilhados (pular)",
+      "source": "assets/_raw/obstacles_sheet.png",
+      "higgsfieldJob": "f2fc19ca-cdaf-4e06-aa48-55851954e80f",
+      "prompt": "5 obstacles in ONE row: two stacked guitar amp cabinets (no brand plates); low tangled pile of audio cables; stage monitor wedge blasting a feedback shockwave; fallen microphone stand; low hanging truss bar with two spotlights."
+    },
+    {
+      "id": "ob_cables",
+      "file": "ob_cables.png",
+      "w": 210,
+      "h": 87,
+      "frames": 1,
+      "usage": "Obstáculo: cabos no chão (pular; prende se tocar)",
+      "source": "assets/_raw/obstacles_sheet.png",
+      "higgsfieldJob": "f2fc19ca-cdaf-4e06-aa48-55851954e80f",
+      "prompt": "5 obstacles in ONE row: two stacked guitar amp cabinets (no brand plates); low tangled pile of audio cables; stage monitor wedge blasting a feedback shockwave; fallen microphone stand; low hanging truss bar with two spotlights."
+    },
+    {
+      "id": "ob_monitor",
+      "file": "ob_monitor.png",
+      "w": 192,
+      "h": 239,
+      "frames": 1,
+      "usage": "Obstáculo: caixa de retorno estourando (pular)",
+      "source": "assets/_raw/obstacles_sheet.png",
+      "higgsfieldJob": "f2fc19ca-cdaf-4e06-aa48-55851954e80f",
+      "prompt": "5 obstacles in ONE row: two stacked guitar amp cabinets (no brand plates); low tangled pile of audio cables; stage monitor wedge blasting a feedback shockwave; fallen microphone stand; low hanging truss bar with two spotlights."
+    },
+    {
+      "id": "ob_stand",
+      "file": "ob_stand.png",
+      "w": 320,
+      "h": 108,
+      "frames": 1,
+      "usage": "Obstáculo: pedestal caído (pular)",
+      "source": "assets/_raw/obstacles_sheet.png",
+      "higgsfieldJob": "f2fc19ca-cdaf-4e06-aa48-55851954e80f",
+      "prompt": "5 obstacles in ONE row: two stacked guitar amp cabinets (no brand plates); low tangled pile of audio cables; stage monitor wedge blasting a feedback shockwave; fallen microphone stand; low hanging truss bar with two spotlights."
+    },
+    {
+      "id": "ob_truss",
+      "file": "ob_truss.png",
+      "w": 218,
+      "h": 154,
+      "frames": 1,
+      "usage": "Obstáculo: treliça baixa com refletores (deslizar por baixo)",
+      "source": "assets/_raw/obstacles_sheet.png",
+      "higgsfieldJob": "f2fc19ca-cdaf-4e06-aa48-55851954e80f",
+      "prompt": "5 obstacles in ONE row: two stacked guitar amp cabinets (no brand plates); low tangled pile of audio cables; stage monitor wedge blasting a feedback shockwave; fallen microphone stand; low hanging truss bar with two spotlights."
+    },
+    {
+      "id": "shirt_black",
+      "file": "shirt_black.png",
+      "w": 153,
+      "h": 160,
+      "frames": 1,
+      "usage": "Camisa lisa (black). O jogo escreve o nome da banda em texto genérico.",
+      "source": "assets/_raw/shirts_sheet.png",
+      "higgsfieldJob": "c41834b1-d597-49d7-a8f5-7402d3c4364d",
+      "prompt": "6 plain BLANK t-shirts, front view, ONE row: black, white, dark blood red, charcoal grey, deep purple, forest green. No print. (o nome da banda é escrito por cima no jogo, em texto genérico — nada de logo oficial)"
+    },
+    {
+      "id": "shirt_white",
+      "file": "shirt_white.png",
+      "w": 152,
+      "h": 160,
+      "frames": 1,
+      "usage": "Camisa lisa (white). O jogo escreve o nome da banda em texto genérico.",
+      "source": "assets/_raw/shirts_sheet.png",
+      "higgsfieldJob": "c41834b1-d597-49d7-a8f5-7402d3c4364d",
+      "prompt": "6 plain BLANK t-shirts, front view, ONE row: black, white, dark blood red, charcoal grey, deep purple, forest green. No print. (o nome da banda é escrito por cima no jogo, em texto genérico — nada de logo oficial)"
+    },
+    {
+      "id": "shirt_red",
+      "file": "shirt_red.png",
+      "w": 152,
+      "h": 160,
+      "frames": 1,
+      "usage": "Camisa lisa (red). O jogo escreve o nome da banda em texto genérico.",
+      "source": "assets/_raw/shirts_sheet.png",
+      "higgsfieldJob": "c41834b1-d597-49d7-a8f5-7402d3c4364d",
+      "prompt": "6 plain BLANK t-shirts, front view, ONE row: black, white, dark blood red, charcoal grey, deep purple, forest green. No print. (o nome da banda é escrito por cima no jogo, em texto genérico — nada de logo oficial)"
+    },
+    {
+      "id": "shirt_grey",
+      "file": "shirt_grey.png",
+      "w": 152,
+      "h": 160,
+      "frames": 1,
+      "usage": "Camisa lisa (grey). O jogo escreve o nome da banda em texto genérico.",
+      "source": "assets/_raw/shirts_sheet.png",
+      "higgsfieldJob": "c41834b1-d597-49d7-a8f5-7402d3c4364d",
+      "prompt": "6 plain BLANK t-shirts, front view, ONE row: black, white, dark blood red, charcoal grey, deep purple, forest green. No print. (o nome da banda é escrito por cima no jogo, em texto genérico — nada de logo oficial)"
+    },
+    {
+      "id": "shirt_purple",
+      "file": "shirt_purple.png",
+      "w": 152,
+      "h": 160,
+      "frames": 1,
+      "usage": "Camisa lisa (purple). O jogo escreve o nome da banda em texto genérico.",
+      "source": "assets/_raw/shirts_sheet.png",
+      "higgsfieldJob": "c41834b1-d597-49d7-a8f5-7402d3c4364d",
+      "prompt": "6 plain BLANK t-shirts, front view, ONE row: black, white, dark blood red, charcoal grey, deep purple, forest green. No print. (o nome da banda é escrito por cima no jogo, em texto genérico — nada de logo oficial)"
+    },
+    {
+      "id": "shirt_green",
+      "file": "shirt_green.png",
+      "w": 153,
+      "h": 160,
+      "frames": 1,
+      "usage": "Camisa lisa (green). O jogo escreve o nome da banda em texto genérico.",
+      "source": "assets/_raw/shirts_sheet.png",
+      "higgsfieldJob": "c41834b1-d597-49d7-a8f5-7402d3c4364d",
+      "prompt": "6 plain BLANK t-shirts, front view, ONE row: black, white, dark blood red, charcoal grey, deep purple, forest green. No print. (o nome da banda é escrito por cima no jogo, em texto genérico — nada de logo oficial)"
+    },
+    {
+      "id": "fx_aura",
+      "file": "fx_aura.png",
+      "w": 172,
+      "h": 178,
+      "frames": 1,
+      "usage": "Aura protetora (Black Sabbath)",
+      "source": "assets/_raw/fx_sheet.png",
+      "higgsfieldJob": "c9e3c113-0c37-466c-91f4-3ef47a95184d",
+      "prompt": "6 effects in ONE row: purple protective aura bubble with runes; dust puff; yellow lightning bolt; pastel acoustic music notes with hearts and flowers; burst of debris; golden heavenly light burst."
+    },
+    {
+      "id": "fx_dust",
+      "file": "fx_dust.png",
+      "w": 156,
+      "h": 170,
+      "frames": 1,
+      "usage": "Poeira (pulo/aterrissagem/tropeço)",
+      "source": "assets/_raw/fx_sheet.png",
+      "higgsfieldJob": "c9e3c113-0c37-466c-91f4-3ef47a95184d",
+      "prompt": "6 effects in ONE row: purple protective aura bubble with runes; dust puff; yellow lightning bolt; pastel acoustic music notes with hearts and flowers; burst of debris; golden heavenly light burst."
+    },
+    {
+      "id": "fx_bolt",
+      "file": "fx_bolt.png",
+      "w": 110,
+      "h": 220,
+      "frames": 1,
+      "usage": "Raio (High Voltage Jump)",
+      "source": "assets/_raw/fx_sheet.png",
+      "higgsfieldJob": "c9e3c113-0c37-466c-91f4-3ef47a95184d",
+      "prompt": "6 effects in ONE row: purple protective aura bubble with runes; dust puff; yellow lightning bolt; pastel acoustic music notes with hearts and flowers; burst of debris; golden heavenly light burst."
+    },
+    {
+      "id": "fx_notes",
+      "file": "fx_notes.png",
+      "w": 155,
+      "h": 215,
+      "frames": 1,
+      "usage": "Notas acústicas (Beatles/Oasis: controles invertidos)",
+      "source": "assets/_raw/fx_sheet.png",
+      "higgsfieldJob": "c9e3c113-0c37-466c-91f4-3ef47a95184d",
+      "prompt": "6 effects in ONE row: purple protective aura bubble with runes; dust puff; yellow lightning bolt; pastel acoustic music notes with hearts and flowers; burst of debris; golden heavenly light burst."
+    },
+    {
+      "id": "fx_debris",
+      "file": "fx_debris.png",
+      "w": 142,
+      "h": 220,
+      "frames": 1,
+      "usage": "Destroços (Meshuggah quebra obstáculo)",
+      "source": "assets/_raw/fx_sheet.png",
+      "higgsfieldJob": "c9e3c113-0c37-466c-91f4-3ef47a95184d",
+      "prompt": "6 effects in ONE row: purple protective aura bubble with runes; dust puff; yellow lightning bolt; pastel acoustic music notes with hearts and flowers; burst of debris; golden heavenly light burst."
+    },
+    {
+      "id": "fx_holy",
+      "file": "fx_holy.png",
+      "w": 143,
+      "h": 220,
+      "frames": 1,
+      "usage": "Luz dourada (camisa sagrada / vitória)",
+      "source": "assets/_raw/fx_sheet.png",
+      "higgsfieldJob": "c9e3c113-0c37-466c-91f4-3ef47a95184d",
+      "prompt": "6 effects in ONE row: purple protective aura bubble with runes; dust puff; yellow lightning bolt; pastel acoustic music notes with hearts and flowers; burst of debris; golden heavenly light burst."
+    },
+    {
+      "id": "bg_far",
+      "file": "bg_far.jpg",
+      "w": 1024,
+      "h": 688,
+      "frames": 1,
+      "usage": "Parallax de fundo (festival à noite). Repete espelhado na horizontal.",
+      "source": "assets/_raw/bg_far.png",
+      "higgsfieldJob": "72d9c713-2a9c-492f-ab93-1f64d79fa3ec",
+      "prompt": "Wide side-scrolling background: night outside a heavy metal festival backstage, purple/red sky, full moon, distant stage with red/white beams, crowd silhouettes, pine trees. Bottom third dark and empty. No text, no banners with words. (opaco)"
+    }
+  ]
+}
