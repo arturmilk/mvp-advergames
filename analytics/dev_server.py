@@ -11,6 +11,7 @@ e serve os arquivos do repositório (jogos e dashboard) na mesma porta.
     jogo:      http://localhost:8790/?analytics=http://localhost:8790/exec
     happy hour http://localhost:8790/happy-hour/?analytics=http://localhost:8790/exec
     fuga poser http://localhost:8790/fuga-do-poser/?analytics=http://localhost:8790/exec
+    busao rock http://localhost:8790/busao-do-rock/?analytics=http://localhost:8790/exec
     dashboard: http://localhost:8790/dashboard/   (endpoint http://localhost:8790/exec, token "teste")
 
 Os dados ficam em analytics/dev_data.json (fora do git). Só stdlib.
@@ -28,7 +29,7 @@ from urllib.parse import parse_qs, urlparse
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, 'analytics', 'dev_data.json')
 TOKEN = os.environ.get('DASHBOARD_TOKEN', 'teste')
-GAMES = {'rover': 'Rover — A Entrega', 'happy-hour': 'Rover Happy Hour', 'fuga-do-poser': 'Máquina do Mal em: Fuga do Poser'}
+GAMES = {'rover': 'Rover — A Entrega', 'happy-hour': 'Rover Happy Hour', 'fuga-do-poser': 'Máquina do Mal em: Fuga do Poser', 'busao-do-rock': 'Máquina do Mal em: Busão do Rock'}
 COLS = {
     'Partidas': ['session_id', 'jogo', 'player_id', 'apelido', 'inicio', 'fim', 'status', 'pontos', 'duracao_s', 'nivel', 'meta',
                  'motivo_fim', 'entregas', 'combo_max', 'itens', 'erros', 'salvo_ranking', 'apelido_ranking', 'posicao_ranking',

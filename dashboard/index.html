@@ -492,7 +492,7 @@ function setGames(server) {
   ids.forEach(id => {
     const c = conf[id] || {}, i = Object.keys(conf).indexOf(id), slot = i >= 0 ? i : Object.keys(conf).length + ids.filter(k => !(k in conf)).indexOf(id);
     const name = srv[id] || c.name || c.short || id;
-    GAME[id] = { name, short: c.short || name, color: GAME_COLORS[slot % GAME_COLORS.length], lvl: c.levelLabel || 'Nível', path: c.path != null ? c.path : id + '/' };
+    GAME[id] = { name, short: c.short || name, color: GAME_COLORS[slot % GAME_COLORS.length], lvl: c.levelLabel || 'Nível', reasons: c.endReasons || {}, path: c.path != null ? c.path : id + '/' };
   });
   GKEYS = ids;
   if (F.game !== 'all' && !GAME[F.game]) F.game = 'all';
@@ -765,7 +765,7 @@ function render() {
   // roscas
   const RL = Object.assign({ vidas: 'Perdeu as vidas', perdeu_itens: 'Deixou cair 5 itens', tempo: 'Fim do tempo', encerrou: 'Encerrou na pausa' }, CFG.endReasons || {}, { abandonada: 'Abandonada', jogando: 'Jogando agora', outro: 'Outro' });
   const cnt = f => { const o = {}; S.forEach(s => { const v = f(s); o[v] = (o[v] || 0) + 1; }); return Object.entries(o); };
-  donut($('#dn-reasons'), cnt(s => RL[s.reason] || s.reason), { aria: 'Como as partidas terminam' });
+  donut($('#dn-reasons'), cnt(s => (GAME[s.game] && GAME[s.game].reasons[s.reason]) || RL[s.reason] || s.reason), { aria: 'Como as partidas terminam' });
   $('#card-games').hidden = gs.length < 2;
   if (gs.length > 1) donut($('#dn-games'), gs.map(g => [GAME[g].short, S.filter(s => s.game === g).length, GAME[g].color]), { keepOrder: true, aria: 'Partidas por jogo' });
   const per1 = playerRows(S);
