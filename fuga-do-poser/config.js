@@ -10,10 +10,10 @@ const CONFIG = {
   gameName: 'Fuga do Poser',
   heroName: 'o headbanger',
 
-  /* ---------- Tela (resolução lógica: largura fixa de 360; a altura acompanha o aparelho) ---------- */
-  canvasWidth: 360,
-  canvasHeight: 640,     // altura de referência
-  floorFromBottom: 132,  // distância do chão até a base da tela (área dos botões fica abaixo do chão)
+  /* ---------- Tela (jogo na HORIZONTAL: altura lógica fixa de 400; a largura acompanha o aparelho) ---------- */
+  canvasHeight: 400,     // altura lógica (px)
+  minWidth: 600,         // largura lógica mínima (janela estreita no computador ganha zoom menor)
+  floorFromBottom: 66,   // distância do chão até a base da tela
   pxPerMeter: 20,        // 20 px lógicos = 1 metro (distância e velocímetro)
 
   /* ---------- Velocidade (auto-scroll) ---------- */
@@ -26,7 +26,7 @@ const CONFIG = {
 
   /* ---------- Protagonista ---------- */
   hero: {
-    homeX: 0.56,         // posição "confortável" na tela (fração da largura)
+    homeX: 340,          // posição "confortável" na tela (px lógicos a partir da esquerda)
     catchup: 1.35,       // corre até 1,35× a velocidade da tela para voltar à posição confortável
     drawH: 92,           // altura do desenho (px lógicos)
     w: 28, h: 66, slideH: 28, // hitbox em pé / deslizando
@@ -43,8 +43,8 @@ const CONFIG = {
 
   /* ---------- O Poser ---------- */
   poser: {
-    x: 34,               // centro do desenho na tela (canto esquerdo)
-    reach: 62,           // se o herói chegar a esta distância da borda esquerda, o Poser alcança
+    x: 130,              // centro do desenho na tela (à esquerda; o botão DESLIZAR fica no canto, antes dele)
+    reach: 160,          // se o herói chegar a esta distância da borda esquerda, o Poser alcança
     drawH: 104,
     lineEvery: [4.5, 7.5], // segundos entre um balão de fala e outro
     lineTime: 3.4,       // quanto tempo cada balão fica na tela
@@ -84,35 +84,36 @@ const CONFIG = {
   },
 
   /* ---------- Camisas ----------
-     O nome aparece escrito na camisa em texto genérico (nada de logo oficial).
-     effect: 'win' | 'slow' | 'break' | 'dash' | 'shield' | 'voltage' | 'collect' | 'invert'
-     weight = frequência relativa; color = cor da camisa (black, white, red, grey, purple, green) */
+     Cada camisa leva o logo oficial da banda (assets/logos/<id>.webp, fundo transparente).
+     Sem o arquivo, o nome da banda aparece escrito no lugar.
+     effect: 'win' | 'slow' | 'break' | 'shield' | 'voltage' | 'collect' | 'invert'
+     weight = frequência relativa; color = cor da camisa (black, white, red, grey, purple, green)
+     Toda camisa vale shirtPoints (+20), seja boa ou ruim. */
   shirts: {
-    judas:     { name: 'Judas Priest', sub: 'PAINKILLER', color: 'red',    effect: 'win',     points: 1000, weight: 0 },
-    mayhem:    { name: 'Mayhem',       color: 'black',  effect: 'slow',    points: 0,   weight: 8 },
-    meshuggah: { name: 'Meshuggah',    color: 'grey',   effect: 'break',   points: 40,  weight: 7 },
-    sodom:     { name: 'Sodom',        color: 'black',  effect: 'dash',    points: 40,  weight: 4 },
-    sepultura: { name: 'Sepultura',    color: 'green',  effect: 'dash',    points: 40,  weight: 4 },
-    slayer:    { name: 'Slayer',       color: 'red',    effect: 'dash',    points: 40,  weight: 4 },
-    sabbath:   { name: 'Black Sabbath',color: 'purple', effect: 'shield',  points: 40,  weight: 8 },
-    acdc:      { name: 'AC/DC',        color: 'black',  effect: 'voltage', points: 60,  weight: 5 },
-    aerosmith: { name: 'Aerosmith',    color: 'white',  effect: 'voltage', points: 60,  weight: 4 },
-    purple:    { name: 'Deep Purple',  color: 'purple', effect: 'voltage', points: 60,  weight: 4 },
-    venom:     { name: 'Venom',        color: 'black',  effect: 'collect', points: 150, weight: 5 },
-    saxon:     { name: 'Saxon',        color: 'grey',   effect: 'collect', points: 150, weight: 5 },
-    opeth:     { name: 'Opeth',        color: 'green',  effect: 'collect', points: 150, weight: 5 },
-    mastodon:  { name: 'Mastodon',     color: 'white',  effect: 'collect', points: 150, weight: 5 },
-    megadeth:  { name: 'Megadeth',     color: 'red',    effect: 'collect', points: 150, weight: 5 },
-    beatles:   { name: 'Beatles',      color: 'white',  effect: 'invert',  points: 0,   weight: 6 },
-    oasis:     { name: 'Oasis',        color: 'white',  effect: 'invert',  points: 0,   weight: 5 }
+    judas:     { name: 'Judas Priest', sub: 'PAINKILLER', color: 'red',    effect: 'win', weight: 0 },
+    mayhem:    { name: 'Mayhem',       color: 'black',  effect: 'slow',   weight: 8 },
+    meshuggah: { name: 'Meshuggah',    color: 'black',  effect: 'break',  weight: 7 },
+    sodom:     { name: 'Sodom',        color: 'black',  effect: 'collect', weight: 4 },
+    sepultura: { name: 'Sepultura',    color: 'black',  effect: 'collect', weight: 4 },
+    slayer:    { name: 'Slayer',       color: 'black',  effect: 'collect', weight: 4 },
+    sabbath:   { name: 'Black Sabbath',color: 'black',  effect: 'shield',  weight: 8 },
+    acdc:      { name: 'AC/DC',        color: 'black',  effect: 'voltage',  weight: 5 },
+    aerosmith: { name: 'Aerosmith',    color: 'black',  effect: 'voltage',  weight: 4 },
+    purple:    { name: 'Deep Purple',  color: 'black',  effect: 'voltage',  weight: 4 },
+    venom:     { name: 'Venom',        color: 'black',  effect: 'collect', weight: 5 },
+    saxon:     { name: 'Saxon',        color: 'black',  effect: 'collect', weight: 5 },
+    opeth:     { name: 'Opeth',        color: 'black',  effect: 'collect', weight: 5 },
+    mastodon:  { name: 'Mastodon',     color: 'black',  effect: 'collect', weight: 5 },
+    megadeth:  { name: 'Megadeth',     color: 'black',  effect: 'collect', weight: 5 },
+    beatles:   { name: 'Beatles',      color: 'black',  effect: 'invert',   weight: 6 },
+    oasis:     { name: 'Oasis',        color: 'black',  effect: 'invert',   weight: 5 }
   },
   effects: {
     slow:    { time: 4,   factor: 0.67, label: 'CAMISA ENVENENADA! -30% de velocidade' },
     break:   { time: 5,   label: 'RITMO POLIRRÍTMICO! Quebra tudo' },
-    dash:    { time: 1.3, mult: 2.0, maxX: 0.8, label: 'DASH BRUTAL!' },
     shield:  { time: 0,   label: 'AURA PROTETORA! Ignora o próximo impacto' },
-    voltage: { time: 8,   jumpMult: 1.16, scoreMult: 1.5, label: 'HIGH VOLTAGE JUMP!' },
-    collect: { multStep: 0.25, multMax: 4, label: 'TRVE METAL! Multiplicador' },
+    voltage: { time: 8,   jumpMult: 1.16, label: 'HIGH VOLTAGE JUMP!' },
+    collect: { label: 'TRVE METAL! Pra coleção' },
     invert:  { time: 2,   label: 'Vinheta acústica… controles trocados!' },
     win:     { label: 'METAL GOD ASCENDED' }
   },
@@ -122,12 +123,15 @@ const CONFIG = {
   sacredChance: 0.05,
 
   /* ---------- Pontuação ---------- */
-  pointsPerMeter: 1,     // pontos por metro corrido (× multiplicador Trve Metal)
+  timePoints: 100,       // pontos a cada timeEvery segundos de fuga
+  timeEvery: 10,
+  shirtPoints: 20,       // pontos por camisa pega (qualquer camisa)
+  logoTime: 2.2,         // segundos que o logo da banda fica na tela depois de pegar a camisa
   goals: [               // título no fim da partida (min = pontuação mínima)
     { min: 0,    name: 'Poser em Treinamento' },
-    { min: 1000, name: 'Headbanger de Respeito' },
-    { min: 3000, name: 'Guerreiro do Corpsepaint' },
-    { min: 8000, name: 'Lenda do Underground' }
+    { min: 400,  name: 'Headbanger de Respeito' },
+    { min: 1000, name: 'Guerreiro do Corpsepaint' },
+    { min: 2000, name: 'Lenda do Underground' }
   ],
   winTitle: 'Metal God Ascended',
 
@@ -151,7 +155,7 @@ const CONFIG = {
     tutorialTips: [
       'Toque em PULAR para pular. Toque de novo no ar para o pulo duplo.',
       'Segure DESLIZAR para passar por baixo das treliças.',
-      'Cada camisa tem um efeito: umas ajudam, outras atrapalham. A do Judas Priest (Painkiller) vence o jogo!'
+      '100 pontos a cada 10 s de fuga e +20 por camisa. Umas camisas ajudam, outras atrapalham. A do Judas Priest (Painkiller) vence o jogo!'
     ],
     caughtTitle: 'O Poser te alcançou!',
     caughtLines: [
@@ -179,7 +183,7 @@ const CONFIG = {
   analytics: {
     game: 'fuga-do-poser', // não troque: é a chave deste jogo na planilha (constante GAMES do Code.gs)
     endpoint: 'https://script.google.com/macros/s/AKfycbyOZORbDFYrL_rfN4JM_fgma4S2ReeeZjYA6e11ZdyVexaaIVB5ZD8KOt95Q3QTCNpJhA/exec',
-    milestones: [100, 250, 500, 1000, 1500, 2000, 3000, 4000, 5000, 7500, 10000]
+    milestones: [100, 200, 300, 500, 750, 1000, 1500, 2000, 3000]
   },
 
   /* ---------- QR code de uso único (ticket.js) ----------
