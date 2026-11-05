@@ -12,7 +12,7 @@
  * Instalação passo a passo: analytics/README.md
  */
 
-var GAMES = { 'rover': 'Rover — A Entrega', 'happy-hour': 'Rover Happy Hour', 'fuga-do-poser': 'Máquina do Mal em: Fuga do Poser' };
+var GAMES = { 'rover': 'Rover — A Entrega', 'happy-hour': 'Rover Happy Hour', 'fuga-do-poser': 'Máquina do Mal em: Fuga do Poser', 'busao-do-rock': 'Máquina do Mal em: Busão do Rock' };
 var COLS = {
   Partidas: ['session_id', 'jogo', 'player_id', 'apelido', 'inicio', 'fim', 'status', 'pontos', 'duracao_s', 'nivel', 'meta',
     'motivo_fim', 'entregas', 'combo_max', 'itens', 'erros', 'salvo_ranking', 'apelido_ranking', 'posicao_ranking',

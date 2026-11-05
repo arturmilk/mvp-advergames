@@ -156,7 +156,6 @@ const CONFIG = {
 
   /* ---------- Coleta de dados (dashboard + planilha Google) ---------- */
   // endpoint = URL do Web App do Apps Script (termina em /exec). Vazio = não envia nada. Veja ../analytics/README.md
-  // ATENÇÃO: 'busao-do-rock' ainda precisa entrar na constante GAMES do Code.gs (e o Apps Script, ganhar nova versão).
   analytics: {
     game: 'busao-do-rock', // não troque: é a chave deste jogo na planilha
     endpoint: 'https://script.google.com/macros/s/AKfycbyOZORbDFYrL_rfN4JM_fgma4S2ReeeZjYA6e11ZdyVexaaIVB5ZD8KOt95Q3QTCNpJhA/exec',
@@ -165,8 +164,7 @@ const CONFIG = {
 
   /* ---------- QR code de uso único (ticket.js) ----------
      required: false = o link normal é livre; só os links ?qr= do dashboard são de uso único.
-               true  = só abre com QR do dashboard. Ligue SÓ depois de publicar a nova versão do Apps Script
-                       (com 'busao-do-rock' na constante GAMES), senão todo QR aparece como inválido. */
+               true  = só abre com QR do dashboard (o Apps Script publicado já conhece 'busao-do-rock'). */
   ticket: {
     required: false,
     oneGame: true,

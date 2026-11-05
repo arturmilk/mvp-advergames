@@ -1,6 +1,6 @@
 # Dados dos jogos: planilha Google + dashboard do dono
 
-Os jogos (hoje **Rover — A Entrega**, **Rover Happy Hour** e **Máquina do Mal em: Fuga do Poser**) mandam os dados de cada partida para uma **planilha do Google Sheets**
+Os jogos (hoje **Rover — A Entrega**, **Rover Happy Hour**, **Máquina do Mal em: Fuga do Poser** e **Máquina do Mal em: Busão do Rock**) mandam os dados de cada partida para uma **planilha do Google Sheets**
 do cliente. O **dashboard** (`dashboard/index.html`, identidade visual da Montaggio) lê essa planilha e mostra ranking, jogadores, tempo jogado,
 quanto tempo cada jogador leva para chegar a cada pontuação, etc. Tudo de todos os aparelhos, não só de um.
 
@@ -78,7 +78,7 @@ O dashboard não tem o nome de nenhum cliente no código. Tudo o que muda de um 
 | `title` | título do painel (padrão "Painel dos jogos") |
 | `filePrefix` | começo do nome dos CSV e PNG (vazio = nome do cliente ou `jogos`) |
 | `siteUrl` | site dos jogos, usado só quando o dashboard é aberto direto do arquivo |
-| `games` | um item por jogo, na ordem dos filtros e das cores: `short` (nome curto), `path` (pasta do jogo), `levelLabel` (Mundo, Nível, Fase…). A chave é o id do jogo no `Code.gs` |
+| `games` | um item por jogo, na ordem dos filtros e das cores: `short` (nome curto), `path` (pasta do jogo), `levelLabel` (Mundo, Nível, Fase, Lendas…) e `endReasons` (texto de um motivo de fim só para aquele jogo, ex.: `vitoria`). A chave é o id do jogo no `Code.gs` |
 | `endReasons` | texto de cada motivo de fim de partida (`vidas`, `tempo`…) |
 
 O nome completo de cada jogo vem do Apps Script (constante `GAMES` do `Code.gs`), então um jogo novo aparece no dashboard assim que o
@@ -139,6 +139,7 @@ python analytics/dev_server.py
 * Jogo: <http://localhost:8790/?analytics=http://localhost:8790/exec>
 * Happy Hour: <http://localhost:8790/happy-hour/?analytics=http://localhost:8790/exec>
 * Fuga do Poser: <http://localhost:8790/fuga-do-poser/?analytics=http://localhost:8790/exec>
+* Busão do Rock: <http://localhost:8790/busao-do-rock/?analytics=http://localhost:8790/exec>
 * Dashboard: <http://localhost:8790/dashboard/> (endereço `http://localhost:8790/exec`, token `teste`)
 
 O parâmetro `?analytics=` só funciona em `localhost`. Os dados de teste ficam em `analytics/dev_data.json` (fora do git); apague o arquivo para zerar.
@@ -151,7 +152,7 @@ Não testado em celular físico.
 
 ## 7. QR codes de uso único
 
-No dashboard, o quadro **QR codes de uso único** gera um QR code (ou vários, até 50 de uma vez) para **A Entrega** ou **Happy Hour**,
+No dashboard, o quadro **QR codes de uso único** gera um QR code (ou vários, até 50 de uma vez) para qualquer jogo da lista (**A Entrega**, **Happy Hour**, **Fuga do Poser**, **Busão do Rock**),
 com uma nota opcional de onde vai ser usado (ex.: "Loja Centro"). Cada QR leva a um link com um código aleatório de 18 letras
 (`?qr=…`, 72 bits, impossível de adivinhar). Dá para mostrar na tela, copiar o link, baixar o PNG (com o nome do jogo embaixo) ou imprimir todos numa folha.
 
@@ -188,3 +189,25 @@ Configuração em `config.js` › `ticket` (cada jogo):
 **Depois de atualizar o `Code.gs`** (este recurso precisa da versão nova): cole o código novo, salve e use
 **Implantar › Gerenciar implantações › ✏️ › Versão: Nova versão › Implantar**. Não use "Nova implantação" (o URL `/exec` mudaria).
 A aba `QR` é criada sozinha no primeiro QR gerado. Sem a versão nova, o botão do dashboard avisa que o Apps Script precisa ser publicado.
+
+## 8. Colocar um jogo novo no painel
+
+Feito assim para o **Fuga do Poser** e o **Busão do Rock** (05/11/2026). O id do jogo é o `analytics.game` do `config.js` do jogo
+(ex.: `busao-do-rock`) e precisa ser igual nos quatro lugares abaixo.
+
+1. **`analytics/apps-script/Code.gs`**: incluir o id e o nome completo na constante `GAMES`. É a mesma lista que vale para o QR de
+   uso único (`qr_new`/`qr_check`/`qr_use` recusam ids que não estão nela) e para a coleta (ids desconhecidos são descartados).
+2. **`analytics/dev_server.py`**: o mesmo id na constante `GAMES` (servidor de teste).
+3. **`dashboard/config.js`** › `games`: `short`, `path` (pasta do jogo) e `levelLabel`; `endReasons` se algum motivo de fim
+   precisar de texto próprio do jogo (ex.: `vitoria`). O jogo entra sozinho nos filtros, no ranking e no gerador de QR.
+4. **Apps Script** (projeto "jogos"): colar o `Code.gs` novo, salvar e publicar em
+   **Implantar › Gerenciar implantações › ✏️ (a implantação do `/exec` que está nos jogos) › Versão: Nova versão › Implantar**.
+   Nunca "Nova implantação". Depois rodar `setup` uma vez (cria a linha do jogo na aba `Resumo`).
+5. Testar: uma partida de teste chega na aba `Partidas`, o jogo aparece no painel, um QR gerado para ele abre o jogo e fica "usado"
+   no primeiro toque. Apagar as linhas de teste (abas `Partidas`, `Marcos`, `Eventos`, `QR`).
+
+O QR obrigatório (`ticket.required` no `config.js` do jogo) fica desligado até a versão nova do Apps Script estar publicada.
+
+**Busão do Rock (05/11/2026), servidor de teste:** partida (2 lendas, fim por tempo) aparece no painel com o filtro "Busão do Rock",
+nível "Lendas 2" e motivo "Fim do tempo"; QR gerado para o Busão abre o jogo, tira o `?qr=` do link, fica `usado` no primeiro
+toque e o mesmo link em outra aba mostra "QR code já usado". Não testado em celular físico.
