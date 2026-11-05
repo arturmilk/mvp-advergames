@@ -15,6 +15,7 @@
   --blood: #B0151B; --fire: #FF5A1F; --bone: #F2EBDD; --night: #140A1A; --ink: #120B0E; --chrome: #C9CED6; --tacky: #FFD21F;
   --purple: #6B3FA0; --toxic: #7BD23A;
   --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px); --sar: env(safe-area-inset-right, 0px);
   --font: "Arial Black", "Helvetica Neue", Impact, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
@@ -23,12 +24,12 @@ html, body { margin: 0; height: 100%; background: #0b0510; color: var(--bone); f
   overscroll-behavior: none; overflow: hidden; -webkit-text-size-adjust: 100%; }
 body { background: radial-gradient(circle at 50% 30%, #2a1030, #07030a 70%); }
 button, input { font-family: inherit; }
-#app { position: fixed; inset: 0; margin: 0 auto; max-width: 480px; overflow: hidden; background: var(--night);
+#app { position: fixed; inset: 0; margin: 0 auto; overflow: hidden; background: var(--night);
   touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 #cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
 /* ---------- HUD ---------- */
-#hud { position: absolute; left: 0; right: 0; top: 0; padding: calc(var(--sat) + 8px) 10px 0; display: none; pointer-events: none; z-index: 5; }
+#hud { position: absolute; left: 0; right: 0; top: 0; padding: calc(var(--sat) + 8px) calc(var(--sar) + 10px) 0 calc(var(--sal) + 10px); display: none; pointer-events: none; z-index: 5; }
 #hud.on { display: block; }
 .hud-row { display: flex; align-items: center; gap: 6px; }
 .hud-row + .hud-row { margin-top: 6px; }
@@ -36,18 +37,17 @@ button, input { font-family: inherit; }
   border-radius: 10px; padding: 4px 8px; font-family: var(--font); font-weight: 900; font-size: 14px; line-height: 1; color: #fff;
   text-shadow: 0 1px 0 #000; white-space: nowrap; }
 .chip small { font-size: 10px; opacity: .75; letter-spacing: .5px; }
-#hScore { font-size: 22px; border-color: var(--blood); background: linear-gradient(180deg, rgba(176,21,27,.95), rgba(90,6,10,.95)); }
-#hMult { color: var(--tacky); }
+#hScore { font-size: 20px; border-color: var(--blood); background: linear-gradient(180deg, rgba(176,21,27,.95), rgba(90,6,10,.95)); }
 .hud-spacer { flex: 1; }
 .hbtn { pointer-events: auto; width: 44px; height: 44px; border-radius: 12px; border: 2px solid rgba(201,206,214,.45);
   background: rgba(12,6,14,.8); color: #fff; font-size: 20px; display: grid; place-items: center; cursor: pointer; padding: 0; }
 .hbtn:active { transform: scale(.94); }
-#hShirt { min-width: 0; flex: 1; max-width: 190px; padding: 3px 8px 3px 4px; position: relative; overflow: hidden; }
+#hShirt { min-width: 0; flex: 0 1 190px; padding: 3px 8px 3px 4px; position: relative; overflow: hidden; }
 #hShirt img { width: 26px; height: 26px; object-fit: contain; flex: none; }
 #hShirtN { overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
 #hShirtBar { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--tacky); width: 0; }
 #hShirt.bad { border-color: var(--toxic); } #hShirt.good { border-color: var(--tacky); } #hShirt.weird { border-color: #F6A6D8; }
-#prox { display: flex; align-items: center; gap: 6px; }
+#prox { display: flex; align-items: center; gap: 6px; flex: 1 1 120px; min-width: 90px; max-width: 320px; }
 #prox b { font-family: var(--font); font-size: 11px; letter-spacing: 1px; color: #FFB3A8; text-shadow: 0 1px 0 #000; white-space: nowrap; }
 #proxBar { flex: 1; height: 10px; border-radius: 6px; background: rgba(12,6,14,.8); border: 2px solid rgba(201,206,214,.35); overflow: hidden; }
 #proxBar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--toxic), var(--tacky) 55%, var(--blood)); transition: width .12s linear; }
@@ -55,21 +55,22 @@ button, input { font-family: inherit; }
 @keyframes blink { 50% { opacity: .3; } }
 
 /* ---------- Controles (segurar, sem swipe) ---------- */
-.ctrl { position: absolute; bottom: calc(var(--sab) + 14px); width: 132px; height: 82px; border: 3px solid #000; border-radius: 20px; z-index: 6;
+.ctrl { position: absolute; bottom: calc(var(--sab) + 10px); width: 112px; height: 70px; border: 3px solid #000; border-radius: 20px; z-index: 6;
   display: none; touch-action: none; cursor: pointer; font-family: var(--font); font-size: 18px; font-weight: 900; color: #fff; letter-spacing: 1px;
   text-shadow: 0 2px 0 #000; box-shadow: 0 6px 0 #000, inset 0 2px 0 rgba(255,255,255,.3); padding: 0; transition: transform .05s, background .2s; }
 .ctrl.on { display: block; }
-.ctrl span { display: block; font-size: 26px; line-height: 1; }
+.ctrl span { display: block; font-size: 22px; line-height: 1; }
+.ctrl em { font-size: 15px; }
 .ctrl.down { transform: translateY(4px); box-shadow: 0 2px 0 #000, inset 0 2px 0 rgba(255,255,255,.3); }
 .ctrl::after { content: ''; position: absolute; inset: -14px; } /* área de toque maior que o botão */
-#bSlide { left: 14px; background: linear-gradient(180deg, #5B4A7A, #2E2142); }
-#bJump { right: 14px; background: linear-gradient(180deg, #E0262D, #8A0B10); }
+#bSlide { left: calc(var(--sal) + 12px); opacity: .92; background: linear-gradient(180deg, #5B4A7A, #2E2142); }
+#bJump { right: calc(var(--sar) + 12px); opacity: .92; background: linear-gradient(180deg, #E0262D, #8A0B10); }
 #app.invert .ctrl { animation: wobble .3s ease-in-out infinite alternate; }
 @keyframes wobble { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
 
 /* ---------- Telas ---------- */
 .screen { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: flex-start;
-  padding: calc(var(--sat) + 14px) 16px calc(var(--sab) + 14px); z-index: 10; overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
+  padding: calc(var(--sat) + 12px) calc(var(--sar) + 16px) calc(var(--sab) + 12px) calc(var(--sal) + 16px); z-index: 10; overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
 .screen.on { display: flex; animation: fadeIn .25s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .dim { background: rgba(8,3,10,.7); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
@@ -95,21 +96,21 @@ button, input { font-family: inherit; }
 #splash small { margin-top: 8px; font-weight: 700; opacity: .7; }
 
 /* Título */
-#title { justify-content: space-between; }
-.t-top { display: flex; flex-direction: column; align-items: center; width: 100%; }
-#logoWrap { position: relative; width: min(94%, 360px); touch-action: none; margin-top: 2px; }
-#tBus { width: 100%; display: block; filter: drop-shadow(0 8px 10px rgba(0,0,0,.6)); }
+#title { flex-direction: row; justify-content: center; align-items: center; gap: 4vw; }
+.t-top { display: flex; flex-direction: column; align-items: center; flex: 0 1 460px; min-width: 0; }
+#logoWrap { position: relative; touch-action: none; margin-top: 2px; }
+#tBus { height: 30vh; max-height: 220px; width: auto; max-width: 100%; display: block; filter: drop-shadow(0 8px 10px rgba(0,0,0,.6)); }
 #logoRing { position: absolute; left: 50%; top: 50%; width: 70px; height: 70px; margin: -35px; border-radius: 50%; pointer-events: none;
   background: conic-gradient(var(--tacky) calc(var(--p, 0) * 1turn), transparent 0); opacity: 0;
   -webkit-mask: radial-gradient(circle, transparent 58%, #000 60%); mask: radial-gradient(circle, transparent 58%, #000 60%); }
-.logo-title { margin: 4px 0 0; font-family: var(--font); font-size: clamp(34px, 11vw, 48px); line-height: .95; text-align: center; color: var(--bone);
+.logo-title { margin: 4px 0 0; font-family: var(--font); font-size: clamp(28px, 9vh, 52px); line-height: .95; text-align: center; color: var(--bone);
   -webkit-text-stroke: 2px #000; paint-order: stroke fill; text-shadow: 0 4px 0 var(--blood), 0 8px 18px rgba(0,0,0,.6); text-transform: uppercase; }
 .logo-title span { display: block; font-size: .42em; color: var(--chrome); letter-spacing: 3px; -webkit-text-stroke: 1px #000; text-shadow: 0 2px 0 #000; margin-bottom: 4px; }
-.t-cast { display: flex; align-items: flex-end; justify-content: center; gap: 4px; margin-top: 10px; height: 24vh; max-height: 200px; }
+.t-cast { display: flex; align-items: flex-end; justify-content: center; gap: 4px; margin-top: 6px; height: 20vh; max-height: 170px; }
 .t-cast img { height: 100%; object-fit: contain; filter: drop-shadow(0 4px 4px rgba(0,0,0,.5)); }
 .t-cast img.p { height: 108%; }
 .tagline { margin: 6px 0 0; font-weight: 800; font-size: 15px; color: #FFD8C8; text-shadow: 0 2px 0 #000; text-align: center; }
-.menu { width: 100%; max-width: 330px; }
+.menu { flex: 0 1 320px; min-width: 240px; }
 .menu > .btn:first-child { min-height: 60px; font-size: 24px; }
 .played-msg { background: rgba(0,0,0,.55); border: 2px solid var(--tacky); border-radius: 12px; padding: 8px 10px; font-size: 14px; line-height: 1.35; color: #fff; margin-top: 10px; text-align: center; }
 .best { margin: 10px 0 0; text-align: center; font-weight: 800; font-size: 14px; color: #fff; text-shadow: 0 1px 0 #000; }
@@ -159,7 +160,31 @@ tr.me td { background: #FFF1B8; }
 tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
 .empty { padding: 18px; font-weight: 700; color: #7A6A6A; }
 
-#pause .card, #modal .card { max-width: 320px; }
+#pause .card, #modal .card { max-width: 340px; }
+#tutorial .card { max-width: 600px; }
+#gameover .card { max-width: 760px; }
+.tut-btns .btn { margin-top: 10px; }
+/* fim de jogo na horizontal: resultado à esquerda, apelido e botões à direita */
+@media (min-width: 600px) {
+  .go-card { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: center; }
+  .go-card .invite { margin-top: 0; }
+}
+@media (max-height: 420px) { .tut-hero { display: none; } }
+@media (max-height: 520px) {
+  .card { padding: 12px 14px; border-radius: 14px; }
+  .card h2 { font-size: 19px; }
+  .card p { font-size: 13.5px; margin: 4px 0; }
+  .btn { min-height: 44px; font-size: 16px; margin-top: 8px; }
+  .btn.small { min-height: 40px; font-size: 14px; }
+  .tut-hero { height: 60px; margin: 2px 0; }
+  .tips { font-size: 12.5px; margin-top: 4px; } .tips li { margin: 2px 0; }
+  .go-score { font-size: 38px; }
+  .stats { margin: 6px 0 2px; } .stats b { font-size: 14px; }
+  .invite { margin-top: 6px; padding: 6px 10px; }
+  .nick input { height: 44px; font-size: 19px; }
+  .rank-wrap { max-height: 46vh; }
+  .menu > .btn:first-child { min-height: 52px; font-size: 21px; }
+}
 #modal { z-index: 30; }
 #modal input { width: 100%; height: 46px; border-radius: 12px; border: 3px solid #000; font-size: 17px; padding: 0 10px; margin-top: 8px; }
 
@@ -182,13 +207,23 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
 .banned-list button { border: 0; background: #eee; border-radius: 6px; margin: 2px; padding: 4px 8px; font-weight: 700; cursor: pointer; min-height: 30px; }
 .txt { width: 100%; height: 46px; border-radius: 12px; border: 3px solid #000; font-size: 17px; padding: 0 10px; }
 
-#toast { position: absolute; left: 50%; top: 36%; transform: translate(-50%, -50%) scale(.6); opacity: 0; z-index: 8; pointer-events: none;
-  font-family: var(--font); font-size: 22px; color: #fff; -webkit-text-stroke: 2px #000; paint-order: stroke fill; text-shadow: 0 4px 0 var(--blood);
-  text-align: center; width: 92%; line-height: 1.15; transition: transform .25s cubic-bezier(.2,1.6,.4,1), opacity .25s; }
-#toast.on { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+/* Logo da banda + avisos: canto de cima à esquerda, atrás do herói (área que já passou, não atrapalha) */
+#pickup { position: absolute; left: calc(var(--sal) + 12px); top: calc(var(--sat) + 62px); width: min(250px, 30vw); z-index: 7; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 4px; }
+#logoPop { width: 100%; height: min(80px, 16vh); display: grid; place-items: center; opacity: 0; transform: scale(.6);
+  transition: transform .25s cubic-bezier(.2,1.6,.4,1), opacity .25s;
+  background: radial-gradient(ellipse at center, rgba(10,4,12,.72) 30%, rgba(10,4,12,0) 72%); }
+#logoPop.on { opacity: 1; transform: scale(1); }
+#logoPop img { max-width: 92%; max-height: 92%; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,.8)); }
+#logoPop b { font-family: Impact, var(--font); font-size: 30px; color: #fff; -webkit-text-stroke: 1.5px #000; paint-order: stroke fill; letter-spacing: 1px; text-transform: uppercase; text-align: center; line-height: 1; }
+#toast { opacity: 0; transform: scale(.6); font-family: var(--font); font-weight: 900; font-size: 15px; color: #fff; -webkit-text-stroke: 2px #000; paint-order: stroke fill;
+  text-shadow: 0 3px 0 var(--blood); text-align: center; width: 100%; line-height: 1.15; transition: transform .25s cubic-bezier(.2,1.6,.4,1), opacity .25s; }
+#toast.on { opacity: 1; transform: scale(1); }
+#toast.solo { position: absolute; left: 50%; top: 42%; width: min(92%, 520px); font-size: 20px; transform: translate(-50%, -50%) scale(.6); z-index: 31; pointer-events: none; }
+#toast.solo.on { transform: translate(-50%, -50%) scale(1); }
 #rotate { display: none; position: fixed; inset: 0; z-index: 99; background: var(--night); color: #fff; font-weight: 800;
   align-items: center; justify-content: center; text-align: center; padding: 24px; font-size: 18px; }
-@media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) { #rotate { display: flex; } }
+@media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
 @media (prefers-reduced-motion: reduce) { .screen.on, #app.invert .ctrl, #prox.hot b { animation: none; } }
 </style>
 </head>
@@ -200,20 +235,17 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
     <div class="hud-row">
       <div class="chip" id="hScore"><small>PTS</small><span id="hScoreV">0</span></div>
       <div class="chip"><span id="hDistV">0</span><small>m</small></div>
+      <div class="chip" id="hSpeed"><span id="hSpeedV">0</span><small>km/h</small></div>
+      <div class="chip" id="hShirt"><img id="hShirtI" alt=""><span id="hShirtN">Sem camisa</span><i id="hShirtBar"></i></div>
       <div class="hud-spacer"></div>
+      <div id="prox"><b>POSER</b><div id="proxBar"><i id="proxI"></i></div></div>
       <button class="hbtn" id="hMute" aria-label="Som ligado/desligado">🔊</button>
       <button class="hbtn" id="hPause" aria-label="Pausar">⏸</button>
     </div>
-    <div class="hud-row">
-      <div class="chip" id="hSpeed"><span id="hSpeedV">0</span><small>km/h</small></div>
-      <div class="chip" id="hShirt"><img id="hShirtI" alt=""><span id="hShirtN">Sem camisa</span><i id="hShirtBar"></i></div>
-      <div class="chip" id="hMult">x<span id="hMultV">1</span></div>
-    </div>
-    <div class="hud-row" id="prox"><b>POSER</b><div id="proxBar"><i id="proxI"></i></div></div>
   </div>
   <button class="ctrl" id="bSlide" aria-label="Deslizar (segure)"><span>▼</span><em style="font-style:normal" id="bSlideL">DESLIZAR</em></button>
   <button class="ctrl" id="bJump" aria-label="Pular (toque de novo no ar para o pulo duplo)"><span>▲</span><em style="font-style:normal" id="bJumpL">PULAR</em></button>
-  <div id="toast"></div>
+  <div id="pickup"><div id="logoPop"></div><div id="toast"></div></div>
 
   <!-- Splash -->
   <section class="screen on" id="splash">
@@ -251,14 +283,14 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
       <p id="tutText" style="font-weight:800"></p>
       <div class="keys"><div class="k1">▼ DESLIZAR<small>segure</small></div><div class="k2">▲ PULAR<small>toque · 2× = pulo duplo</small></div></div>
       <ul class="tips" id="tutTips"></ul>
-      <button class="btn" id="bStart">FUGIR!</button>
-      <button class="btn ghost small" id="bTutBack">Voltar</button>
+      <div class="row2 tut-btns"><button class="btn ghost" id="bTutBack">Voltar</button><button class="btn" id="bStart">FUGIR!</button></div>
     </div>
   </section>
 
   <!-- Fim de jogo -->
   <section class="screen dim" id="gameover">
-    <div class="card">
+    <div class="card go-card">
+      <div class="go-l">
       <h2 id="goTitle"></h2>
       <p id="goLine" style="font-size:13.5px"></p>
       <div class="go-score" id="goScore">0</div>
@@ -270,6 +302,8 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
         <div><b id="goTime">0:00</b><span>tempo</span></div>
         <div><b id="goSpeed">0</b><span>km/h máx.</span></div>
       </div>
+      </div>
+      <div class="go-r">
       <form id="saveForm" autocomplete="off" class="invite">
         <p>Grave seu apelido no ranking!</p>
         <label class="lbl" for="nickIn">Apelido (até 6 letras ou números, sem palavrão)</label>
@@ -282,6 +316,7 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
       <div class="row2">
         <button class="btn ghost small" id="bGoRank">🏆 Ranking</button>
         <button class="btn ghost small" id="bGoMenu">Menu</button>
+      </div>
       </div>
     </div>
   </section>
@@ -360,7 +395,7 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
     </div>
   </section>
 </div>
-<div id="rotate">📱 Gire o celular para a posição em pé para jogar.</div>
+<div id="rotate">📱 Gire o celular para a horizontal (deitado) para jogar.</div>
 
 <script src="config.js"></script>
 <script src="analytics.js"></script>
@@ -381,7 +416,7 @@ const fmt = n => Math.round(n).toLocaleString('pt-BR');
 const fmtTime = ms => { const s = Math.floor(ms / 1000); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const SHIRT_IDS = Object.keys(C.shirts);
-const EFFECT_CLASS = { win: 'good', slow: 'bad', break: 'good', dash: 'good', shield: 'good', voltage: 'good', collect: 'good', invert: 'weird' };
+const EFFECT_CLASS = { win: 'good', slow: 'bad', break: 'good', shield: 'good', voltage: 'good', collect: 'good', invert: 'weird' };
 
 /* Gerador de números com semente: a fase é sorteada com ele (os testes fixam a semente com __fp.seed). */
 let seedNext = null;
@@ -575,7 +610,6 @@ const Sound = (() => {
         case 'collect': [0, 4, 7, 12].forEach((n, i) => tone(t + i * .05, midi(76 + n), .14, { type: 'square', vol: .06 })); break;
         case 'bad': [0, -1, -2, -6].forEach((n, i) => tone(t + i * .14, midi(62 + n), .2, { type: 'sawtooth', vol: .07 })); break;
         case 'acoustic': [72, 76, 79, 84].forEach((n, i) => tone(t + i * .09, midi(n), .5, { type: 'triangle', vol: .12, att: .01 })); break;
-        case 'dash': hiss(t, .4, { vol: .16, freq: 900, type: 'bandpass', q: .4 }); tone(t, 200, .35, { type: 'sawtooth', vol: .06, to: 900 }); break;
         case 'shield': [0, 7, 12].forEach((n, i) => tone(t + i * .04, midi(67 + n), .5, { type: 'sine', vol: .12 })); break;
         case 'break': hiss(t, .3, { vol: .3, freq: 1500, type: 'bandpass', q: .5 }); tone(t, 110, .2, { vol: .35, to: 40 }); break;
         case 'blah': [0, 1].forEach(i => tone(t + i * .16, 150 - i * 20, .13, { type: 'square', vol: .05, to: 110 })); break;
@@ -657,6 +691,18 @@ async function loadAssets(onProgress) {
     img.src = 'assets/' + meta.file;
   })));
 }
+// logos oficiais das bandas (opcionais): assets/logos/<id>.webp com fundo transparente
+const LOGO = {};
+async function loadLogos() {
+  // assets/logos/logos.json lista as bandas que já têm arquivo (evita pedir arquivo que não existe)
+  let have = [];
+  try { const r = await fetch('assets/logos/logos.json', { cache: 'no-cache' }); if (r.ok) have = await r.json(); } catch (e) {}
+  return Promise.all(SHIRT_IDS.filter(id => have.includes(id)).map(id => new Promise(res => {
+    const img = new Image(); img.decoding = 'async';
+    img.onload = () => { LOGO[id] = img; res(); }; img.onerror = () => res();
+    img.src = 'assets/logos/' + id + '.webp';
+  })));
+}
 function frameCanvas(id, f = 0, scale = 1) {
   const a = IMG[id], w = Math.max(1, Math.round(a.frameW * scale)), h = Math.max(1, Math.round(a.frameH * scale));
   const c = cnv(w, h), g = c.getContext('2d'); g.imageSmoothingQuality = 'high';
@@ -670,19 +716,23 @@ function assetURL(id, f = 0, maxH = 256) {
 
 /* ======================= CANVAS / LAYOUT ======================= */
 const app = $('#app'), cv = $('#cv'), ctx = cv.getContext('2d');
-const V = { W: C.canvasWidth, H: C.canvasHeight, scale: 1, dpr: 1, floorY: C.canvasHeight - C.floorFromBottom };
+const V = { W: C.minWidth, H: C.canvasHeight, scale: 1, dpr: 1, floorY: C.canvasHeight - C.floorFromBottom };
 const CACHE = {};
 function safeBottom() { const p = document.createElement('div'); p.style.cssText = 'position:absolute;bottom:0;height:env(safe-area-inset-bottom,0px);'; app.appendChild(p); const h = p.offsetHeight; p.remove(); return h; }
 function resize() {
   const r = app.getBoundingClientRect();
   V.dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-  V.scale = r.width / C.canvasWidth;
-  V.W = C.canvasWidth; V.H = Math.max(500, r.height / V.scale);
+  // horizontal: altura lógica fixa; a largura acompanha a tela (janela estreita = zoom menor)
+  V.scale = Math.max(.1, Math.min(r.height / C.canvasHeight, r.width / C.minWidth));
+  V.W = r.width / V.scale; V.H = r.height / V.scale;
   V.floorY = Math.round(V.H - C.floorFromBottom - safeBottom() / V.scale);
   cv.width = Math.round(r.width * V.dpr); cv.height = Math.round(r.height * V.dpr);
   ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
   buildCache();
+  // celular em pé: aparece o aviso para girar e a partida pausa
+  if (isPortraitPhone() && G && G.state === 'play') pauseGame();
 }
+function isPortraitPhone() { return matchMedia('(orientation: portrait) and (pointer: coarse)').matches; }
 function buildCache() {
   if (!IMG.hero) return;
   const k = V.scale * V.dpr;
@@ -696,12 +746,21 @@ function buildCache() {
     CACHE['ob_' + type] = { c: frameCanvas('ob_' + type, 0, h * k / a.frameH), w, h };
   }
   for (const id of ['fx_aura', 'fx_dust', 'fx_bolt', 'fx_notes', 'fx_debris', 'fx_holy']) { const a = IMG[id]; CACHE[id] = frameCanvas(id, 0, Math.min(1, 120 * k / a.frameW)); }
-  // camisas: base lisa + nome da banda escrito (texto genérico, sem logo)
-  const SW = 46;
+  // camisas: base + logo oficial da banda no peito (sem o arquivo do logo, o nome vai escrito)
+  const SW = 50;
   for (const id of SHIRT_IDS) {
     const s = C.shirts[id], a = IMG['shirt_' + s.color] || IMG.shirt_black, sh = SW * a.frameH / a.frameW;
     const c = frameCanvas('shirt_' + s.color, 0, SW * k / a.frameW), g = c.getContext('2d');
     const light = s.color === 'white';
+    const lg = LOGO[id];
+    if (lg) {
+      const bw = c.width * .5, bh = c.height * .34, r = Math.min(bw / lg.naturalWidth, bh / lg.naturalHeight);
+      const w = lg.naturalWidth * r, h = lg.naturalHeight * r;
+      g.imageSmoothingQuality = 'high'; g.drawImage(lg, c.width / 2 - w / 2, c.height * .44 - h / 2, w, h);
+      if (s.sub) { const fs = c.height * .09; g.font = `900 ${fs}px Impact, "Arial Black", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = Math.max(1, fs * .25); g.strokeStyle = '#000'; g.strokeText(s.sub, c.width / 2, c.height * .68); g.fillStyle = '#FFD21F'; g.fillText(s.sub, c.width / 2, c.height * .68); }
+      CACHE['shirt_' + id] = { c, w: SW, h: sh };
+      continue;
+    }
     const name = s.name.toUpperCase(), words = name.split(' ');
     const lines = words.length > 1 && name.length > 8 ? [words.slice(0, Math.ceil(words.length / 2)).join(' '), words.slice(Math.ceil(words.length / 2)).join(' ')] : [name];
     if (s.sub) lines.push(s.sub);
@@ -764,10 +823,10 @@ let G = null;
 function freshState(state = 'menu') {
   return {
     state, t: 0, elapsed: 0, introT: 0, camX: 0, S: C.speed.base, step: 0, maxStep: 0, maxS: C.speed.base,
-    hx: V.W * H.homeX, hy: V.floorY, vy: 0, onGround: true, jumps: 0, coyote: 0, buffer: 0, sliding: false, wasSliding: false,
+    hx: H.homeX, hy: V.floorY, vy: 0, onGround: true, jumps: 0, coyote: 0, buffer: 0, sliding: false, wasSliding: false,
     stumble: 0, pitT: 0, pit: null, blocked: false, runPhase: 0,
-    fx: { slow: 0, break: 0, dash: 0, voltage: 0, invert: 0 }, shield: false,
-    mult: 1, score: 0, dist: 0, startX: V.W * H.homeX, shirts: 0, hits: 0, falls: 0, picked: {},
+    fx: { slow: 0, break: 0, voltage: 0, invert: 0 }, shield: false,
+    score: 0, dist: 0, startX: H.homeX, shirts: 0, hits: 0, falls: 0, picked: {},
     equipped: null, equipT: 0, equipMax: 1,
     obs: [], pits: [], plats: [], items: [], parts: [], texts: [], genX: 0, sacredOK: 0,
     poser: { lineT: 2.5, line: '', lineLife: 0, x: PZ.x, lean: 0, walk: 0, fly: null },
@@ -781,7 +840,10 @@ const goalFor = s => { let g = C.goals[0]; for (const x of C.goals) if (s >= x.m
 const heroScreenX = () => G.hx - G.camX;
 const reachLine = () => PZ.reach;
 // 0 = longe, 1 = alcançou
-const proximity = () => clamp(1 - (heroScreenX() - H.w / 2 - reachLine()) / (V.W * H.homeX - H.w / 2 - reachLine()), 0, 1);
+const proximity = () => clamp(1 - (heroScreenX() - H.w / 2 - reachLine()) / (H.homeX - H.w / 2 - reachLine()), 0, 1);
+// pontuação: 100 a cada 10 s de fuga + 20 por camisa
+const scoreNow = () => Math.floor(G.elapsed / 1000 / C.timeEvery) * C.timePoints + G.shirts * C.shirtPoints;
+const INTRO_DOOR = 210; // onde fica a porta do ônibus na tela (px lógicos)
 
 /* ======================= FASE (geração procedural) ======================= */
 function groundAt(x) { for (const p of G.pits) if (x > p.x0 && x < p.x1) return false; return true; }
@@ -843,12 +905,12 @@ function newGame() {
   markPlayed();
   if (seedNext != null) { R = mulberry32(seedNext); seedNext = null; } else R = mulberry32((Date.now() ^ (Math.random() * 1e9)) >>> 0);
   G = freshState('intro');
-  const cb = CACHE.bus, doorWorld = V.W * .34;
+  const cb = CACHE.bus, doorWorld = INTRO_DOOR;
   G.busX = doorWorld - cb.w * cb.door;
-  G.hx = doorWorld; G.hy = V.floorY - 22; G.startX = V.W * H.homeX;
-  G.genX = V.W * H.homeX + C.level.startClear;
+  G.hx = doorWorld; G.hy = V.floorY - 22; G.startX = H.homeX;
+  G.genX = H.homeX + C.level.startClear;
   G.poser.x = -60;
-  pressQ = releaseQ = 0; releaseAll(); showScreen(null); setHud(true); updateHud(true);
+  pressQ = releaseQ = 0; releaseAll(); hideLogo(); showScreen(null); setHud(true); updateHud(true);
   Sound.unlock(); Sound.music(true); Sound.soft(false); Sound.musicLevel(.7); Sound.sfx('door');
   RA.start({ nick: player().nick || '' });
 }
@@ -878,20 +940,24 @@ function update(dt) {
   updateHero(dt);
   updatePoser(dt);
   generate();
-  // pontos por distância (× multiplicador Trve Metal; × High Voltage)
+  // distância (só informativa) e pontos: 100 a cada 10 s + 20 por camisa
   const d = Math.max(0, (G.hx - G.startX) / C.pxPerMeter);
-  if (d > G.dist) { G.score += (d - G.dist) * C.pointsPerMeter * G.mult * (G.fx.voltage > 0 ? C.effects.voltage.scoreMult : 1); G.dist = d; }
+  if (d > G.dist) G.dist = d;
+  const sc = scoreNow();
+  const ticks = Math.floor(G.elapsed / 1000 / C.timeEvery);
+  if (ticks > (G.timeTicks || 0)) { G.timeTicks = ticks; G.texts.push({ x: G.hx, y: G.hy - 104, txt: '+' + C.timePoints, life: 1.1, col: '#FFD21F', big: true }); }
+  G.score = sc;
   RA.progress(Math.floor(G.score), G.elapsed / 1000);
   if (G.state === 'play' && heroScreenX() - H.w / 2 <= reachLine()) endGame('poser');
   updateHud();
 }
 function updateIntro(dt) {
-  const D = C.intro.duration, t = (G.introT += dt), fy = V.floorY, door = V.W * .34;
+  const D = C.intro.duration, t = (G.introT += dt), fy = V.floorY, door = INTRO_DOOR;
   // 0–0,35 s: ônibus chega freando | 0,35–0,8 s: aparece na porta | 0,8–1,2 s: pula do degrau | 1,2–2 s: começa a correr
   if (t < .8) { G.hx = door; G.hy = fy - 22; }
   else if (t < 1.2) { const k = (t - .8) / .4; G.hx = door + 26 * k; G.hy = fy - 22 + 22 * k - Math.sin(k * Math.PI) * 34; if (k > .95 && !G.landed) { G.landed = true; Sound.sfx('land'); dust(G.hx, fy); } }
-  else { const k = (t - 1.2) / (D - 1.2); G.hy = fy; const sp = C.speed.base * k * k; G.camX += sp * dt; G.hx += (sp + (V.W * H.homeX - (G.hx - G.camX)) * 2.2) * dt; G.runPhase += dt * 10 * Math.max(.4, k); }
-  if (t > 1.15) { G.poser.x = Math.min(PZ.x, G.poser.x + 140 * dt); G.poser.walk += dt * 6; }
+  else { const k = (t - 1.2) / (D - 1.2); G.hy = fy; const sp = C.speed.base * k * k; G.camX += sp * dt; G.hx += (sp + (H.homeX - (G.hx - G.camX)) * 2.2) * dt; G.runPhase += dt * 10 * Math.max(.4, k); }
+  if (t > 1.15) { G.poser.x = Math.min(PZ.x, G.poser.x + 260 * dt); G.poser.walk += dt * 6; }
   if (t > 1.3 && !G.poser.line) { G.poser.line = C.intro.poserShout; G.poser.lineLife = 1.6; Sound.sfx('blah'); }
   if (G.poser.lineLife > 0) G.poser.lineLife -= dt;
   if (t >= D) {
@@ -903,7 +969,7 @@ function updateIntro(dt) {
 }
 function setEffect(name, time) { G.fx[name] = Math.max(G.fx[name], time); }
 function updateHero(dt) {
-  const fy = V.floorY, scrX = heroScreenX(), home = V.W * H.homeX;
+  const fy = V.floorY, scrX = heroScreenX(), home = H.homeX;
   // --- pulo (com buffer e coyote time) ---
   while (pressQ > 0) { pressQ--; G.buffer = H.jumpBuffer; }
   while (releaseQ > 0) { releaseQ--; if (G.vy < 0) G.vy *= H.jumpCut; }
@@ -923,7 +989,6 @@ function updateHero(dt) {
   let v;
   const slowF = G.fx.slow > 0 ? C.effects.slow.factor : 1;
   if (G.stumble > 0) { G.stumble -= dt; v = G.S * H.stumbleSpeed; }
-  else if (G.fx.dash > 0) v = scrX < V.W * C.effects.dash.maxX ? G.S * C.effects.dash.mult : G.S;
   else {
     const vmax = G.S * H.catchup * slowF;
     v = scrX < home - 1 ? vmax : scrX > home + 1 ? G.S * .9 : G.S;
@@ -978,7 +1043,6 @@ function updateHero(dt) {
       o.hit = true;
       if (G.fx.break > 0) smash(o);
       else if (G.shield) { smash(o); breakShield(); }
-      else if (G.fx.dash > 0) { /* passa voando */ }
       else { G.stumble = H.stumbleTime; G.hits++; G.shake = 5; Sound.sfx(o.kind === 'overhead' ? 'bonk' : 'trip'); dust(G.hx, fy); G.texts.push({ x: G.hx, y: G.hy - 70, txt: o.kind === 'overhead' ? 'TOINC!' : 'OPA!', life: .7, col: '#FFB3A8' }); }
     }
   }
@@ -988,8 +1052,7 @@ function updateHero(dt) {
   const cy = G.hy - (G.sliding ? H.slideH : H.h) / 2, ch = (G.sliding ? H.slideH : H.h) / 2 + 6;
   for (const it of G.items) if (!it.dead && Math.abs(it.x - G.hx) < it.r + H.w / 2 && Math.abs(it.y - cy) < it.r + ch) collect(it);
   // animação da corrida
-  G.runPhase += dt * (G.stumble > 0 ? 5 : 12 * Math.sqrt(G.S / C.speed.base) * (G.fx.dash > 0 ? 1.6 : 1));
-  if (G.fx.dash > 0 && Math.random() < .5) G.parts.push({ type: 'ghost', x: G.hx, y: G.hy, f: frameIdx(), life: .18, max: .18 });
+  G.runPhase += dt * (G.stumble > 0 ? 5 : 12 * Math.sqrt(G.S / C.speed.base));
 }
 function breakShield() { G.shield = false; Sound.sfx('shield'); G.flash = .5; G.texts.push({ x: G.hx, y: G.hy - 80, txt: 'AURA!', life: .8, col: '#C9A6FF' }); }
 function smash(o) {
@@ -997,31 +1060,30 @@ function smash(o) {
   const cx = o.x + o.w / 2, cy = (o.kind === 'overhead' ? V.floorY - o.gap : V.floorY) - o.h / 2;
   fxSpr('fx_debris', cx, cy, .5, 1.1);
   for (let i = 0; i < 14; i++) { const a = rnd(-Math.PI, 0), s = rnd(120, 320); G.parts.push({ type: 'dot', x: cx, y: cy, vx: Math.cos(a) * s + G.S * .4, vy: Math.sin(a) * s, g: 900, life: rnd(.4, .8), max: .8, col: pick(['#222', '#666', '#8A5A2A', '#B0151B']), rot: 0, vr: rnd(-9, 9), w: rnd(4, 8), h: rnd(3, 6) }); }
-  G.score += 15 * G.mult; G.texts.push({ x: cx, y: cy - 20, txt: '+' + Math.round(15 * G.mult), life: .7, col: '#fff' });
 }
 function collect(it) {
   it.dead = true; const s = C.shirts[it.id], E = C.effects[s.effect];
   G.shirts++; G.picked[it.id] = (G.picked[it.id] || 0) + 1;
-  let pts = s.points * G.mult;
-  let label = s.name.toUpperCase() + ': ' + E.label;
+  const pts = C.shirtPoints; G.score = scoreNow();
+  showLogo(it.id);
+  G.texts.push({ x: it.x, y: it.y - 10, txt: '+' + pts, life: .9, col: s.effect === 'slow' || s.effect === 'invert' ? '#fff' : '#FFD21F', big: s.effect === 'win' });
+  const label = E.label;
   switch (s.effect) {
-    case 'win': G.score += pts; G.texts.push({ x: it.x, y: it.y - 10, txt: '+' + fmt(pts), life: 1.2, col: '#FFE680', big: true }); return victory(it);
+    case 'win': return victory(it);
     case 'slow': setEffect('slow', E.time); Sound.sfx('bad'); break;
     case 'break': setEffect('break', E.time); Sound.sfx('shirt'); break;
-    case 'dash': setEffect('dash', E.time); G.stumble = 0; Sound.sfx('dash'); break;
     case 'shield': G.shield = true; Sound.sfx('shield'); break;
     case 'voltage': setEffect('voltage', E.time); Sound.sfx('shirt'); fxSpr('fx_bolt', G.hx, G.hy - 40, .5, .9); break;
-    case 'collect': G.mult = Math.min(E.multMax, +(G.mult + E.multStep).toFixed(2)); label = s.name.toUpperCase() + ': TRVE METAL x' + String(G.mult).replace('.', ','); Sound.sfx('collect'); break;
+    case 'collect': Sound.sfx('collect'); break;
     case 'invert': setEffect('invert', E.time); Sound.sfx('acoustic'); Sound.soft(true); app.classList.add('invert'); releaseAll(); setCtrlLabels(); fxSpr('fx_notes', G.hx, G.hy - 80, E.time, .7, true); break;
   }
-  G.score += pts;
   G.equipped = it.id; G.equipMax = E.time || 2; G.equipT = G.equipMax;
-  if (pts) G.texts.push({ x: it.x, y: it.y - 10, txt: '+' + fmt(pts), life: .9, col: s.effect === 'collect' ? '#FFD21F' : '#fff' });
-  toast(label, 1300);
+  toast(label, C.logoTime * 1000);
   RA.progress(Math.floor(G.score), G.elapsed / 1000);
 }
 function updatePoser(dt) {
   const P = G.poser; P.walk += dt * 6 * Math.sqrt(G.S / C.speed.base);
+  if (P.x < PZ.x) P.x = Math.min(PZ.x, P.x + 260 * dt);
   P.lean = lerp(P.lean, proximity(), dt * 4);
   if (P.lineLife > 0) P.lineLife -= dt;
   else if ((P.lineT -= dt) <= 0) {
@@ -1045,14 +1107,14 @@ function victory(it) {
 }
 function endGame(reason) {
   if (G.state !== 'play') return;
-  G.state = 'over'; G.endReason = reason; G.overT = 0; releaseAll(); Sound.soft(false); app.classList.remove('invert');
+  G.state = 'over'; G.endReason = reason; G.overT = 0; releaseAll(); if (reason !== 'vitoria') hideLogo(); Sound.soft(false); app.classList.remove('invert');
   if (reason === 'poser') { Sound.sfx('caught'); Sound.musicLevel(.3); G.poser.line = PZ.caughtLine; G.poser.lineLife = 99; }
   if (reason === 'encerrou') Sound.musicLevel(.3);
-  G.score = Math.round(G.score);
+  G.score = scoreNow();
   const title = reason === 'vitoria' ? C.winTitle : goalFor(G.score);
   const r = { score: G.score, level: title, distance: Math.round(G.dist), duration: Math.round(G.elapsed / 1000), win: reason === 'vitoria' };
   LB.record(r);
-  RA.end({ score: G.score, sec: G.elapsed / 1000, level: G.maxStep + 1, title, reason, items: G.shirts, misses: G.hits + G.falls, maxCombo: Math.round(G.mult * 100) / 100, nick: player().nick || '' });
+  RA.end({ score: G.score, sec: G.elapsed / 1000, level: G.maxStep + 1, title, reason, items: G.shirts, misses: G.hits + G.falls, maxCombo: G.shirts, nick: player().nick || '' });
   const pl = player(); G.newRecord = G.score > (pl.best || 0) && G.score > 0;
   if (G.newRecord) { pl.best = G.score; store.set(K.player, pl); }
   setTimeout(() => { if (G.state === 'over') showGameOver(); }, reason === 'vitoria' ? 2600 : reason === 'poser' ? 2000 : 300);
@@ -1114,9 +1176,6 @@ function render() {
     ctx.save(); ctx.translate(x, y); ctx.rotate(Math.sin(G.t * 3 + it.t) * .12); ctx.drawImage(s.c, -s.w / 2, -s.h / 2, s.w, s.h); ctx.restore();
   }
   if (G.state !== 'menu') drawPoser();
-  // fantasmas do dash
-  for (const p of G.parts) if (p.type === 'ghost') { ctx.globalAlpha = p.life / p.max * .4; const hc = CACHE.hero, f = hc.fr[p.f]; ctx.drawImage(f, p.x - G.camX - hc.w / 2 - 6, p.y - hc.h + 2, hc.w, hc.h); }
-  ctx.globalAlpha = 1;
   if (G.state !== 'menu') drawHero();
   // partículas
   for (const p of G.parts) {
@@ -1138,8 +1197,6 @@ function render() {
     ctx.lineWidth = 5; ctx.strokeStyle = '#000'; ctx.strokeText(t.txt, x, t.y); ctx.fillStyle = t.col; ctx.fillText(t.txt, x, t.y);
   }
   ctx.globalAlpha = 1;
-  // linhas de velocidade no dash
-  if (G.fx.dash > 0) { ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2; for (let i = 0; i < 8; i++) { const y = (i * 97 + G.t * 900) % (fy - 40) + 30; const x = (i * 131 + G.t * 1400) % (W + 200) - 100; ctx.beginPath(); ctx.moveTo(W - x, y); ctx.lineTo(W - x - 60, y); ctx.stroke(); } }
   // veneno (Mayhem): tela esverdeada
   if (G.fx.slow > 0) { ctx.globalAlpha = .12 + .06 * Math.sin(G.t * 8); ctx.fillStyle = '#5BD23A'; ctx.fillRect(-10, -10, W + 20, V.H + 20); ctx.globalAlpha = 1; }
   if (G.flash > 0) { ctx.globalAlpha = Math.min(.8, G.flash); ctx.fillStyle = G.win ? '#FFF4C8' : '#E8D8FF'; ctx.fillRect(-10, -10, W + 20, V.H + 20); ctx.globalAlpha = 1; }
@@ -1242,13 +1299,12 @@ function updateHud(force) {
   if (force) for (const k in hudCache) delete hudCache[k];
   setTxt('#hScoreV', fmt(G.score));
   setTxt('#hDistV', fmt(G.dist));
-  setTxt('#hSpeedV', String(kmh(G.state === 'play' ? G.S * (G.fx.dash > 0 ? C.effects.dash.mult : 1) : C.speed.base)));
-  setTxt('#hMultV', String(G.mult).replace('.', ','));
+  setTxt('#hSpeedV', String(kmh(G.state === 'play' ? G.S : C.speed.base)));
   const id = G.equipped || (G.shield ? 'sabbath' : null);
   if (hudCache.shirt !== id) {
     hudCache.shirt = id;
     const el = $('#hShirt'); el.className = 'chip' + (id ? ' ' + EFFECT_CLASS[C.shirts[id].effect] : '');
-    $('#hShirtI').src = id ? CACHE['shirt_' + id].c.toDataURL() : ''; $('#hShirtI').style.visibility = id ? '' : 'hidden';
+    $('#hShirtI').src = id ? (LOGO[id] ? LOGO[id].src : CACHE['shirt_' + id].c.toDataURL()) : ''; $('#hShirtI').style.visibility = id ? '' : 'hidden';
     $('#hShirtN').textContent = id ? C.shirts[id].name : 'Sem camisa';
   }
   const bar = G.equipT > 0 ? G.equipT / G.equipMax : 0;
@@ -1257,7 +1313,20 @@ function updateHud(force) {
   const pr = Math.round(proximity() * 100) + '%'; if (hudCache.pr !== pr) { hudCache.pr = pr; $('#proxI').style.width = pr; $('#prox').classList.toggle('hot', proximity() > .7); }
 }
 let toastT = 0;
-function toast(msg, ms = 1000) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), ms); }
+function toast(msg, ms = 1000) {
+  const t = $('#toast'), inGame = G && (G.state === 'play' || G.state === 'intro');
+  // durante a partida o aviso fica no canto (com o logo); fora dela, no meio da tela
+  if (inGame) { if (t.parentNode.id !== 'pickup') $('#pickup').appendChild(t); t.classList.remove('solo'); }
+  else { if (t.parentNode !== app) app.appendChild(t); t.classList.add('solo'); }
+  t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), ms);
+}
+let logoT = 0;
+function showLogo(id) {
+  const el = $('#logoPop'), s = C.shirts[id];
+  el.innerHTML = LOGO[id] ? `<img src="${LOGO[id].src}" alt="${esc(s.name)}">` : `<b>${esc(s.name)}</b>`;
+  el.classList.add('on'); clearTimeout(logoT); logoT = setTimeout(() => el.classList.remove('on'), C.logoTime * 1000);
+}
+function hideLogo() { clearTimeout(logoT); $('#logoPop').classList.remove('on'); }
 function toggleMute() { const m = Sound.toggle(); $('#hMute').textContent = m ? '🔇' : '🔊'; $('#bPMute').textContent = m ? 'Ligar som' : 'Desligar som'; }
 
 /* ======================= TELAS ======================= */
@@ -1286,7 +1355,7 @@ function buildStatic() {
   $('#rkTop').textContent = C.publicTop; $('#admMax').textContent = C.leaderboardMax;
 }
 function showGameOver() {
-  setHud(false); showScreen('gameover');
+  setHud(false); hideLogo(); showScreen('gameover');
   const win = G.endReason === 'vitoria';
   $('#goTitle').textContent = win ? '🤘 ' + C.winTitle + ' 🤘' : G.endReason === 'poser' ? T.caughtTitle : T.quitTitle;
   $('#goLine').textContent = win ? T.winLine : G.endReason === 'poser' ? pick(T.caughtLines) : '';
@@ -1452,7 +1521,7 @@ function frame(now) {
 (async function boot() {
   RA.init(C); TK.init(C);
   const t0 = performance.now();
-  await loadAssets(p => { $('#loadBar').style.width = Math.round(p * 100) + '%'; });
+  await Promise.all([loadAssets(p => { $('#loadBar').style.width = Math.round(p * 100) + '%'; }), loadLogos()]);
   resize(); buildStatic(); setCtrlLabels();
   $('#hMute').textContent = Sound.muted ? '🔇' : '🔊'; $('#bPMute').textContent = Sound.muted ? 'Ligar som' : 'Desligar som';
   requestAnimationFrame(t => { last = t; frame(t); });

@@ -1,10 +1,11 @@
-# Máquina do Mal em: Fuga do Poser (advergame mobile)
+# Máquina do Mal em: Fuga do Poser (advergame mobile, na horizontal)
 
 Auto-runner de perseguição em 2D para a **Máquina do Mal**. Um headbanger de corpsepaint desce do ônibus da banda e precisa fugir
 do **Poser** (camisa com rosa, bermuda cargo, óculos na nuca), que vem andando pelo canto esquerdo da tela soltando pérolas em
 balões de fala. A tela corre sozinha e acelera a cada 30 s. Se o herói tropeçar, ficar preso num amplificador ou cair num buraco
 e o Poser alcançar, acabou. As camisas de banda espalhadas pelo caminho dão poderes, atrapalham ou dão pontos. A do Judas Priest
-(Painkiller) vence o jogo.
+(Painkiller) vence o jogo. **O jogo é jogado com o celular deitado (horizontal)**; em pé aparece o aviso para girar e a
+partida pausa.
 
 * 100% client-side: HTML + JS puro, Canvas 2D, sem dependências. A única requisição externa é a coleta de dados (opcional).
 * Mesmo modo de operar dos outros jogos: **uma partida por abertura do link** (sem "jogar de novo"), pop-up de tutorial antes de
@@ -14,6 +15,7 @@ e o Poser alcançar, acabou. As camisas de banda espalhadas pelo caminho dão po
 index.html              jogo completo (loop, física, fase procedural, telas, HUD, admin, áudio sintetizado)
 config.js               TODA a configuração (textos, falas do Poser, camisas, velocidades, obstáculos, senhas)
 assets/                 sprites PNG/JPG + manifest.json + ícones do PWA
+assets/logos/           logos oficiais das bandas (<id>.webp, fundo transparente) + logos.json com a lista dos que existem
 assets/_raw/            imagens originais geradas no Higgsfield (fonte para reprocessar)
 tools/process_assets.py converte assets/_raw -> assets/*.png + assets/manifest.json
 analytics.js, ticket.js cópias idênticas dos arquivos da raiz (coleta de dados e QR code de uso único)
@@ -63,26 +65,29 @@ O primeiro perigo de toda partida é sempre um cabo (tropeço), nunca um buraco.
 na velocidade atual (`level.reaction`).
 
 ### Camisas
-O nome da banda é **escrito em texto genérico** sobre uma camisa lisa (nenhum logo oficial é reproduzido).
+Cada camisa leva o **logo oficial da banda** no peito, e quando o jogador pega uma, o logo aparece grande no canto de cima à
+esquerda, atrás do herói (área que já passou, não atrapalha), junto com o efeito, por 2,2 s (`logoTime`).
+Os logos ficam em `assets/logos/<id>.webp` (fundo transparente) e precisam estar listados em `assets/logos/logos.json`
+(ex.: `["slayer", "mayhem"]`). Banda sem arquivo aparece com o nome escrito no lugar.
 
 | Camisa | Efeito |
 |---|---|
-| **Judas Priest — Painkiller** | Vitória: solo triunfal, o Poser sai voando e o jogo termina com "Metal God Ascended" (+1.000 × multiplicador). Só aparece depois de 90 s, raramente, num lugar alto (pulo duplo) |
+| **Judas Priest — Painkiller** | Vitória: solo triunfal, o Poser sai voando e o jogo termina com "Metal God Ascended" (+20 como qualquer camisa). Só aparece depois de 90 s, raramente, num lugar alto (pulo duplo) |
 | Mayhem ("envenenada") | Lentidão por 4 s: o herói não consegue acompanhar a tela e o Poser se aproxima (≈ -30%) |
 | Meshuggah | "Ritmo polirrítmico": quebra qualquer obstáculo à frente por 5 s |
-| Sodom / Sepultura / Slayer | Dash brutal por 1,3 s: 2× a velocidade, abre distância, passa por cima de tropeços |
 | Black Sabbath | Aura protetora: ignora (e destrói) o próximo impacto |
-| AC/DC / Aerosmith / Deep Purple | High Voltage Jump por 8 s: pulo 16% mais alto e pontos por metro × 1,5 (+60) |
-| Venom / Saxon / Opeth / Mastodon / Megadeth | +150 pontos e +0,25 no multiplicador **Trve Metal** (até ×4) |
+| AC/DC / Aerosmith / Deep Purple | High Voltage Jump por 8 s: pulo 16% mais alto |
+| Sodom / Sepultura / Slayer / Venom / Saxon / Opeth / Mastodon / Megadeth | "Trve Metal": camisa de coleção, sem efeito |
 | Beatles / Oasis | Vinheta acústica: a trilha vira violão e os botões PULAR/DESLIZAR trocam de função por 2 s |
 
 ### Pontos
-1 ponto por metro × multiplicador Trve Metal (× 1,5 com High Voltage) + pontos das camisas × multiplicador + 15 por obstáculo quebrado.
-Títulos (`goals`): Poser em Treinamento (0), Headbanger de Respeito (1.000), Guerreiro do Corpsepaint (3.000), Lenda do Underground (8.000).
+**100 pontos a cada 10 s de fuga + 20 por camisa** (qualquer camisa, boa ou ruim). Ajuste em `timePoints`, `timeEvery` e `shirtPoints`.
+Títulos (`goals`): Poser em Treinamento (0), Headbanger de Respeito (400), Guerreiro do Corpsepaint (1.000), Lenda do Underground (2.000).
 Quem pega a Painkiller ganha o título **Metal God Ascended**.
 
 ### HUD
-Pontos, metros, velocímetro (km/h), camisa equipada (com a barra do tempo restante do efeito), multiplicador Trve Metal e o medidor de proximidade do Poser.
+Pontos, metros, velocímetro (km/h), camisa equipada (com a barra do tempo restante do efeito), e o medidor de proximidade do Poser, tudo numa linha só no topo.
+Botões: DESLIZAR no canto de baixo à esquerda (antes do Poser) e PULAR no canto de baixo à direita.
 
 ---
 
@@ -160,7 +165,7 @@ sintetizados no navegador (WebAudio).
 * `analytics.game = 'fuga-do-poser'`, mesmo endpoint `/exec` dos outros jogos. Eventos: `start` (no começo da intro), `milestone`
   (pontos e cada degrau de velocidade como "Fase"), `end` e `save`.
 * Coluna `motivo_fim`: `poser` (o Poser alcançou), `vitoria` (Judas Priest) ou `encerrou`. `itens` = camisas pegas,
-  `erros` = batidas + quedas, `combo_max` = multiplicador Trve Metal final, `nivel` = fase de velocidade.
+  `erros` = batidas + quedas, `combo_max` = camisas pegas, `nivel` = fase de velocidade.
 * **O Apps Script precisa de nova versão** para aceitar o jogo novo (o `Code.gs` descarta ids desconhecidos):
   cole o `analytics/apps-script/Code.gs` atualizado › salve › **Implantar › Gerenciar implantações › ✏️ › Versão: Nova versão ›
   Implantar** (não "Nova implantação", para o URL `/exec` continuar o mesmo). Depois rode a função `setup` uma vez para a aba
@@ -180,20 +185,21 @@ token `teste`). Para repetir, abra o console: `__fp` expõe `seed(n)`, `newGame(
 | # | Cenário | Resultado |
 |---|---|---|
 | 1 | Intro | Dura 2,0 s: ônibus chega, herói na porta, pulo do degrau, corrida; o Poser entra com o balão ✔ |
-| 2 | Sem tocar em nada | O primeiro perigo é um cabo; 4 tropeços e o Poser alcança aos 8 s (`motivo_fim = poser`) ✔ |
+| 2 | Sem tocar em nada | O primeiro perigo é um cabo; o Poser alcança depois de alguns tropeços (`motivo_fim = poser`) ✔ |
 | 3 | Amplificador sem pular / pulando | Sem pular, trava e o Poser alcança; pulando, 0 batidas ✔ |
 | 4 | Treliça em pé / deslizando | 1 batida em pé, 0 deslizando ✔ |
 | 5 | Buraco | Cai, sai do outro lado e a partida continua; pulando, 0 quedas ✔ |
 | 6 | Alturas de pulo | simples 141 px, duplo 249 px, curto (soltar cedo) 67 px, High Voltage 191 px ✔ |
-| 7 | Camisas | Mayhem: 4 s de lentidão, perde ~40 px a cada 3,5 s. Meshuggah: quebrou amplificador, treliça e cabo, 0 batidas. Slayer: abre distância e volta à posição. Black Sabbath: absorveu o amplificador e a aura sumiu. Venom: ×1,25; Opeth + Saxon: ×1,5. Beatles: botões trocados ("DESLIZAR?"/"PULAR?") por 2 s e voltam. Judas Priest: vitória, Poser voando, título Metal God Ascended ✔ |
+| 7 | Camisas | Mayhem: 4 s de lentidão, perde ~40 px a cada 3,5 s. Meshuggah: quebrou amplificador, treliça e cabo, 0 batidas. Slayer: +20 e o logo aparece no canto. Black Sabbath: absorveu o amplificador e a aura sumiu. Beatles: botões trocados ("DESLIZAR?"/"PULAR?") por 2 s e voltam. Judas Priest: vitória, Poser voando, título Metal God Ascended ✔ |
 | 8 | Aceleração | 220 → 246 (30 s) → 276 (60 s) → teto 440 px/s ✔ |
-| 9 | Bot simples (6 sementes) | Partidas de 19 s a 171 s, 4 a 73 camisas; vitória pela Painkiller em parte delas ✔ (com a raridade atual, menos frequente) |
+| 9 | Bot simples (6 sementes, 844×390) | Partidas de 19 s a 106 s, 3 a 43 camisas, 160 a 1.860 pontos ✔ |
+| 9b | Pontuação | 4,3 s + 2 camisas = 40; 10 s = +100 com o "+100" sobre o herói; Painkiller = +20 e vitória ✔ |
 | 10 | Apelidos | vazio, `ABCDEFG`, `JOÃO`, `A B`, `<x>`, `P3N1S`, `CU`, `b0sta`, `NAZ1` recusados; `TRVE` gravado como #1 ✔ |
 | 11 | Uma partida por abertura | Sem "jogar de novo"; depois da partida o título mostra "✔ PARTIDA JÁ JOGADA", inclusive após recarregar ✔ |
 | 12 | Dados | `visit`, `start`, `end` e `save` chegam no servidor de teste com `jogo = fuga-do-poser`, `motivo_fim`, título e posição no ranking ✔ |
 | 13 | QR code de uso único | Mesmo link em dois navegadores: A toca em JOGAR e vai para o tutorial; B vê "QR code já usado" ✔ |
-| 14 | Responsividade | 360×740, 430×932 e 480×860: sem rolagem horizontal; título, tutorial, fim, gravado e ranking cabem na tela; console limpo ✔ |
-| 15 | Desempenho | 120 quadros de update + render em 430×932 com DPR 2: ~0,2 ms por quadro no computador de teste ✔ |
+| 14 | Responsividade (horizontal) | 740×360, 844×390, 932×430, 860×480 e 1280×720: sem rolagem horizontal; título em duas colunas, tutorial e fim de jogo (resultado à esquerda, apelido à direita) cabem na tela; console limpo ✔ |
+| 14b | Celular em pé | 390×844: aparece "Gire o celular para a horizontal" e a partida pausa ✔ |
 
 **Não testado em celular físico** (iPhone e Android médio): falta confirmar 60 fps, áudio depois do primeiro toque, safe-area e
 multitoque (segurar DESLIZAR e tocar PULAR ao mesmo tempo).
@@ -204,8 +210,8 @@ multitoque (segurar DESLIZAR e tocar PULAR ao mesmo tempo).
 
 1. **Marcas de terceiros — conferir com o jurídico antes de circular.** O jogo usa nomes de bandas reais (Judas Priest, Mayhem,
    Meshuggah, Sodom, Sepultura, Slayer, Black Sabbath, AC/DC, Aerosmith, Deep Purple, Venom, Saxon, Opeth, Mastodon, Megadeth,
-   Beatles, Oasis) escritos em texto genérico nas camisas, e as falas do Poser citam Slipknot, Rock in Rio, Iron Maiden e
-   Sweet Child O' Mine. Nenhum logo ou arte oficial foi reproduzido. A camisa do Poser tem só uma rosa genérica, sem o nome do
+   Beatles, Oasis) **com os logos oficiais** nas camisas e na tela (decisão do Arthur em 05/11/2026, ciente do risco de marca
+   num jogo publicitário público), e as falas do Poser citam Slipknot, Rock in Rio, Iron Maiden e Sweet Child O' Mine. A camisa do Poser tem só uma rosa genérica, sem o nome do
    Guns N' Roses (pedido original). Os nomes ficam em `config.js` e podem ser trocados por bandas fictícias.
 2. **Tom:** o tutorial usa "desgraçado" e a Mayhem é tratada como "camisa envenenada" (piada interna do pedido). Ajustável em `texts`.
 3. **Senhas do admin** (públicas no `config.js`) e domínio de publicação.
