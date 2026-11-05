@@ -1248,9 +1248,6 @@ function drawHero() {
   if (G.pitT > 0) y = G.hy;
   // sombra
   if (G.pitT <= 0 && groundAt(G.hx)) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(x, V.floorY + 3, 18 * clamp(1 - (V.floorY - G.hy) / 260, .3, 1), 5, 0, 0, 7); ctx.fill(); }
-  // luz de palco atrás do herói (roupa preta no cenário escuro)
-  const spot = CACHE.spot || (CACHE.spot = (() => { const c = cnv(128, 128), g = c.getContext('2d'), rg = g.createRadialGradient(64, 64, 4, 64, 64, 64); rg.addColorStop(0, 'rgba(255,236,200,.55)'); rg.addColorStop(.5, 'rgba(255,200,150,.22)'); rg.addColorStop(1, 'rgba(255,200,150,0)'); g.fillStyle = rg; g.fillRect(0, 0, 128, 128); return c; })());
-  ctx.drawImage(spot, x - 62, y - hc.h * .55 - 62, 124, 124);
   if (G.shield) { const a = CACHE.fx_aura, s = 104 + Math.sin(G.t * 6) * 4; ctx.globalAlpha = .5; ctx.drawImage(a, x - s / 2, G.hy - hc.h * .5 - s / 2, s, s * a.height / a.width); ctx.globalAlpha = 1; }
   ctx.save(); ctx.translate(x, y);
   if (G.stumble > 0) ctx.rotate(.18 * Math.sin(G.stumble * 30));
