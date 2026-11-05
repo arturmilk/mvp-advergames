@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "generator": "gpt_image_2_5 (Higgsfield), quality=high, resolution=1k",
+  "style": "Stylized hand-painted retro arcade 3D game texture, dusk orange-purple palette, flat orthographic (no perspective), no text, no logos, no brand marks (exceto o letreiro da própria loja e o \"SHOW 19H\").",
+  "note": "Textura ausente ou com erro cai no desenho procedural em Canvas de mesmo id (index.html). Para regenerar, gere no Higgsfield com o prompt abaixo, salve em assets/_raw/<id>.webp e rode python tools/process_textures.py.",
+  "textures": [
+    {
+      "id": "asphalt",
+      "file": "asphalt.webp",
+      "source": "assets/_raw/asphalt.webp",
+      "higgsfieldJob": "107dd097-cabb-4a84-84ba-b1e702437118",
+      "prompt": "Seamless tileable top-down dark worn city asphalt, fine gravel grain, subtle cracks and oil stains, no markings.",
+      "usage": "chão das ruas (repete a cada 8 m)",
+      "w": 512,
+      "h": 512
+    },
+    {
+      "id": "sidewalk",
+      "file": "sidewalk.webp",
+      "source": "assets/_raw/sidewalk.webp",
+      "higgsfieldJob": "3e4457ec-3f1a-4fe5-958a-ca7a30e34a50",
+      "prompt": "Seamless tileable top-down sidewalk of 4x4 square concrete slabs.",
+      "usage": "calçadas e praças (repete a cada 6 m)",
+      "w": 512,
+      "h": 512
+    },
+    {
+      "id": "facade_a",
+      "file": "facade_a.webp",
+      "source": "assets/_raw/facade_a.webp",
+      "higgsfieldJob": "2794d440-855a-4087-b673-a46b8bc17a4c",
+      "prompt": "Flat orthographic 5-storey red brick facade at dusk, lit windows, abstract neon (lightning bolt, guitar), no letters.",
+      "usage": "prédios tipo A",
+      "w": 512,
+      "h": 1024
+    },
+    {
+      "id": "facade_b",
+      "file": "facade_b.webp",
+      "source": "assets/_raw/facade_b.webp",
+      "higgsfieldJob": "cfd1b852-a0f9-4c2c-ab64-a7260da97bab",
+      "prompt": "Flat orthographic 6-storey teal/cream apartment facade at dusk with balconies and pink neon star/note, no letters.",
+      "usage": "prédios tipo B",
+      "w": 512,
+      "h": 1024
+    },
+    {
+      "id": "facade_c",
+      "file": "facade_c.webp",
+      "source": "assets/_raw/facade_c.webp",
+      "higgsfieldJob": "fb029e55-dd65-46f4-80f0-a282b3efc3f5",
+      "prompt": "Flat orthographic 7-storey glass office facade reflecting sunset, green/yellow neon stripe, no letters.",
+      "usage": "prédios tipo C",
+      "w": 512,
+      "h": 1024
+    },
+    {
+      "id": "store",
+      "file": "store.webp",
+      "source": "assets/_raw/store.webp",
+      "higgsfieldJob": "5e77f6e7-a52a-46b3-9fc2-e8fe4aa180e7",
+      "prompt": "Flat orthographic black rock t-shirt store facade at dusk, flame decals, plain black shirts in the window, red gothic neon sign \"Máquina do Mal\", purple neon guitar and bolt.",
+      "usage": "fachada da loja Máquina do Mal (recortada sem o céu) e quadro 1 da HQ",
+      "w": 1024,
+      "h": 512
+    },
+    {
+      "id": "sky",
+      "file": "sky.webp",
+      "source": "assets/_raw/sky.webp",
+      "higgsfieldJob": "447813ef-20bf-445d-ab74-a853ab3c66a8",
+      "prompt": "Wide panoramic dusk sky, orange glow at the bottom to deep indigo at the top, violet clouds, first stars.",
+      "usage": "céu (cilindro em volta da cidade)",
+      "w": 1024,
+      "h": 512
+    },
+    {
+      "id": "bus_side",
+      "file": "bus_side.webp",
+      "source": "assets/_raw/bus_side.webp",
+      "higgsfieldJob": "6ec14167-f032-4798-a3bb-d4773aabaec8",
+      "prompt": "Flat orthographic bus side panel, glossy black, purple lower stripe, hot rod flames from the front, 7 tinted windows.",
+      "usage": "laterais do ônibus (frente à direita)",
+      "w": 1024,
+      "h": 512
+    },
+    {
+      "id": "bus_front",
+      "file": "bus_front.webp",
+      "source": "assets/_raw/bus_front.webp",
+      "higgsfieldJob": "4716e469-d421-42f6-835f-08f8b220f492",
+      "prompt": "Flat orthographic bus front, big windshield with sunset reflection, round headlights, chrome grille, amber sign \"SHOW 19H\".",
+      "usage": "frente do ônibus, quadro 3 da HQ e ícones",
+      "w": 512,
+      "h": 512
+    },
+    {
+      "id": "tree",
+      "file": "tree.webp",
+      "source": "assets/_raw/tree.webp",
+      "higgsfieldJob": "43526a41-5111-4518-833f-155d80f3cb10",
+      "prompt": "Single stylized tree, round leafy crown, orange sunset rim light, transparent background.",
+      "usage": "árvores (dois planos cruzados)",
+      "w": 256,
+      "h": 256
+    }
+  ]
+}
