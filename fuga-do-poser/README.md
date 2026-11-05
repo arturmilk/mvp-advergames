@@ -81,6 +81,7 @@ Beatles (`The Beatles logo.svg`), Oasis (`Oasis Logo.svg`).
 **Faltam (5, aparecem com o nome escrito):** Mayhem, Venom, Saxon, Opeth e Mastodon. Não há logo deles no Commons nem
 na Wikipédia (o "Mayhem" e o "Venom" do Commons são outras coisas). Para incluir, basta salvar o PNG/webp transparente em
 `assets/logos/<id>.webp` e acrescentar o id em `logos.json`.
+Versão com logos publicada no GitHub Pages em 05/11/2026.
 
 | Camisa | Efeito |
 |---|---|
