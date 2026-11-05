@@ -15,10 +15,12 @@ window.DASH_CONFIG = {
   // Um jogo que o Apps Script conhece e que não está aqui aparece com o nome do Apps Script e a pasta "<id>/".
   games: {
     'rover': { short: 'A Entrega', path: '', levelLabel: 'Mundo' },
-    'happy-hour': { short: 'Happy Hour', path: 'happy-hour/', levelLabel: 'Nível' }
+    'happy-hour': { short: 'Happy Hour', path: 'happy-hour/', levelLabel: 'Nível' },
+    'fuga-do-poser': { short: 'Fuga do Poser', path: 'fuga-do-poser/', levelLabel: 'Fase' }
   },
   // Textos dos motivos de fim de partida (o jogo grava a chave na coluna motivo_fim).
   endReasons: {
-    vidas: 'Perdeu as vidas', perdeu_itens: 'Deixou cair 5 itens', tempo: 'Fim do tempo', encerrou: 'Encerrou na pausa'
+    vidas: 'Perdeu as vidas', perdeu_itens: 'Deixou cair 5 itens', tempo: 'Fim do tempo', encerrou: 'Encerrou na pausa',
+    poser: 'O Poser alcançou', vitoria: 'Vitória (camisa do Judas Priest)'
   }
 };
