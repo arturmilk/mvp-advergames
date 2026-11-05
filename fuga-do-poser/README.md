@@ -69,6 +69,18 @@ Cada camisa leva o **logo oficial da banda** no peito, e quando o jogador pega u
 esquerda, atrás do herói (área que já passou, não atrapalha), junto com o efeito, por 2,2 s (`logoTime`).
 Os logos ficam em `assets/logos/<id>.webp` (fundo transparente) e precisam estar listados em `assets/logos/logos.json`
 (ex.: `["slayer", "mayhem"]`). Banda sem arquivo aparece com o nome escrito no lugar.
+Todas as camisas são pretas, como merch de verdade (só a do Judas é vermelha). Logos pretos no original foram invertidos
+para branco, para ler na camisa preta.
+
+**Logos incluídos (12)** — baixados do Wikimedia Commons em 05/11/2026, convertidos para webp com fundo transparente:
+Judas Priest (`Judas Priest logo.png`), Meshuggah (`Meshuggah logo.svg`), Sodom (`Sodom-logo.svg`), Sepultura
+(`Sepultura logo.png`), Slayer (`Slayer wordmark.svg`), Black Sabbath (`Black Sabbath logo.svg`), AC/DC (`Logo ACDC pwrup.svg`),
+Aerosmith (`Aerosmith-logo.png`), Deep Purple (`Deep-Purple-logo.svg`), Megadeth (`MegadethLogoDileo.png`),
+Beatles (`The Beatles logo.svg`), Oasis (`Oasis Logo.svg`).
+
+**Faltam (5, aparecem com o nome escrito):** Mayhem, Venom, Saxon, Opeth e Mastodon. Não há logo deles no Commons nem
+na Wikipédia (o "Mayhem" e o "Venom" do Commons são outras coisas). Para incluir, basta salvar o PNG/webp transparente em
+`assets/logos/<id>.webp` e acrescentar o id em `logos.json`.
 
 | Camisa | Efeito |
 |---|---|
