@@ -1,5 +1,5 @@
 // Service worker simples: rede primeiro, cache como reserva (funciona offline depois da 1ª visita).
-const CACHE = 'fuga-do-poser-v3';
+const CACHE = 'fuga-do-poser-v4';
 self.addEventListener('install', e => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
