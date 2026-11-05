@@ -143,8 +143,9 @@ button, input { font-family: inherit; }
 .nick input:focus { outline: none; border-color: var(--blood); }
 .nick .btn { width: auto; margin: 0; padding: 0 14px; font-size: 16px; }
 .err { color: #B00010; font-weight: 800; font-size: 13px; min-height: 18px; margin: 5px 0 0; }
+.invite .err:empty { display: none; }
 label.lbl { display: block; text-align: left; font-weight: 800; font-size: 13px; margin-top: 10px; color: #3A2A2A; }
-.invite { background: #fff; border: 2px dashed var(--blood); border-radius: 12px; padding: 8px 10px; margin-top: 10px; }
+.invite { background: #fff; border: 2px solid #000; box-shadow: 0 3px 0 rgba(0,0,0,.18); border-radius: 12px; padding: 10px 12px; margin-top: 10px; }
 .invite p { margin: 0; font-weight: 800; font-size: 14px; }
 
 /* Ranking */
@@ -166,7 +167,8 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
 .tut-btns .btn { margin-top: 10px; }
 /* fim de jogo na horizontal: resultado à esquerda, apelido e botões à direita */
 @media (min-width: 600px) {
-  .go-card { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: center; }
+  .go-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: center; }
+  .go-card > div { min-width: 0; }
   .go-card .invite { margin-top: 0; }
 }
 @media (max-height: 420px) { .tut-hero { display: none; } }
@@ -210,11 +212,11 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
 /* Logo da banda + avisos: canto de cima à esquerda, atrás do herói (área que já passou, não atrapalha) */
 #pickup { position: absolute; left: calc(var(--sal) + 12px); top: calc(var(--sat) + 62px); width: min(250px, 30vw); z-index: 7; pointer-events: none;
   display: flex; flex-direction: column; align-items: center; gap: 4px; }
-#logoPop { width: 100%; height: min(80px, 16vh); display: grid; place-items: center; opacity: 0; transform: scale(.6);
+#logoPop { width: 100%; height: min(80px, 16vh); display: flex; align-items: center; justify-content: center; overflow: hidden; opacity: 0; transform: scale(.6);
   transition: transform .25s cubic-bezier(.2,1.6,.4,1), opacity .25s;
   background: radial-gradient(ellipse at center, rgba(10,4,12,.72) 30%, rgba(10,4,12,0) 72%); }
 #logoPop.on { opacity: 1; transform: scale(1); }
-#logoPop img { max-width: 92%; max-height: 92%; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,.8)); }
+#logoPop img { width: 92%; height: 92%; object-fit: contain; filter: drop-shadow(0 2px 2px rgba(0,0,0,.8)); }
 #logoPop b { font-family: Impact, var(--font); font-size: 30px; color: #fff; -webkit-text-stroke: 1.5px #000; paint-order: stroke fill; letter-spacing: 1px; text-transform: uppercase; text-align: center; line-height: 1; }
 #toast { opacity: 0; transform: scale(.6); font-family: var(--font); font-weight: 900; font-size: 15px; color: #fff; -webkit-text-stroke: 2px #000; paint-order: stroke fill;
   text-shadow: 0 3px 0 var(--blood); text-align: center; width: 100%; line-height: 1.15; transition: transform .25s cubic-bezier(.2,1.6,.4,1), opacity .25s; }
@@ -300,13 +302,13 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
         <div><b id="goDist">0</b><span>metros</span></div>
         <div><b id="goShirts">0</b><span>camisas</span></div>
         <div><b id="goTime">0:00</b><span>tempo</span></div>
-        <div><b id="goSpeed">0</b><span>km/h máx.</span></div>
+        <div><b id="goSpeed">0</b><span>km/h máx</span></div>
       </div>
       </div>
       <div class="go-r">
       <form id="saveForm" autocomplete="off" class="invite">
         <p>Grave seu apelido no ranking!</p>
-        <label class="lbl" for="nickIn">Apelido (até 6 letras ou números, sem palavrão)</label>
+        <label class="lbl" for="nickIn">Apelido (até 6 letras ou números)</label>
         <div class="nick">
           <input id="nickIn" maxlength="6" inputmode="text" autocapitalize="characters" spellcheck="false" placeholder="TRVE" aria-describedby="nickErr">
           <button class="btn" type="submit" id="bSave">Gravar</button>
@@ -485,7 +487,7 @@ function nickError(raw) {
   const nick = String(raw).trim().toUpperCase();
   if (!nick) return 'Digite seu apelido (até 6 letras).';
   if (!NICK_RE.test(nick)) return 'Use de 1 a 6 letras sem acento, números ou hífen.';
-  if (isOffensive(nick)) return 'Esse apelido não é permitido. Escolha outro, sem palavrão.';
+  if (isOffensive(nick)) return 'Esse apelido não é permitido. Escolha outro.';
   if (LB.banned().includes(nick)) return 'Esse apelido não está disponível. Escolha outro.';
   return '';
 }
