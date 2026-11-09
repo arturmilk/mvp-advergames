@@ -158,7 +158,7 @@ partida por aparelho.
 | Tempo inicial, bônus, aviso final, contagem, relógio | `time.*` |
 | Pontos por resgate, bônus da vitória, títulos | `points.*`, `goals`, `winTitle` |
 | Física do ônibus (velocidade, aceleração, freio, ré, esterço, inclinação, quique) | `bus.*` |
-| Câmera (distância, altura, suavidade, campo de visão) | `camera.*` |
+| Câmera (distância, altura, suavidade, campo de visão; mais alta e afastada desde 09/11, e **dinâmica**: com velocidade se afasta, sobe, olha mais à frente e abre o campo de visão — `speedDistance`, `speedHeight`, `speedLookAhead`, `speedFov`) | `camera.*` |
 | Cidade (quarteirões, ruas, alturas, praças, postes, árvores, posição da loja, semente) | `city.*` |
 | Zona de resgate e distância entre resgates | `pickup.*` |
 | Desempenho (resolução máxima, neblina, antialias) | `render.*` |

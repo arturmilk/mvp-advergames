@@ -99,7 +99,10 @@ const CONFIG = {
   fullscreenOnTouch: true,    // tela cheia no primeiro toque em qualquer lugar (Android/computador; no iPhone, só pela Tela de Início)
 
   /* ---------- Câmera ---------- */
-  camera: { distance: 15, height: 7, lookAhead: 8, lookHeight: 2, follow: 5, fov: 62 },
+  // distance/height = parado; com velocidade a câmera se afasta (speedDistance), sobe (speedHeight), olha mais à frente
+  // (speedLookAhead) e abre o campo de visão (speedFov). speedFollow = quão rápido ela acompanha a mudança de velocidade.
+  camera: { distance: 18, height: 10, lookAhead: 9, lookHeight: 1.5, follow: 7, fov: 62,
+            speedDistance: 3, speedHeight: 2, speedLookAhead: 8, speedFov: 9, speedFollow: 1.2 },
 
   /* ---------- Resgates ---------- */
   pickup: {

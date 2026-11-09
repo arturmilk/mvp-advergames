@@ -1421,16 +1421,22 @@ function camDesired() {
     return { x: s.x + Math.sin(a) * 70, y: 26, z: s.z + Math.cos(a) * 70, lx: s.x, ly: 4, lz: s.z };
   }
   const up = G.state === 'over' ? Math.min(G.overT, 2) * 6 : 0;
-  let x = b.x - fx * cc.distance, z = b.z - fz * cc.distance;
+  // câmera dinâmica: com velocidade ela se afasta, sobe e olha mais à frente (G.camSpd = velocidade suavizada, 0..1)
+  const k = G.camSpd || 0, dist = cc.distance + (cc.speedDistance || 0) * k, la = cc.lookAhead + (cc.speedLookAhead || 0) * k;
+  let x = b.x - fx * dist, z = b.z - fz * dist;
   // não deixa a câmera entrar nos prédios: aproxima do ônibus
   for (let i = 1; i <= 8; i++) {
     const t = i / 8, px = lerp(b.x, x, t), pz = lerp(b.z, z, t);
     if (W.colliders.some(q => q.kind === 'block' && px > q.x0 && px < q.x1 && pz > q.z0 && pz < q.z1)) { x = lerp(b.x, x, (i - 1) / 8); z = lerp(b.z, z, (i - 1) / 8); break; }
   }
-  return { x, y: cc.height + up, z, lx: b.x + fx * cc.lookAhead, ly: cc.lookHeight, lz: b.z + fz * cc.lookAhead };
+  return { x, y: cc.height + (cc.speedHeight || 0) * k + up, z, lx: b.x + fx * la, ly: cc.lookHeight, lz: b.z + fz * la };
 }
 function snapCamera() { G.cam = camDesired(); }
 function updateCamera(dt) {
+  const cc = C.camera, sf = G.state === 'play' ? clamp(Math.abs(G.bus.v) / B.maxSpeed, 0, 1) : 0;
+  G.camSpd = lerp(G.camSpd || 0, sf, 1 - Math.exp(-(cc.speedFollow || 1.2) * dt));
+  const fov = cc.fov + (cc.speedFov || 0) * G.camSpd;
+  if (camera && Math.abs(camera.fov - fov) > .05) { camera.fov = fov; camera.updateProjectionMatrix(); }
   const d = camDesired(); if (!G.cam) G.cam = d;
   const a = 1 - Math.exp(-(G.state === 'over' && G.win ? 1.5 : C.camera.follow) * dt);
   for (const k of ['x', 'y', 'z', 'lx', 'ly', 'lz']) G.cam[k] = lerp(G.cam[k], d[k], a);
