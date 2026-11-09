@@ -77,9 +77,26 @@ const CONFIG = {
     steerSpeed: 4,       // quão rápido o volante vira
     steerAtTop: 0.45,    // em velocidade máxima o esterço cai para 45% (estabilidade)
     lean: 0.07,          // inclinação lateral nas curvas
-    bounce: 0.35,        // quanto da velocidade sobra ao bater num prédio
+    bounce: 0.35,        // (só com hitStop: false) quanto da velocidade sobra ao bater num prédio
+    hitStop: true,       // bater de frente num prédio, poste ou árvore PARA o ônibus. A calçada é livre (sobe nela)
     hornCooldown: 0.4
   },
+
+  /* ---------- Drift ----------
+     Rápido (acima de minSpeed × velocidade máxima) + virando + FREIO = a traseira escorrega e os pneus chiam. */
+  drift: {
+    enabled: true,
+    minSpeed: 0.55,      // fração da velocidade máxima para começar a escorregar (≈ 53 km/h)
+    grip: 2.2,           // aderência durante o drift (menor = escorrega mais)
+    normalGrip: 9,       // aderência normal
+    steerBoost: 1.7,     // o bico vira mais rápido durante o drift
+    brake: 0.22,         // no drift o freio segura só 22% (o ônibus desliza em vez de parar)
+    volume: 0.22         // volume do chiado
+  },
+
+  /* ---------- HUD ---------- */
+  hud: { arrowScale: 0.5 },   // tamanho da seta 3D (era 0.72)
+  fullscreenOnTouch: true,    // tela cheia no primeiro toque em qualquer lugar (Android/computador; no iPhone, só pela Tela de Início)
 
   /* ---------- Câmera ---------- */
   camera: { distance: 15, height: 7, lookAhead: 8, lookHeight: 2, follow: 5, fov: 62 },
@@ -153,7 +170,7 @@ const CONFIG = {
       'Siga a SETA verde e amarela no topo da tela: ela aponta para a próxima lenda e mostra a distância.',
       'Você começa com só 30 segundos. Passe o ônibus pela zona neon no chão para embarcar a lenda: +10 segundos e +10 pontos.',
       'Depois da 10ª lenda, a seta aponta de volta para a loja Máquina do Mal. Chegue lá antes do tempo zerar!',
-      'Celular: ◀ ▶ à esquerda para virar; à direita, o pedal grande acelera e o FREIO/RÉ freia e dá ré. Teclado: W A S D ou setas; H buzina.'
+      'Celular: setas à esquerda para virar; à direita, o pedal com seta para cima acelera e o com seta para baixo freia e dá ré. Rápido, virando e freando, o busão faz drift! Pode subir na calçada, mas poste, árvore e prédio param o ônibus. Teclado: W A S D ou setas; H buzina.'
     ],
     goStore: 'TODO MUNDO A BORDO! Volta pra loja!',
     winTitle: 'Parabéns! Você zerou o Busão do Rock!',
@@ -194,6 +211,7 @@ const CONFIG = {
                true  = só abre com QR do dashboard (o Apps Script publicado já conhece 'busao-do-rock'). */
   ticket: {
     required: false,
+    quietWait: true,     // confere e valida o QR sem a tela 'Conferindo/Validando o QR code' (os avisos de QR usado/inválido continuam)
     oneGame: true,
     offline: 'block',
     color: '#B0151B',
@@ -239,6 +257,6 @@ const CONFIG = {
   engineVolume: 0.16,
   // motor: segurando o acelerador o som sobe marcha a marcha até o pico em rampSec; gears = fatia de tempo de cada marcha (soma 1)
   engineSound: { rampSec: 10, gears: [0.18, 0.22, 0.27, 0.33], dropRate: 2.5 },
-  musicTempo: 152      // trilha original de hard rock (riff em Mi, palhetada abafada); volume em musicVolume
+  musicTempo: 176      // trilha original de hard rock (riff em Mi com galope, bateria cheia); volume em musicVolume
 };
 window.CONFIG = CONFIG;

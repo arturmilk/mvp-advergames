@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#140A1A">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Busão do Rock">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="description" content="Máquina do Mal em: Busão do Rock — resgate 10 lendas do rock pela cidade antes do show das 19h!">
 <title>Máquina do Mal em: Busão do Rock</title>
@@ -50,7 +52,7 @@ button, input { font-family: inherit; }
 #hLogo { font-size: 15px; transform: rotate(-4deg); transform-origin: 0 50%; margin-top: 5px; }
 #hLogo.img { height: 30px; }
 /* tempo: placa de stencil inclinada, número grande */
-#hTime { position: relative; display: flex; align-items: flex-end; gap: 6px; padding: 2px 12px 3px 8px; background: var(--ink); background-image: var(--grain);
+#hTime { position: relative; display: flex; align-items: flex-end; gap: 6px; padding: 2px 12px 3px 10px; background: var(--ink); background-image: var(--grain);
   transform: skewX(-10deg); box-shadow: 4px 4px 0 var(--blood); border-left: 5px solid var(--tacky); }
 #hTime > * { transform: skewX(10deg); }
 #hTime .hl { writing-mode: vertical-rl; transform: rotate(180deg) skewX(0); font-size: 9px; letter-spacing: 1.5px; color: var(--tacky); padding-bottom: 2px; }
@@ -88,20 +90,21 @@ button, input { font-family: inherit; }
 #hHorn { color: var(--tacky); }
 @keyframes blink { 50% { opacity: .35; } }
 @keyframes jolt { 0% { transform: scale(1.45) rotate(-4deg); } 40% { transform: scale(.94) rotate(2deg); } 100% { transform: none; } }
-/* velocímetro: embaixo no meio, entre os controles */
-#hSpeed { position: absolute; left: 50%; bottom: calc(var(--sab) + 10px); transform: translateX(-50%) skewX(-10deg); display: none; align-items: baseline; gap: 4px;
-  background: var(--ink); background-image: var(--grain); padding: 1px 10px 2px; border-bottom: 3px solid var(--tacky); z-index: 5; pointer-events: none; }
-#hSpeed.on { display: inline-flex; }
-#hSpeedV { font-family: var(--num); font-size: 24px; line-height: 1; color: var(--bone); min-width: 1.6em; text-align: right; }
-#hSpeed small { font-family: var(--type); font-size: 11px; color: var(--tacky); }
+/* velocímetro: no canto de cima à esquerda, ao lado do relógio do jogo */
+.h-row2 { display: flex; align-items: center; gap: 8px; margin-left: 6px; }
+#hSpeed { display: inline-flex; align-items: baseline; gap: 4px; background: var(--ink); background-image: var(--grain); padding: 0 8px 1px;
+  border-bottom: 3px solid var(--tacky); transform: skewX(-10deg); pointer-events: none; }
+#hSpeedV { font-family: var(--num); font-size: 20px; line-height: 1.05; color: var(--bone); min-width: 1.6em; text-align: right; }
+#hSpeed small { font-family: var(--type); font-size: 10px; color: var(--tacky); }
 
 /* seta: o desenho 3D fica no canvas; aqui só a distância e o nome do alvo */
-#target { position: absolute; left: 50%; top: calc(var(--sat) + 25vh); transform: translateX(-50%); z-index: 5; pointer-events: none; display: none;
-  text-align: center; line-height: 1.05; }
-#target.on { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-#tDist { font-family: var(--num); font-size: 26px; font-style: italic; color: var(--tacky); -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 2px 2px 0 var(--ink); }
-#tName { font-family: var(--type); font-size: 12px; color: #1A1414; background: #E9DCB8; padding: 1px 7px; transform: rotate(-1deg); box-shadow: 1px 2px 0 rgba(0,0,0,.45); }
-#tName:empty { display: none; }
+#target { position: absolute; left: 50%; top: calc(var(--sat) + 17vh); transform: translateX(-50%); z-index: 5; pointer-events: none; display: none; text-align: center; line-height: 1; }
+#target.on { display: block; }
+#tDist { font-family: var(--num); font-size: 21px; font-style: italic; color: var(--tacky); -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 2px 2px 0 var(--ink); }
+/* nome do alvo ("2/10 · RAUL SEIXAS"): embaixo, no meio, longe da pista */
+#tName { position: absolute; left: 50%; bottom: calc(var(--sab) + 8px); transform: translateX(-50%) rotate(-1deg); z-index: 6; pointer-events: none; display: none; white-space: nowrap;
+  font-family: var(--type); font-size: 12px; color: #1A1414; background: #E9DCB8; background-image: var(--grain); padding: 2px 9px 1px; box-shadow: 2px 2px 0 rgba(0,0,0,.55); }
+#tName.on:not(:empty) { display: block; }
 
 /* ---------- Controles (segurar; multitoque) ---------- */
 .ctrl { position: absolute; z-index: 6; display: none; touch-action: none; cursor: pointer; border: 3px solid #000; padding: 0;
@@ -130,21 +133,21 @@ button, input { font-family: inherit; }
 
 /* ---------- Pop-ups durante a partida ---------- */
 /* fala da lenda: flyer xerocado preso com fita */
-#talk { position: absolute; left: calc(var(--sal) + 10px); top: calc(var(--sat) + 132px); width: min(330px, 44vw); z-index: 7; pointer-events: none;
-  display: flex; gap: 8px; align-items: flex-start; background: #EFE6D2; background-image: var(--grain); color: var(--ink); border: 2px solid var(--ink); padding: 8px 9px 7px;
-  box-shadow: 5px 5px 0 rgba(0,0,0,.65); opacity: 0; transform: scale(.6) rotate(-6deg); transform-origin: 0 0; transition: transform .22s cubic-bezier(.2,1.6,.4,1), opacity .18s; }
-#talk::before { content: ''; position: absolute; left: 38%; top: -9px; width: 64px; height: 16px; background: rgba(233,220,184,.88); transform: rotate(-4deg); box-shadow: 0 1px 0 rgba(0,0,0,.25); }
-#talk.on { opacity: 1; transform: scale(1) rotate(-1.5deg); }
+#talk { position: absolute; left: 50%; bottom: calc(var(--sab) + 34px); width: min(390px, calc(100vw - 2 * (var(--sal) + 206px))); z-index: 7; pointer-events: none;
+  display: flex; gap: 7px; align-items: center; background: #EFE6D2; background-image: var(--grain); color: var(--ink); border: 2px solid var(--ink); padding: 5px 8px 5px 5px;
+  box-shadow: 4px 4px 0 rgba(0,0,0,.65); opacity: 0; transform: translateX(-50%) scale(.6) rotate(-4deg); transform-origin: 50% 100%; transition: transform .22s cubic-bezier(.2,1.6,.4,1), opacity .18s; }
+#talk::before { content: ''; position: absolute; left: 42%; top: -8px; width: 52px; height: 13px; background: rgba(233,220,184,.88); transform: rotate(-4deg); box-shadow: 0 1px 0 rgba(0,0,0,.25); }
+#talk.on { opacity: 1; transform: translateX(-50%) rotate(-1deg); }
 #talk.taunt { background-color: #FFF3B0; border-color: var(--blood); box-shadow: 5px 5px 0 var(--blood); }
 #talk em:empty { display: none; }
-#talk img { width: 60px; height: 76px; object-fit: cover; object-position: 50% 100%; flex: none; background: #CFC3A8; border: 2px solid var(--ink); filter: contrast(1.08); }
-#talk b { display: block; font-family: var(--num); font-weight: 400; font-size: 17px; letter-spacing: .5px; color: var(--blood); text-transform: uppercase; line-height: 1; }
-#talk p { margin: 3px 0 0; font-family: var(--type); font-size: 12.5px; line-height: 1.25; }
-#talk em { display: inline-block; font-style: normal; font-family: var(--num); font-size: 14px; letter-spacing: .5px; color: var(--ink); background: var(--tacky); padding: 0 5px; margin-top: 4px; transform: rotate(-2deg); }
-#toast { position: absolute; left: 50%; top: 46%; width: min(92%, 560px); transform: translate(-50%, -50%) scale(.6) skewX(-8deg); z-index: 31; pointer-events: none;
-  opacity: 0; font-family: var(--num); font-size: 30px; letter-spacing: 1px; color: var(--bone); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill;
+#talk img { width: 36px; height: 46px; object-fit: cover; object-position: 50% 100%; flex: none; background: #CFC3A8; border: 2px solid var(--ink); filter: contrast(1.08); }
+#talk b { display: block; font-family: var(--num); font-weight: 400; font-size: 14px; letter-spacing: .5px; color: var(--blood); text-transform: uppercase; line-height: 1; }
+#talk p { margin: 1px 0 0; font-family: var(--type); font-size: 11px; line-height: 1.2; }
+#talk em { display: inline-block; font-style: normal; font-family: var(--num); font-size: 14px; letter-spacing: .5px; color: var(--ink); background: var(--tacky); padding: 0 5px; margin-top: 2px; transform: rotate(-2deg); font-size: 12px; }
+#toast { position: absolute; left: 50%; top: calc(var(--sat) + 8px); width: min(56%, 520px); transform: translate(-50%, 0) scale(.6) skewX(-8deg); z-index: 31; pointer-events: none;
+  opacity: 0; font-family: var(--num); font-size: 24px; letter-spacing: 1px; color: var(--bone); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill;
   text-shadow: 4px 4px 0 var(--blood); text-align: center; line-height: 1.1; text-transform: uppercase; transition: transform .25s cubic-bezier(.2,1.6,.4,1), opacity .25s; }
-#toast.on { opacity: 1; transform: translate(-50%, -50%) scale(1) skewX(-8deg); }
+#toast.on { opacity: 1; transform: translate(-50%, 0) scale(1) skewX(-8deg); }
 /* contagem 3-2-1-VAI: placa preta de stencil com estouro de raios girando */
 #count { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%); z-index: 8; pointer-events: none; display: none;
   font-family: var(--num); font-style: italic; font-size: min(30vh, 170px); line-height: 1; color: var(--tacky); padding: .06em .32em .02em;
@@ -158,14 +161,14 @@ button, input { font-family: inherit; }
 @keyframes pop { from { transform: translate(-50%, -50%) scale(2.2) rotate(-14deg); opacity: 0; } 35% { opacity: 1; } to { transform: translate(-50%, -50%) scale(1) rotate(-4deg); } }
 @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 /* resgate: letreiro de manobra (nome + pontos), embaixo no meio */
-#plus { position: absolute; left: 50%; bottom: calc(var(--sab) + 50px); transform: translateX(-50%); white-space: nowrap; z-index: 7; pointer-events: none;
-  display: flex; flex-direction: column; align-items: center; gap: 2px; opacity: 0; }
-#plus .pn { font-family: var(--num); font-size: 22px; letter-spacing: 1px; color: var(--bone); text-transform: uppercase; background: var(--ink); padding: 1px 10px; transform: skewX(-10deg); }
-#plus .pv { display: flex; gap: 10px; font-family: var(--num); font-style: italic; font-size: 30px; line-height: 1; color: var(--tacky); -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--blood); }
+#plus { position: absolute; left: 50%; top: calc(var(--sat) + 17vh + 26px); transform: translateX(-50%); white-space: nowrap; z-index: 7; pointer-events: none;
+  display: flex; flex-direction: row; align-items: center; gap: 8px; opacity: 0; }
+#plus .pn { font-family: var(--num); font-size: 16px; letter-spacing: 1px; color: var(--bone); text-transform: uppercase; background: var(--ink); padding: 1px 10px; transform: skewX(-10deg); }
+#plus .pv { display: flex; gap: 8px; font-family: var(--num); font-style: italic; font-size: 22px; line-height: 1; color: var(--tacky); -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--blood); }
 #plus .pv small { font-size: .55em; }
 #plus.on { animation: trick 1.6s ease-out; }
 @keyframes trick { 0% { opacity: 0; transform: translateX(-50%) scale(1.6); } 12% { opacity: 1; transform: translateX(-50%) scale(.95); } 20% { transform: translateX(-50%) scale(1); }
-  80% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-18px); } }
+  80% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
 
 /* ---------- Telas ---------- */
 .screen { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: flex-start;
@@ -318,6 +321,7 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
   #bGas { width: 84px; height: 128px; }
   #bBrake { width: 78px; height: 72px; right: calc(var(--sar) + 110px); }
   #hTimeV { font-size: 33px; } #hScoreV { font-size: 36px; } .meter { width: 112px; }
+  .steer { width: 70px; height: 70px; } #bRight { left: calc(var(--sal) + 94px); }
 }
 @media (max-height: 380px) { .c-side { display: none; } .panels { height: 56vh; } }
 #modal { z-index: 30; }
@@ -414,9 +418,9 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
   <div id="hud" aria-live="off">
     <div class="h-left">
       <div class="mdm-logo" id="hLogo"></div>
-      <div id="hTime"><span class="hl">TEMPO</span><span id="hTimeV">0:40</span></div>
+      <div id="hTime"><span id="hTimeV">0:30</span></div>
       <div class="meter" id="hMeter"><i></i></div>
-      <div class="tape" id="hClock">RELÓGIO <b id="hClockV">18:00</b></div>
+      <div class="h-row2"><div class="tape" id="hClock"><b id="hClockV">18:00</b></div><div id="hSpeed"><span id="hSpeedV">0</span><small>km/h</small></div></div>
     </div>
     <div class="h-right">
       <div class="h-btns">
@@ -428,8 +432,8 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
       <div class="tape" id="hLeg" aria-label="Lendas resgatadas">LENDAS <span class="ticks"></span> <b id="hLegV">0/10</b></div>
     </div>
   </div>
-  <div id="target"><div id="tDist">0 m</div><div id="tName"></div></div>
-  <div id="hSpeed"><span id="hSpeedV">0</span><small>km/h</small></div>
+  <div id="target"><div id="tDist">0 m</div></div>
+  <div id="tName"></div>
   <button class="ctrl steer" id="bLeft" aria-label="Virar à esquerda (segure)"></button>
   <button class="ctrl steer" id="bRight" aria-label="Virar à direita (segure)"></button>
   <button class="ctrl" id="bBrake" aria-label="Freio e ré (segure)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 22L2 11h6V2h8v9h6z"/></svg></button>
@@ -708,7 +712,7 @@ function sha256(str) {
 /* ======================= ÁUDIO (Web Audio: motor, buzina, riff, sirene, trilha) ======================= */
 const Sound = (() => {
   let ac = null, master, musBus, sfxBus, engBus, gtrIn, noise, timer = null, step = 0, nextT = 0, playing = false;
-  let eng = null, revT = 0, gear = 0, engLastT = 0;
+  let eng = null, revT = 0, gear = 0, engLastT = 0, skidG = null;
   let muted = !!store.get(K.settings, {}).muted;
   const midi = n => 440 * Math.pow(2, (n - 69) / 12);
   // trilha original: riff de hard rock em Mi, power chords em colcheias com palhetada abafada (m) e acentos abertos.
@@ -742,6 +746,10 @@ const Sound = (() => {
     const g2 = ac.createGain(); g2.gain.value = .5; o2.connect(g2); g2.connect(f);
     o1.connect(f); f.connect(g); g.connect(engBus); o1.start(); o2.start();
     eng = { o1, o2, f };
+    // chiado de pneu (drift): ruído em loop num passa-banda, volume pelo quanto o ônibus escorrega
+    const ks = ac.createBufferSource(), kf = ac.createBiquadFilter(), kf2 = ac.createBiquadFilter(); skidG = ac.createGain();
+    ks.buffer = noise; ks.loop = true; kf.type = 'bandpass'; kf.frequency.value = 1500; kf.Q.value = 4; kf2.type = 'peaking'; kf2.frequency.value = 2600; kf2.gain.value = 8;
+    skidG.gain.value = 0; ks.connect(kf); kf.connect(kf2); kf2.connect(skidG); skidG.connect(sfxBus); ks.start();
   }
   function tone(t, fr, dur, { type = 'sine', vol = .3, bus = sfxBus, to = null, att = .005 } = {}) {
     const o = ac.createOscillator(), g = ac.createGain();
@@ -770,10 +778,18 @@ const Sound = (() => {
       gtr(t, root, dur, vol, null, 7);
       tone(t, midi(root - 12), kind === 'l' ? .6 : .16, { type: 'triangle', vol: .15, bus: musBus });
     }
-    if (s === 0 || s === 4 || (bar === 3 && s === 5)) tone(t, 120, .16, { vol: .45, bus: musBus, to: 45 });
-    if (s === 2 || s === 6) { hiss(t, .12, { vol: .22, freq: 1800, type: 'bandpass', q: .8, bus: musBus }); tone(t, 200, .07, { type: 'triangle', vol: .12, bus: musBus }); }
-    hiss(t, .03, { vol: .04, freq: 8000, bus: musBus });
-    if (k === 0) hiss(t, .6, { vol: .05, freq: 5000, bus: musBus });
+    const half = 30 / C.musicTempo; // meia colcheia (semicolcheia)
+    // galope: nas palhetadas abafadas, uma segunda batida na semicolcheia
+    if (n && n[1] === 'm' && s % 2 === 1) gtr(t + half, n[0], .06, .07, null, 7);
+    // bateria: bumbo em todo tempo + dobra no fim do compasso, caixa forte no 2 e no 4, chimbal em semicolcheias, prato na virada
+    if (s % 2 === 0) tone(t, 130, .15, { vol: .55, bus: musBus, to: 42 });
+    if (s === 7 || (bar === 3 && s === 5)) tone(t + half, 130, .12, { vol: .45, bus: musBus, to: 42 });
+    if (s === 2 || s === 6) { hiss(t, .16, { vol: .32, freq: 1900, type: 'bandpass', q: .7, bus: musBus }); tone(t, 210, .08, { type: 'triangle', vol: .16, bus: musBus }); }
+    if (bar === 3 && s >= 6) { hiss(t, .1, { vol: .22, freq: 1600, type: 'bandpass', q: .8, bus: musBus }); hiss(t + half, .1, { vol: .22, freq: 1600, type: 'bandpass', q: .8, bus: musBus }); }
+    hiss(t, .03, { vol: .05, freq: 8000, bus: musBus }); hiss(t + half, .025, { vol: .03, freq: 9000, bus: musBus });
+    if (k === 0 || k === 16) hiss(t, .8, { vol: .07, freq: 4500, bus: musBus });
+    // guitarra solo: frase curta de pentatônica no fim do 2º e do 4º compasso
+    if ((bar === 1 || bar === 3) && s === 6) [[64, 0], [67, 1], [69, 2], [71, 3]].forEach(([m, d]) => tone(t + d * half, midi(m + 12), .14, { type: 'sawtooth', vol: .035, bus: musBus }));
   }
   function pump() { const spb = 60 / C.musicTempo / 2; while (nextT < ac.currentTime + .15) { scheduleStep(step++, nextT); nextT += spb; } }
   let sirenOn = false;
@@ -805,6 +821,7 @@ const Sound = (() => {
       engBus.gain.setTargetAtTime(on ? C.engineVolume * Math.min(1, .38 + .22 * speedFrac + .62 * p) : 0, t, .1);
     },
     get rev() { return { revT, gear }; },
+    skid(level) { if (ac && skidG) skidG.gain.setTargetAtTime(Math.max(0, Math.min(1, level)) * ((C.drift && C.drift.volume) || .22), ac.currentTime, .05); },
     get muted() { return muted; },
     toggle() {
       muted = !muted; const s = store.get(K.settings, {}); s.muted = muted; store.set(K.settings, s);
@@ -985,7 +1002,7 @@ function buildCity() {
   M.grass = new THREE.MeshLambertMaterial({ color: 0x3f6b35 });
   const G = { asphalt: new Geo(), sidewalk: new Geo(), curb: new Geo(), facade_a: new Geo(), facade_b: new Geo(), facade_c: new Geo(), roof: new Geo(), store: new Geo(), storeSide: new Geo(),
     lines: new Geo(), pole: new Geo(), lampHead: new Geo(), glow: new Geo(), tree: new Geo(), grass: new Geo() };
-  W.colliders = []; W.spots = [];
+  W.colliders = []; W.spots = []; W.posts = []; W.blocks = [];
   // chão (asfalto) cobrindo a cidade toda + uma borda
   const ext = HALF + 60;
   G.asphalt.top(-ext, ext, 0, -ext, ext, [0, 0, ext * 2 / 8, ext * 2 / 8]);
@@ -1004,6 +1021,7 @@ function buildCity() {
   const facades = ['facade_a', 'facade_b', 'facade_c'];
   const fuv = (w, h) => [0, 0, Math.max(1, Math.round(w / CT.texMeters)), 1];
   const lampAt = (x, z, dx, dz) => {
+    W.posts.push({ x, z, r: .3 });
     G.pole.box(x - .15, x + .15, 0, 6.2, z - .15, z + .15);
     const hx = x + dx * 1.4, hz = z + dz * 1.4;
     G.pole.box(Math.min(x, hx) - .08, Math.max(x, hx) + .08, 6, 6.2, Math.min(z, hz) - .08, Math.max(z, hz) + .08);
@@ -1011,6 +1029,7 @@ function buildCity() {
     G.glow.top(hx - 5, hx + 5, .05, hz - 5, hz + 5);
   };
   const treeAt = (x, z, s = 1) => {
+    W.posts.push({ x, z, r: .55 * s });
     const h = 6.5 * s, w = 3.4 * s;
     G.tree.quad([x - w, .2, z], [x + w, .2, z], [x + w, h, z], [x - w, h, z]);
     G.tree.quad([x, .2, z - w], [x, .2, z + w], [x, h, z + w], [x, h, z - w]);
@@ -1022,7 +1041,9 @@ function buildCity() {
     // calçada (laje elevada) e meio-fio
     G.sidewalk.top(x0, x1, .25, z0, z1, [0, 0, BS / 6, BS / 6]);
     G.curb.walls(x0, x1, 0, .25, z0, z1, () => [0, 0, 1, 1]);
-    W.colliders.push({ x0: x0 + .3, x1: x1 - .3, z0: z0 + .3, z1: z1 - .3, kind: park ? 'park' : 'block' });
+    // a calçada é livre (o ônibus sobe nela); bloqueiam o prédio (miolo do quarteirão), os postes e as árvores
+    W.blocks.push({ x0, x1, z0, z1 });
+    if (!park && !isStore) W.colliders.push({ x0: x0 + SW, x1: x1 - SW, z0: z0 + SW, z1: z1 - SW, kind: 'block' });
     // postes e árvores ao longo da calçada (alternando)
     const edge = .9;
     let k = 0;
@@ -1082,6 +1103,7 @@ function buildStore(G, x0, x1, z0, z1) {
   G.store.quad([cx - w / 2, .25, front], [cx + w / 2, .25, front], [cx + w / 2, h, front], [cx - w / 2, h, front]);
   G.storeSide.walls(cx - w / 2, cx + w / 2, .25, h, back, front, () => [0, 0, 1, 1], 'new');
   G.storeSide.top(cx - w / 2, cx + w / 2, h, back, front);
+  W.colliders.push({ x0: cx - w / 2, x1: cx + w / 2, z0: back, z1: front, kind: 'block' });
   W.store = { x: cx, z: z1 + 4, doorZ: front, h, w };
   // palco do show (aparece na vitória) fica na calçada e na rua em frente
 }
@@ -1194,7 +1216,7 @@ function freshState(state = 'menu') {
   const s = roadC(CT.storeBlock[1] + 1);
   return {
     state, t: 0, elapsed: 0, timeLeft: C.time.start, countT: 0, score: 0, rescued: 0, idx: 0, route: null,
-    bus: { x: W.store ? W.store.x - 24 : 0, z: s + RW / 4, h: Math.PI / 2, v: 0, steer: 0, roll: 0, pitch: 0 },
+    bus: { x: W.store ? W.store.x - 24 : 0, z: s + RW / 4, h: Math.PI / 2, vh: Math.PI / 2, v: 0, steer: 0, roll: 0, pitch: 0, slip: 0, y: 0 },
     crashes: 0, dist: 0, maxV: 0, clockMin: C.time.clockStart, warnSec: 99, taunted: {}, tauntPool: [], hornT: 0, overT: 0, endReason: '', win: false, bonus: 0, crashT: 0, shake: 0,
     cam: null, lastCount: -1
   };
@@ -1272,7 +1294,7 @@ function drive(dt) {
     if (b.v < 0) b.v = Math.min(0, b.v + B.brake * dt);
     else b.v += B.accel * dt * (1 - .55 * b.v / B.maxSpeed);
   } else if (inp.brake && !inp.gas) {
-    if (b.v > .3) b.v = Math.max(0, b.v - B.brake * dt);
+    if (b.v > .3) b.v = Math.max(0, b.v - B.brake * (G.drifting ? (C.drift.brake || .22) : 1) * dt);
     else b.v = Math.max(-B.maxReverse, b.v - B.accel * .6 * dt);
   } else {
     const d = (B.drag + .004 * b.v * b.v) * dt; b.v = Math.abs(b.v) <= d ? 0 : b.v - Math.sign(b.v) * d;
@@ -1281,14 +1303,21 @@ function drive(dt) {
   const sf = Math.abs(b.v) / B.maxSpeed, maxS = B.steerMax * (1 - (1 - B.steerAtTop) * sf);
   b.steer = lerp(b.steer, steerIn * maxS, 1 - Math.exp(-B.steerSpeed * dt));
   // bicicleta: positivo = vira à direita (no Three, ângulo positivo gira para a esquerda)
-  b.h -= b.v / B.wheelBase * Math.tan(b.steer) * dt;
+  // drift: rápido + virando + freio = a traseira escorrega (a direção do movimento demora a seguir o bico)
+  const DR = C.drift || {};
+  G.drifting = DR.enabled !== false && inp.brake && !inp.gas && steerIn !== 0 && b.v > B.maxSpeed * (DR.minSpeed || .55);
+  b.h -= b.v / B.wheelBase * Math.tan(b.steer) * dt * (G.drifting ? (DR.steerBoost || 1.7) : 1);
+  const grip = b.v <= 0 ? 60 : G.drifting ? (DR.grip || 2.2) : (DR.normalGrip || 9);
+  let dh = b.h - b.vh; dh = Math.atan2(Math.sin(dh), Math.cos(dh));
+  b.vh += dh * (1 - Math.exp(-grip * dt));
+  b.slip = Math.abs(Math.atan2(Math.sin(b.h - b.vh), Math.cos(b.h - b.vh)));
   b.roll = lerp(b.roll, b.steer * sf * B.lean * 6 * Math.sign(b.v || 1), 1 - Math.exp(-6 * dt));
   b.pitch = lerp(b.pitch, (inp.gas && b.v < B.maxSpeed * .9 ? -.012 : 0) + (inp.brake && b.v > 1 ? .02 : 0), 1 - Math.exp(-5 * dt));
   move(dt);
   G.maxV = Math.max(G.maxV, b.v);
 }
 function move(dt) {
-  const b = G.bus, [fx, fz] = fwd(b.h);
+  const b = G.bus, [fx, fz] = fwd(b.v > 0 ? b.vh : b.h);
   const ox = b.x, oz = b.z;
   b.x += fx * b.v * dt; b.z += fz * b.v * dt;
   collide();
@@ -1311,10 +1340,21 @@ function collide() {
       } else { const p = (r - d) / d; b.x += dx * p; b.z += dz * p; dx /= d; dz /= d; }
       hit = { nx: dx, nz: dz };
     }
+    // postes e árvores (círculos)
+    for (const q of W.posts) {
+      const dx0 = cx - q.x, dz0 = cz - q.z, rr2 = r + q.r;
+      if (dx0 > rr2 || dx0 < -rr2 || dz0 > rr2 || dz0 < -rr2) continue;
+      const d = Math.hypot(dx0, dz0); if (d >= rr2 || d < 1e-6) continue;
+      const p = (rr2 - d) / d; b.x += dx0 * p; b.z += dz0 * p;
+      hit = { nx: dx0 / d, nz: dz0 / d, post: true };
+    }
   }
   if (hit) {
     const along = Math.abs(fx * hit.nx + fz * hit.nz), sp = Math.abs(b.v);
-    if (along > .55) { if (sp > 3 && G.crashT <= 0) { G.crashes++; G.crashT = .5; G.shake = Math.min(1, sp / 14); Sound.sfx('crash'); } b.v *= -B.bounce * .6; }
+    if (along > .55 || hit.post) { // de frente (ou num poste/árvore): o ônibus para
+      if (sp > 3 && G.crashT <= 0) { G.crashes++; G.crashT = .5; G.shake = Math.min(1, sp / 14); Sound.sfx('crash'); }
+      b.v = B.hitStop === false ? b.v * -B.bounce * .6 : 0;
+    }
     else { b.v *= .985; if (sp > 6 && G.crashT <= 0) { G.crashT = .35; Sound.sfx('scrape'); } }
   }
 }
@@ -1412,7 +1452,9 @@ function applyNight(f) {
 }
 function syncBus() {
   const b = G.bus;
-  W.bus.position.set(b.x, 0, b.z); W.bus.rotation.y = b.h;
+  const onWalk = W.blocks.some(q => b.x > q.x0 && b.x < q.x1 && b.z > q.z0 && b.z < q.z1);
+  b.y = lerp(b.y || 0, onWalk ? .25 : 0, .25);
+  W.bus.position.set(b.x, b.y, b.z); W.bus.rotation.y = b.h;
   W.busBody.rotation.z = b.roll; W.busBody.rotation.x = b.pitch;
   W.busBody.position.y = Math.abs(b.v) > .5 ? Math.sin(G.t * 22) * .025 : 0;
 }
@@ -1447,6 +1489,7 @@ function render() {
   renderer.render(scene, camera);
   if (showArrow) { renderer.clearDepth(); renderer.render(ui.scene, ui.cam); }
   // motor
+  Sound.skid(G.state === 'play' && G.bus.v > 4 ? clamp((G.bus.slip - .06) * 3.2, 0, 1) : 0);
   Sound.engine(G.state === 'play' || G.state === 'count' || (G.state === 'over' && Math.abs(G.bus.v) > .5), Math.abs(G.bus.v) / B.maxSpeed, inp.gas ? 1 : 0);
 }
 
@@ -1462,9 +1505,9 @@ function resize() {
   ui.cam.aspect = w / h; ui.cam.updateProjectionMatrix();
   // seta a ~11% do topo, a 9 unidades da câmera da seta
   const half = Math.tan(THREE.MathUtils.degToRad(ui.cam.fov / 2)) * 9;
-  W.arrowY = half * .7;
+  W.arrowY = half * .76;
   if (W.arrow) W.arrow.tilt.position.set(0, W.arrowY, -9);
-  if (W.arrow) W.arrow.tilt.scale.setScalar(.72);
+  if (W.arrow) W.arrow.tilt.scale.setScalar((C.hud && C.hud.arrowScale) || .5);
   if (isPortraitPhone() && G && G.state === 'play') pauseGame();
 }
 
@@ -1527,7 +1570,7 @@ function setHudIcons() {
   $('#hMute').innerHTML = Sound.muted ? ICON.mute : ICON.sound;
   renderLogo($('#hLogo')); renderLogo($('#cLogo'));
 }
-function setHud(on) { $('#hud').classList.toggle('on', on); $$('.ctrl').forEach(b => b.classList.toggle('on', on)); $('#target').classList.toggle('on', on); $('#hSpeed').classList.toggle('on', on); }
+function setHud(on) { $('#hud').classList.toggle('on', on); $$('.ctrl').forEach(b => b.classList.toggle('on', on)); $('#target').classList.toggle('on', on); $('#tName').classList.toggle('on', on); }
 function setTxt(id, v) { if (hudCache[id] !== v) { hudCache[id] = v; $(id).textContent = v; } }
 function updateHud(force) {
   if (force) { for (const k in hudCache) delete hudCache[k]; $('#hLeg .ticks').innerHTML = CHARS.map(() => '<i></i>').join(''); }
@@ -1621,6 +1664,12 @@ function goFullscreen() {
       if (p && p.then) p.then(lock).catch(() => {}); else lock();
     }
   } catch (e) {}
+}
+// tela cheia no primeiro toque em qualquer lugar (o navegador só permite dentro de um toque/clique).
+// iPhone: o Safari não tem tela cheia para páginas; ali o jeito é 'Adicionar à Tela de Início' (manifest display: fullscreen).
+if (C.fullscreenOnTouch !== false) {
+  const fsTap = () => { if (!document.fullscreenElement && !document.webkitFullscreenElement) goFullscreen(); };
+  ['pointerup', 'touchend', 'click'].forEach(t => addEventListener(t, fsTap, { capture: true, passive: true }));
 }
 function startFlow() {
   if (hasPlayed()) { toast(playedMsg(), 1800); return goTitle(); }
@@ -1825,7 +1874,7 @@ window.__bus = {
   step(sec) { const n = Math.round(sec / DT); for (let i = 0; i < n; i++) update(DT); updateHud(); },
   press(k, down) { inp[k] = !!down; },
   skipCount() { while (G.state === 'count') update(DT); },
-  teleport(x, z, h) { G.bus.x = x; G.bus.z = z; if (h != null) G.bus.h = h; G.bus.v = 0; snapCamera(); },
+  teleport(x, z, h) { G.bus.x = x; G.bus.z = z; if (h != null) G.bus.h = G.bus.vh = h; G.bus.v = 0; snapCamera(); },
   // põe o ônibus 15 m antes do alvo atual, de frente para ele
   nearTarget(back = 15) { const t = curTarget(); if (t.ax === 'z') this.teleport(t.x, t.z - back, 0); else this.teleport(t.x - back, t.z, Math.PI / 2); return t; },
   toTarget() { const t = curTarget(); if (t) this.teleport(t.x, t.z); this.step(DT); return t; },

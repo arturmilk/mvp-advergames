@@ -15,7 +15,8 @@ aparece o aviso para girar e a partida pausa.
 * **Peso dos assets do jogo:** ~1,2 MB em webp (texturas ~420 KB, fachada nova 123 KB, sprites 330 KB, HQ 337 KB).
 * **Som do motor:** segurando o acelerador o ronco sobe marcha a marcha (4 marchas, com a queda de giro e um estalo em cada troca) e
   só chega no pico depois de **10 s** (`engineSound.rampSec`, fatias de cada marcha em `engineSound.gears`). Soltando, o giro cai.
-* **Trilha:** riff **original** de hard rock em Mi (power chords com palhetada abafada, bateria e baixo simples, 152 bpm), no clima de
+* **Trilha:** riff **original** de hard rock em Mi (power chords com palhetada abafada e galope, bateria cheia com bumbo em todo tempo,
+  chimbal em semicolcheias, prato na virada e uma frase curta de guitarra solo, 176 bpm), no clima de
   banda pesada dos anos 70 pedido como referência, **sem copiar nenhuma música** (direito autoral). Volume em `musicVolume`, andamento
   em `musicTempo`; o botão de som da HUD tira tudo.
 * Áudio todo sintetizado com Web Audio: ronco do motor (acompanha a velocidade), buzina, riff de guitarra ao resgatar, sirene nos
@@ -74,6 +75,11 @@ iPhone respeitada. Só toque e segurar, sem swipe. A partida pausa sozinha quand
 * **Tempo:** começa com **30 s** (`time.start`). Cada resgate soma **+10 s** (`time.bonus`) e **+10 pontos** (`points.rescue`).
   Com 30 s o primeiro resgate precisa sair rápido: a rota sorteia a próxima lenda a 110–240 m (`pickup.minDist/maxDist`). Se ficar
   difícil demais, o ajuste mais suave é subir `time.start` para 40 ou baixar `pickup.maxDist`.
+* **Calçada e batidas:** o ônibus pode subir na calçada (sobe 25 cm). O que bloqueia é o prédio (miolo do quarteirão), os **postes** e as
+  **árvores**: bater de frente em qualquer um deles **para o ônibus** (`bus.hitStop`); raspar de lado só freia um pouco. Praças e o
+  estacionamento da loja são livres (só as árvores e o prédio da loja bloqueiam).
+* **Drift** (`drift`): acima de 55% da velocidade máxima (~53 km/h), virando e segurando o **freio**, a traseira escorrega (o bico vira mais
+  rápido que a direção do movimento), o freio segura só 22% e os pneus chiam (ruído filtrado no Web Audio, volume pelo tamanho da derrapada).
 * **Contagem:** antes de largar aparece 3, 2, 1 e VAI! numa placa preta de stencil com um estouro de raios girando (o VAI! em vermelho).
 * **Provocações** (`taunts`): quando faltam **15, 8 e 3 s**, a próxima lenda a ser buscada aparece num balão amarelo com uma das
   frases da lista (sem repetir até usar todas). Se um resgate devolver tempo, o marco volta a valer.
@@ -98,6 +104,25 @@ iPhone respeitada. Só toque e segurar, sem swipe. A partida pausa sozinha quand
 10 por lenda (máximo 100) + 1 ponto por segundo que sobrou na vitória. Títulos (`goals`): Motorista de Primeira Viagem (0),
 Roadie de Respeito (30 = 3 lendas), Piloto do Apocalipse (60), Lenda da Estrada (100 = as 10 lendas). Quem vence ganha
 **O Show Vai Começar!**
+
+### Onde fica cada coisa na tela (a pista e o horizonte ficam sempre livres)
+* **Alto, à esquerda:** logo, tempo (sem rótulo), barra de tempo, horário do jogo (18:00→19:00) e **velocímetro**.
+* **Alto, à direita:** buzina, som, pausa, pontos e lendas.
+* **Alto, no meio:** a seta 3D (menor, `hud.arrowScale`), a distância e, por 1,5 s, o letreiro do resgate. O aviso "TODO MUNDO A BORDO!"
+  também aparece no alto.
+* **Embaixo, no meio:** o nome do próximo alvo ("2/10 · RAUL SEIXAS") e, quando a lenda fala (resgate ou provocação), um balão compacto
+  entre as setas e os pedais. Ele pode cobrir a traseira do ônibus por alguns segundos, mas nunca a pista à frente nem o horizonte.
+
+### Tela cheia
+`fullscreenOnTouch: true`: o primeiro toque em **qualquer lugar** da tela liga a tela cheia (e trava na horizontal onde o navegador deixa).
+Funciona no Android (Chrome, Samsung Internet) e no computador. **No iPhone o Safari não tem tela cheia para páginas** (só para vídeo): lá
+o jeito é o jogador tocar em Compartilhar › **Adicionar à Tela de Início** e abrir pelo ícone, que abre sem as barras do Safari (o
+`manifest.webmanifest` e as metas `apple-mobile-web-app-*` já estão prontos). No iPad o Safari aceita a tela cheia normal.
+
+### QR code
+`ticket.quietWait: true`: o jogo confere e valida o QR **sem** a tela "Conferindo/Validando o QR code" (a regra de uma partida por QR e os
+avisos de QR usado, inválido ou cancelado continuam iguais). A opção é nova no `ticket.js` (as 4 cópias continuam idênticas); nos outros
+jogos ela fica desligada.
 
 ### HUD (visual)
 Referência de clima: games de skate do fim dos anos 90 (pôster de show xerocado, fita crepe, stencil, letreiro de manobra), sem copiar
@@ -308,6 +333,18 @@ Chromium (Playwright), deitado, coleta de dados bloqueada no teste.
 | 28 | Console e rolagem | Sem erros, sem rolagem horizontal ✔ |
 
 A música e o som do motor foram conferidos pelos números (marchas e tempos); **ninguém ouviu ainda**: vale escutar no celular.
+
+### Testes da rodada 4 (09/11/2026)
+
+| # | Cenário | Resultado |
+|---|---|---|
+| 29 | Layout | 740×360, 932×430 e 1000×480: balão da lenda embaixo entre os controles (ex. 740×360: x 205–534, y 247–329), nome do alvo embaixo, velocímetro no alto à esquerda, letreiro do resgate acima do horizonte; nada no meio da pista; sem rolagem horizontal ✔ |
+| 30 | Drift | A 90% da velocidade, virando + freio: entra em drift, derrapagem de até ~28° ✔ |
+| 31 | Poste | Ônibus a 15 m/s de frente para um poste: para com a frente no poste e conta a batida ✔ |
+| 32 | Calçada | Ônibus em cima da calçada: sobe para 0,25 m; de frente contra o prédio, para ✔ |
+| 33 | Console | Sem erros nem avisos ✔ |
+
+Não testado: tela cheia de verdade (o navegador de teste não entra em tela cheia), som do drift e da música nova (ninguém ouviu), celular físico.
 
 Corrigido junto: o `resize()` tentava posicionar a seta antes de ela existir (erro `reading 'tilt'` no console em alguns carregamentos).
 

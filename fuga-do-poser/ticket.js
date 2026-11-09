@@ -62,6 +62,8 @@
 
   /* ---------- tela por cima do jogo ---------- */
   function overlay(kind, retry, label) {
+    // quietWait: true = conferir/validar o QR em silêncio (sem a tela de espera); os avisos de QR usado/inválido continuam
+    if (cfg.quietWait && (kind === 'checking' || kind === 'claiming')) { hide(); return; }
     if (!box) {
       box = document.createElement('div');
       box.id = 'rt-overlay';
