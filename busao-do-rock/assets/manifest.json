@@ -58,11 +58,12 @@
       "id": "store",
       "file": "store.webp",
       "source": "assets/_raw/store.webp",
-      "higgsfieldJob": "5e77f6e7-a52a-46b3-9fc2-e8fe4aa180e7",
-      "prompt": "Flat orthographic black rock t-shirt store facade at dusk, flame decals, plain black shirts in the window, red gothic neon sign \"Máquina do Mal\", purple neon guitar and bolt.",
-      "usage": "fachada da loja Máquina do Mal (recortada sem o céu) e quadro 1 da HQ",
+      "higgsfieldJob": "4c41b67f-0f16-40b0-b806-ab58eb9a62e0",
+      "prompt": "Stylized hand-painted retro arcade 3D game texture, flat orthographic front elevation of a single-storey rock music store facade, based on the storefront reference photo: dark brown sign board with 'Máquina do Mal' in white gothic blackletter, glass windows with guitars, vinyl records and t-shirt silhouettes, central glass door, generic abstract rock graffiti on the side walls (no recognizable characters), dusk orange-purple palette. No people, no other text, no third-party logos.",
+      "usage": "fachada da loja Máquina do Mal no jogo (recorte 0,40-1344,712 do bruto 16:9). Versão anterior: _raw/store_v1.webp (job 5e77f6e7-a52a-46b3-9fc2-e8fe4aa180e7)",
       "w": 1024,
-      "h": 512
+      "h": 512,
+      "reference": "foto da fachada real da loja (pasta sprites/felipe, fora do git) + quadro 1 da HQ"
     },
     {
       "id": "sky",
@@ -104,5 +105,127 @@
       "w": 256,
       "h": 256
     }
-  ]
+  ],
+  "characters": {
+    "note": "Sprites dos personagens: canvas igual para todos, fundo transparente, pés na borda de baixo. Originais em _raw/chars (nomes da pasta sprites). Gere de novo com python tools/process_sprites.py.",
+    "canvas": [
+      1024,
+      512
+    ],
+    "items": [
+      {
+        "id": "ozzy",
+        "file": "chars/ozzy.webp",
+        "source": "_raw/chars/ozzy.png",
+        "w": 1024,
+        "h": 512,
+        "scale": 0.964,
+        "kb": 15.6
+      },
+      {
+        "id": "raul",
+        "file": "chars/raul.webp",
+        "source": "_raw/chars/raul seixas.png",
+        "w": 1024,
+        "h": 512,
+        "scale": 1.059,
+        "kb": 20.7
+      },
+      {
+        "id": "kurt",
+        "file": "chars/kurt.webp",
+        "source": "_raw/chars/kurtcobain.png",
+        "w": 1024,
+        "h": 512,
+        "scale": 0.892,
+        "kb": 27.2
+      },
+      {
+        "id": "chorao",
+        "file": "chars/chorao.webp",
+        "source": "_raw/chars/chorao.png",
+        "w": 1024,
+        "h": 512,
+        "scale": 1.052,
+        "kb": 20.8
+      },
+      {
+        "id": "slipknot",
+        "file": "chars/slipknot.webp",
+        "source": "_raw/chars/slipknot.png",
+        "w": 1024,
+        "h": 512,
+        "scale": 1.386,
+        "kb": 89.3
+      },
+      {
+        "id": "sepultura",
+        "file": "chars/sepultura.webp",
+        "source": "_raw/chars/SEPULTURA.png",
+        "w": 1024,
+        "h": 512,
+        "scale": 1.291,
+        "kb": 38.7
+      },
+      {
+        "id": "angus",
+        "file": "chars/angus.webp",
+        "source": "_raw/chars/angus young.png",
+        "w": 1024,
+        "h": 512,
+        "scale": 1.249,
+        "kb": 33.2
+      },
+      {
+        "id": "axl",
+        "file": "chars/axl.webp",
+        "source": "_raw/chars/axlr.png",
+        "w": 1024,
+        "h": 512,
+        "scale": 0.862,
+        "kb": 20.1
+      },
+      {
+        "id": "soad",
+        "file": "chars/soad.webp",
+        "source": "_raw/chars/soad.png",
+        "w": 1024,
+        "h": 512,
+        "scale": 1.417,
+        "kb": 64.3
+      }
+    ]
+  },
+  "comic": {
+    "note": "Quadros da HQ de abertura (1:1). Felipe é personagem estilizado gerado a partir de 2 fotos de referência (fora do git); a mesma geração (p1) serviu de referência para p2, p3 e a fachada, para manter o traço. Textos, cartaz e relógio são HTML por cima.",
+    "generator": "gpt_image_2_5 (Higgsfield), quality=high, resolution=1k, aspect 1:1",
+    "style": "Classic 1970s-80s Marvel comic book panel, bold black ink outlines, flat vivid colors, Ben-Day dot halftone shading, CMYK print texture, aged newsprint paper grain. No balloons, no captions (os textos ficam no config.js).",
+    "panels": [
+      {
+        "id": "p1",
+        "file": "comic/p1.webp",
+        "source": "_raw/comic/p1.webp",
+        "higgsfieldJob": "155434c6-854e-40a1-bcc2-e39088ca013a",
+        "prompt": "Late afternoon sunset, the Máquina do Mal storefront (from the reference photo, murals replaced by generic rock graffiti); Felipe in the foreground opening the door and checking his watch, surprised."
+      },
+      {
+        "id": "p2",
+        "file": "comic/p2.webp",
+        "source": "_raw/comic/p2.webp",
+        "higgsfieldJob": "7a3b4a3c-a641-4f09-80f1-72d000407f8b",
+        "prompt": "Inside the store, guitars and records; Felipe on the left 40%, shocked, hands on his head; right side an empty brick wall (cartaz e relógio entram em HTML)."
+      },
+      {
+        "id": "p3",
+        "file": "comic/p3.webp",
+        "source": "_raw/comic/p3.webp",
+        "higgsfieldJob": "3d1e4307-2a48-4a63-9f97-9787cc21f761",
+        "prompt": "Dusk, the black-and-purple flame tour bus bursting out of the garage, Felipe at the wheel giving a thumbs up; upper left calm for the balloon."
+      }
+    ],
+    "size": [
+      600,
+      600
+    ]
+  }
 }

@@ -7,12 +7,16 @@
 const CONFIG = {
   version: 'br-1.0',
   clientName: 'Máquina do Mal',
+  // logo da loja na HUD e na tela inicial. image vazio = logo provisório em letra gótica com o texto abaixo.
+  // Para usar o logo oficial: salve em assets/logo.png (fundo transparente) e ponha image: 'assets/logo.png'.
+  logo: { image: '', text: 'Máquina do Mal' },
   gameName: 'Busão do Rock',
 
   /* ---------- Tempo e relógio ---------- */
   time: {
-    start: 90,           // segundos no começo da partida
-    bonus: 15,           // segundos ganhos a cada resgate
+    start: 40,           // segundos no começo da partida
+    bonus: 10,           // segundos ganhos a cada resgate
+    meterMax: 60,        // tempo que enche a barra de tempo da HUD
     warnAt: 10,          // a partir daqui o cronômetro pisca e a sirene toca a cada segundo
     countdown: 3,        // contagem 3-2-1 antes de largar
     clockStart: 18 * 60, // relógio do jogo: 18:00 ...
@@ -21,14 +25,14 @@ const CONFIG = {
 
   /* ---------- Pontos ---------- */
   points: {
-    rescue: 500,         // por lenda resgatada
-    winPerSecond: 10     // bônus na vitória: pontos por segundo que sobrou no cronômetro
+    rescue: 10,          // por lenda resgatada
+    winPerSecond: 1      // bônus na vitória: pontos por segundo que sobrou no cronômetro
   },
   goals: [               // título no fim da partida (min = pontuação mínima)
-    { min: 0,    name: 'Motorista de Primeira Viagem' },
-    { min: 1500, name: 'Roadie de Respeito' },
-    { min: 3500, name: 'Piloto do Apocalipse' },
-    { min: 5000, name: 'Lenda da Estrada' }
+    { min: 0,   name: 'Motorista de Primeira Viagem' },   // 10 pts por lenda: 30 = 3 lendas
+    { min: 30,  name: 'Roadie de Respeito' },
+    { min: 60,  name: 'Piloto do Apocalipse' },
+    { min: 100, name: 'Lenda da Estrada' }                // as 10 lendas
   ],
   winTitle: 'O Show Vai Começar!',
 
@@ -83,33 +87,36 @@ const CONFIG = {
     antialias: true
   },
 
-  /* ---------- Personagens (PLACEHOLDERS) ----------
+  /* ---------- Personagens ----------
      image: caminho da imagem final (PNG/webp com fundo transparente, em pé, de frente), ex.: 'assets/chars/ozzy.webp'.
      Vazio = boneco provisório simples na cor `color` com o nome escrito.
+     Todas as imagens têm o MESMO canvas (1024×512, pés na borda de baixo; tools/process_sprites.py), então saem na mesma escala.
      line = fala cômica no balão quando embarca. A ordem da lista é a ordem dos resgates. */
+  charHeight: 4.2,   // altura (m) do sprite em pé na calçada; o ônibus tem ~3,4 m. Maior = reconhece de mais longe
   characters: [
-    { id: 'ozzy',     name: 'Ozzy Osbourne', color: '#5B3A8C', image: '', line: 'Eu tava procurando um morcego... tava com fome, entende?... SHAROOOON!' },
-    { id: 'raul',     name: 'Raul Seixas',   color: '#8C5A2B', image: '', line: 'Tentei outra vez e você finalmente chegou!' },
-    { id: 'kurt',     name: 'Kurt Cobain',   color: '#C23A2B', image: '', line: 'Que cheiro é esse? Ah, é espírito de busão!' },
-    { id: 'chorao',   name: 'Chorão',        color: '#2B7AC2', image: '', line: 'O skate me ensinou a chegar até atrasado, truta!' },
+    { id: 'ozzy',     name: 'Ozzy Osbourne', color: '#5B3A8C', image: 'assets/chars/ozzy.webp', line: 'Eu tava procurando um morcego... tava com fome, entende?... SHAROOOON!' },
+    { id: 'raul',     name: 'Raul Seixas',   color: '#8C5A2B', image: 'assets/chars/raul.webp', line: 'Tentei outra vez e você finalmente chegou!' },
+    { id: 'kurt',     name: 'Kurt Cobain',   color: '#C23A2B', image: 'assets/chars/kurt.webp', line: 'Que cheiro é esse? Ah, é espírito de busão!' },
+    { id: 'chorao',   name: 'Chorão',        color: '#2B7AC2', image: 'assets/chars/chorao.webp', line: 'O skate me ensinou a chegar até atrasado, truta!' },
     { id: 'rita',     name: 'Rita Lee',      color: '#E0572B', image: '', line: 'Ovelha negra da família, mas passageira VIP desse busão!' },
-    { id: 'purple',   name: 'Deep Purple',   color: '#7A2BC2', image: '', line: 'Fumaça na água, fogo no céu... e eu aqui no ponto!' },
-    { id: 'slipknot', name: 'Slipknot',      color: '#C2702B', image: '', line: 'Tô de máscara pra ninguém ver que eu esperei uma hora no ponto.' },
-    { id: 'sepultura',name: 'Sepultura',     color: '#3A7A2B', image: '', line: 'Roots, bloody roots! Raiz mesmo é esperar ônibus no sol!' },
-    { id: 'angus',    name: 'Angus Young',   color: '#1F3F8C', image: '', line: 'Cuidado, motorista, essa avenida é uma Highway to Hell!' },
-    { id: 'axl',      name: 'Axl Rose',      color: '#B0151B', image: '', line: 'Welcome to the jungle, baby! Selva mesmo é esse trânsito!' }
+    { id: 'soad',     name: 'System of a Down', color: '#7A2BC2', image: 'assets/chars/soad.webp', line: 'Wake up! Esse busão demorou mais que fila de show!' },
+    { id: 'slipknot', name: 'Slipknot',      color: '#C2702B', image: 'assets/chars/slipknot.webp', line: 'Tô de máscara pra ninguém ver que eu esperei uma hora no ponto.' },
+    { id: 'sepultura',name: 'Sepultura',     color: '#3A7A2B', image: 'assets/chars/sepultura.webp', line: 'Roots, bloody roots! Raiz mesmo é esperar ônibus no sol!' },
+    { id: 'angus',    name: 'Angus Young',   color: '#1F3F8C', image: 'assets/chars/angus.webp', line: 'Cuidado, motorista, essa avenida é uma Highway to Hell!' },
+    { id: 'axl',      name: 'Axl Rose',      color: '#B0151B', image: 'assets/chars/axl.webp', line: 'Welcome to the jungle, baby! Selva mesmo é esse trânsito!' }
   ],
 
   /* ---------- Felipe (protagonista, aparece só na HQ) — PLACEHOLDER ---------- */
   felipe: { name: 'Felipe', color: '#2B2B2B', image: '' },
 
-  /* ---------- HQ de abertura (3 quadros) ---------- */
+  /* ---------- HQ de abertura (3 quadros) ----------
+     image = arte do quadro (Higgsfield, estilo Marvel com retícula; Felipe já desenhado). Vazio = quadro montado com a fachada/ônibus + Felipe. */
   comic: {
     title: 'Máquina do Mal em: Busão do Rock',
     panels: [
-      { caption: 'Fim de tarde, centro da cidade.', line: 'Mais um dia na Máquina do Mal... espera aí...' },
-      { caption: '18:00 em ponto.', poster: 'SHOW DE ROCK HOJE ÀS 19H!', line: 'Puta merda! O show é logo ao anoitecer e as bandas ainda tão espalhadas pela cidade!' },
-      { caption: 'Garagem da loja.', line: 'Bora botar o ônibus na pista e juntar essa galera!' }
+      { caption: 'Fim de tarde, centro da cidade.', image: 'assets/comic/p1.webp', line: 'Mais um dia na Máquina do Mal... espera aí...' },
+      { caption: '18:00 em ponto.', image: 'assets/comic/p2.webp', poster: 'SHOW DE ROCK HOJE ÀS 19H!', line: 'Puta merda! O show é logo ao anoitecer e as bandas ainda tão espalhadas pela cidade!' },
+      { caption: 'Garagem da loja.', image: 'assets/comic/p3.webp', line: 'Bora botar o ônibus na pista e juntar essa galera!' }
     ],
     button: 'COMEÇAR (TELA CHEIA)'
   },
@@ -126,7 +133,7 @@ const CONFIG = {
     howTitle: 'Como jogar',
     howTips: [
       'Siga a SETA verde e amarela no topo da tela: ela aponta para a próxima lenda e mostra a distância.',
-      'Passe o ônibus pela zona neon no chão para embarcar a lenda: +15 segundos e +500 pontos.',
+      'Você começa com só 40 segundos. Passe o ônibus pela zona neon no chão para embarcar a lenda: +10 segundos e +10 pontos.',
       'Depois da 10ª lenda, a seta aponta de volta para a loja Máquina do Mal. Chegue lá antes do tempo zerar!',
       'Celular: ◀ ▶ à esquerda para virar; à direita, o pedal grande acelera e o FREIO/RÉ freia e dá ré. Teclado: W A S D ou setas; H buzina.'
     ],
@@ -144,7 +151,7 @@ const CONFIG = {
     savedTitle: 'Nome gravado!',
     playedMsg: 'Valeu por jogar! É uma partida por vez que o link é aberto. Confira o ranking.',
     playedMsgDevice: 'Valeu por jogar! Cada aparelho tem direito a uma partida. Confira o ranking.',
-    footer: 'Um jogo da Máquina do Mal. Personagens provisórios.'
+    footer: 'Um jogo da Máquina do Mal.'
   },
 
   /* ---------- Admin (/?admin=true ou segurar o título da HQ por 3 s) ---------- */
@@ -159,7 +166,7 @@ const CONFIG = {
   analytics: {
     game: 'busao-do-rock', // não troque: é a chave deste jogo na planilha
     endpoint: 'https://script.google.com/macros/s/AKfycbyOZORbDFYrL_rfN4JM_fgma4S2ReeeZjYA6e11ZdyVexaaIVB5ZD8KOt95Q3QTCNpJhA/exec',
-    milestones: [500, 1500, 2500, 3500, 5000, 6000]
+    milestones: [30, 60, 100, 120]
   },
 
   /* ---------- QR code de uso único (ticket.js) ----------

@@ -18,14 +18,31 @@ JOBS = {
     'facade_a':  ('facade_a.webp',  None,                 (512, 1024), 74),
     'facade_b':  ('facade_b.webp',  None,                 (512, 1024), 74),
     'facade_c':  ('facade_c.webp',  None,                 (512, 1024), 74),
-    'store':     ('store.webp',     (16, 14, 1018, 636),  (1024, 512), 80),
+    'store':     ('store.webp',     (0, 40, 1344, 712),   (1024, 512), 70),
     'sky':       ('sky.webp',       None,                 (1024, 512), 74),
     'bus_side':  ('bus_side.webp',  None,                 (1024, 512), 80),
     'bus_front': ('bus_front.webp', None,                 (512, 512),  80),
     'tree':      ('tree.webp',      None,                 (256, 256),  80),
 }
 
+# quadros da HQ de abertura (assets/_raw/comic/pN.webp -> assets/comic/pN.webp)
+COMIC = {'p1': (600, 600, 66), 'p2': (600, 600, 66), 'p3': (600, 600, 66)}
+
+
+def comic():
+    os.makedirs(os.path.join(ASSETS, 'comic'), exist_ok=True)
+    res = {}
+    for pid, (w, h, q) in COMIC.items():
+        im = Image.open(os.path.join(RAW, 'comic', pid + '.webp')).convert('RGB').resize((w, h), Image.LANCZOS)
+        dst = os.path.join(ASSETS, 'comic', pid + '.webp')
+        im.save(dst, 'WEBP', quality=q, method=6)
+        res[pid] = round(os.path.getsize(dst) / 1024, 1)
+        print('comic', pid, res[pid], 'KB')
+    return res
+
+
 def main():
+    comic()
     out = {}
     for tid, (src, crop, size, q) in JOBS.items():
         im = Image.open(os.path.join(RAW, src))

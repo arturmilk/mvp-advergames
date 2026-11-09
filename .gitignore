@@ -3,3 +3,9 @@
 .DS_Store
 Thumbs.db
 analytics/dev_data.json
+
+# Fonte do Claude Project (notas internas; o repo é público)
+claude-project/
+
+# Fotos de referência de pessoas reais (Busão do Rock): só para gerar no Higgsfield, não publicar
+busao-do-rock/assets/_raw/refs/

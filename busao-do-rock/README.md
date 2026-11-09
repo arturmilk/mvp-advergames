@@ -8,10 +8,11 @@ aparece o aviso para girar e a partida pausa.
 * `index.html` único com todo o JS (cidade, física, câmera, HUD, telas, admin, áudio). Única dependência externa:
   **Three.js r128** pelo CDN (`cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js`). Sem o CDN o jogo mostra o aviso
   "Não foi possível carregar o motor 3D".
-* Texturas geradas no **Higgsfield** e otimizadas em webp (`assets/`, ~460 KB no total). Se alguma não carregar, o jogo desenha
+* Texturas, fachada da loja e HQ de abertura geradas no **Higgsfield** e otimizadas em webp. Se alguma não carregar, o jogo desenha
   uma reserva procedural em Canvas com o mesmo id e não quebra.
-* **Personagens são placeholders**: as 10 lendas e o Felipe aparecem como um boneco simples (silhueta na cor do personagem, rosto
-  com "?" e o nome escrito). As imagens finais entram pelo `config.js` (veja § 3).
+* **Lendas:** 9 sprites recortados (pasta `sprites` do Felipe), padronizados no mesmo canvas em `assets/chars/*.webp` (veja § 3).
+  A Rita Lee ainda não tem imagem e segue com o boneco provisório. O Felipe aparece só na HQ, já desenhado nos quadros.
+* **Peso dos assets do jogo:** ~1,2 MB em webp (texturas ~420 KB, fachada nova 123 KB, sprites 330 KB, HQ 337 KB).
 * Áudio todo sintetizado com Web Audio: ronco do motor (acompanha a velocidade), buzina, riff de guitarra ao resgatar, sirene nos
   últimos segundos, contagem 3-2-1, trilha de rock e solo da vitória.
 * Mesmo modo de operar dos outros jogos: apelido com o mesmo filtro de palavrões, placar local + planilha Google + dashboard, QR code
@@ -21,8 +22,12 @@ aparece o aviso para girar e a partida pausa.
 index.html              jogo completo (Three.js + HUD + telas + admin + áudio)
 config.js               TODA a configuração (tempo, pontos, física, cidade, personagens e falas, HQ, textos, senhas)
 assets/*.webp           texturas (asfalto, calçada, 3 fachadas, loja, céu, ônibus lateral/frente, árvore) + manifest.json
-assets/_raw/            imagens originais do Higgsfield (webp q92), fonte para reprocessar
-tools/process_textures.py   converte assets/_raw -> assets/*.webp (potência de 2) + ícones
+assets/chars/*.webp     sprites das lendas (canvas 1024×512 igual para todos, fundo transparente)
+assets/comic/p1..p3.webp  quadros da HQ de abertura (600×600)
+assets/_raw/            originais (Higgsfield em webp q92, sprites em PNG com os nomes da pasta sprites), fonte para reprocessar
+assets/_raw/refs/       fotos de referência do Felipe e da fachada (FORA do git, .gitignore: pessoa real)
+tools/process_textures.py   converte assets/_raw -> assets/*.webp (potência de 2) + quadros da HQ + ícones
+tools/process_sprites.py    padroniza assets/_raw/chars/*.png -> assets/chars/<id>.webp
 analytics.js, ticket.js cópias idênticas dos arquivos da raiz (coleta de dados e QR code de uso único)
 manifest.webmanifest, sw.js   PWA básico (tela cheia, horizontal)
 ```
@@ -33,8 +38,11 @@ Publicado (depois do merge no `main`): https://arturmilk.github.io/mvp-advergame
 
 ## 1. Como jogar
 
-**Abertura:** HQ em 3 quadros (fanzine, bordas pretas grossas, fundo em retícula). 1) Felipe abrindo a loja; 2) o cartaz
-"SHOW DE ROCK HOJE ÀS 19H!" e o relógio marcando 18:00; 3) Felipe ligando o ônibus. O botão **[ COMEÇAR (TELA CHEIA) ]** liga a
+**Abertura:** HQ em 3 quadros no estilo Marvel anos 70/80 (traço preto grosso, cores chapadas, retícula Ben-Day e papel de
+jornal impresso por cima), arte do Higgsfield em `assets/comic/`. 1) Felipe abrindo a Máquina do Mal ao pôr do sol, olhando o
+relógio; 2) Felipe desesperado dentro da loja, com o cartaz "SHOW DE ROCK HOJE ÀS 19H!" e o relógio marcando 18:00; 3) o ônibus
+saindo da garagem com o Felipe ao volante. Legendas, balões, cartaz e relógio são HTML por cima (texto editável no `config.js`,
+nítido em qualquer tela). Sem a arte, volta o quadro montado com a fachada/ônibus e o boneco do Felipe. O botão **[ COMEÇAR (TELA CHEIA) ]** liga a
 tela cheia (e tenta travar na horizontal), libera o áudio e começa a contagem 3-2-1.
 
 | Controle | Celular | Computador |
@@ -49,7 +57,9 @@ Multitoque (virar e acelerar ao mesmo tempo), `touch-action: none` no jogo todo,
 iPhone respeitada. Só toque e segurar, sem swipe. A partida pausa sozinha quando o app perde o foco.
 
 ### Regras
-* **Tempo:** começa com **90 s** (`time.start`). Cada resgate soma **+15 s** (`time.bonus`) e **+500 pontos** (`points.rescue`).
+* **Tempo:** começa com **40 s** (`time.start`). Cada resgate soma **+10 s** (`time.bonus`) e **+10 pontos** (`points.rescue`).
+  Com 40 s o primeiro resgate precisa sair rápido: a rota sorteia a próxima lenda a 110–240 m (`pickup.minDist/maxDist`). Se ficar
+  difícil demais, o ajuste mais suave é subir `time.start` para 50 ou baixar `pickup.maxDist`.
 * **Relógio do jogo:** começa em 18:00 e anda até 19:00, chegando a 19:00 exatamente quando o tempo zera (nunca volta, mesmo
   com o bônus). O céu, as luzes e os letreiros vão do pôr do sol para a noite junto com o relógio.
 * **Seta:** seta 3D verde e amarela no topo da tela, girando para apontar o próximo alvo, com a distância em metros e o nome embaixo.
@@ -58,15 +68,34 @@ iPhone respeitada. Só toque e segurar, sem swipe. A partida pausa sozinha quand
   fala da lenda e a seta passa para o próximo.
 * **Volta para a loja:** depois da 10ª lenda, a seta aponta para a fachada da Máquina do Mal ("TODO MUNDO A BORDO! Volta pra loja!").
 * **Vitória:** chegar à zona em frente à loja antes do tempo zerar. A câmera gira em volta da loja com as 10 lendas pulando na
-  calçada (o show) e o solo de guitarra. Bônus: **10 pontos por segundo que sobrou** (`points.winPerSecond`).
+  calçada (o show) e o solo de guitarra. Bônus: **1 ponto por segundo que sobrou** (`points.winPerSecond`).
 * **Derrota:** o tempo zera ("Deu 19:00..."). A tela de fim tem **TENTAR NOVAMENTE**.
 * A rota (onde cada lenda está) é sorteada a cada partida, com 110 a 240 m entre um resgate e o próximo (`pickup.minDist/maxDist`).
   A cidade é sempre a mesma (`city.seed`), para o jogador aprender o caminho.
 * Bater de frente num prédio faz o ônibus quicar para trás e tremer a tela; raspar de lado só freia um pouco.
 
 ### Pontos e títulos
-500 por lenda + bônus de tempo na vitória. Títulos (`goals`): Motorista de Primeira Viagem (0), Roadie de Respeito (1.500),
-Piloto do Apocalipse (3.500), Lenda da Estrada (5.000). Quem vence ganha **O Show Vai Começar!**
+10 por lenda (máximo 100) + 1 ponto por segundo que sobrou na vitória. Títulos (`goals`): Motorista de Primeira Viagem (0),
+Roadie de Respeito (30 = 3 lendas), Piloto do Apocalipse (60), Lenda da Estrada (100 = as 10 lendas). Quem vence ganha
+**O Show Vai Começar!**
+
+### HUD (visual)
+Referência de clima: games de skate do fim dos anos 90 (pôster de show xerocado, fita crepe, stencil, letreiro de manobra), sem copiar
+fonte, logo ou elemento de nenhum jogo. Sem gradiente "de app", sem vidro fosco, sem emoji: tudo chapado, com sombra dura e granulado.
+* **Fontes** (Google Fonts, com reserva do sistema se não carregar): Anton para números e títulos, Special Elite (máquina de escrever)
+  para rótulos, UnifrakturMaguntia para o logo provisório.
+* **Esquerda:** logo da Máquina do Mal; placa de TEMPO inclinada com número grande (pisca em vermelho nos 10 s finais) e barra de tempo
+  listrada (cheia = `time.meterMax`, 60 s); relógio 18:00→19:00 numa tira de fita crepe.
+* **Direita:** buzina, som e pausa (ícones SVG desenhados à mão no código); PONTOS em número grande; LENDAS com 10 riscos de contagem.
+* **Resgate:** letreiro de manobra embaixo no meio ("RESGATE: OZZY OSBOURNE", "+10 PTS +10 S"), o tempo e os pontos dão um tranco, e a
+  fala da lenda aparece num flyer preso com fita.
+* **Controles:** setas em placas pretas com contorno; pedais com etiqueta de fita amarela; velocímetro no meio, embaixo.
+* **Telas** (HQ, como jogar, fim, ranking, pausa): botões e cartões com cantos secos, papel granulado e sombra dura.
+
+### Logo
+`config.js > logo`. Não havia arquivo do logo na pasta: por enquanto ele é **provisório**, o nome "Máquina do Mal" em letra gótica
+(parecida com a do letreiro da loja) numa placa preta. Para usar o oficial: salve `assets/logo.png` (fundo transparente) e ponha
+`logo: { image: 'assets/logo.png', text: 'Máquina do Mal' }`. Ele aparece na HUD e no título da tela inicial.
 
 ### Uma partida por abertura do link?
 O briefing pede "tentar novamente", então o padrão aqui é **`onePlayPer: 'none'`** (pode jogar de novo). Para seguir o modelo dos
@@ -87,7 +116,8 @@ partida por aparelho.
 | Zona de resgate e distância entre resgates | `pickup.*` |
 | Desempenho (resolução máxima, neblina, antialias) | `render.*` |
 | Personagens, ordem, cores, falas e imagens | `characters[]` |
-| Felipe e a HQ | `felipe`, `comic.panels[]` (legenda, balão, cartaz), `comic.button` |
+| Altura das lendas em pé na calçada | `charHeight` (m, padrão 4,2; o ônibus tem ~3,4) |
+| Felipe e a HQ | `felipe`, `comic.panels[]` (legenda, `image`, balão, cartaz), `comic.button` |
 | Textos das telas | `texts.*` |
 | Limite de partidas | `onePlayPer` |
 | Admin | `ADMIN_USER`, `ADMIN_PASS` (ou `ADMIN_PASS_SHA256`), `ADMIN_DELETE_PASSWORD`. **Troque antes de divulgar** (o arquivo é público) |
@@ -99,23 +129,39 @@ Admin: `/?admin=true` ou segurar o título da HQ ("Busão do Rock") por 3 s. Mes
 
 ---
 
-## 3. Trocar os placeholders pelas imagens finais
+## 3. Sprites das lendas
 
-Cada lenda e o Felipe têm um campo `image` no `config.js`. Vazio = boneco provisório.
+Cada lenda tem um campo `image` no `config.js`. Vazio = boneco provisório (hoje só a **Rita Lee**).
 
-1. Salve a imagem em `busao-do-rock/assets/chars/<id>.webp` (ou `.png`): **personagem em pé, de frente, corpo inteiro, fundo
-   transparente**, pés encostando na borda de baixo, sem sobra em volta. Proporção livre (o jogo usa a proporção da imagem; o
-   placeholder é 1:2). Tamanho sugerido: 256 × 512 px, webp com transparência (fica com 20 a 60 KB).
-2. No `config.js`, preencha o caminho:
-   ```js
-   { id: 'ozzy', name: 'Ozzy Osbourne', color: '#5B3A8C', image: 'assets/chars/ozzy.webp', line: '...' },
-   felipe: { name: 'Felipe', color: '#2B2B2B', image: 'assets/chars/felipe.webp' },
-   ```
-3. Recarregue. A mesma imagem aparece em pé na calçada (sprite que sempre encara a câmera, estilo Doom), no balão de fala do
-   resgate e no show final. A do Felipe aparece nos 3 quadros da HQ.
+| id | Nome | Arquivo original (pasta `sprites`) | Sprite |
+|---|---|---|---|
+| `ozzy` | Ozzy Osbourne | `ozzy.png` | 15 KB |
+| `raul` | Raul Seixas | `raul seixas.png` | 20 KB |
+| `kurt` | Kurt Cobain | `kurtcobain.png` | 27 KB |
+| `chorao` | Chorão | `chorao.png` (o `chorao.jpg` de fundo verde é a mesma foto, não foi usado) | 21 KB |
+| `soad` | System of a Down | `soad.png` | 64 KB |
+| `slipknot` | Slipknot | `slipknot.png` | 89 KB |
+| `sepultura` | Sepultura | `SEPULTURA.png` | 39 KB |
+| `angus` | Angus Young | `angus young.png` | 33 KB |
+| `axl` | Axl Rose | `axlr.png` | 20 KB |
+| `rita` | Rita Lee | (falta) | boneco |
 
-Se o arquivo não existir ou der erro, volta o placeholder (o jogo nunca quebra). Ids: `ozzy`, `raul`, `kurt`, `chorao`, `rita`,
-`purple`, `slipknot`, `sepultura`, `angus`, `axl`, e `felipe`.
+* **Deep Purple saiu** da lista (não havia sprite) e entrou o **System of a Down** no mesmo lugar da ordem, com a fala
+  "Wake up! Esse busão demorou mais que fila de show!".
+* **Padrão:** `python tools/process_sprites.py` recorta a sobra transparente, encaixa a figura num canvas **1024×512** igual para
+  todos (potência de 2), centraliza, encosta os pés na borda de baixo e salva webp com alpha (q72). Como o canvas é o mesmo, todas
+  as lendas saem na mesma escala no jogo (altura `charHeight`); bandas largas (Slipknot, SOAD) também ocupam a altura toda.
+* **Para trocar ou acrescentar:** salve o PNG com fundo transparente em `assets/_raw/chars/`, ponha o par `id: 'arquivo.png'` em
+  `SPRITES` no script, rode o script e preencha `image: 'assets/chars/<id>.webp'` no `config.js`.
+* A mesma imagem aparece em pé na calçada (sprite que sempre encara a câmera), no retrato do balão de fala (recorte do meio, onde
+  fica a pessoa) e no show final em frente à loja (em duas fileiras).
+* Ozzy e Sepultura vieram recortados da cintura/joelho para cima: na calçada eles "brotam" do chão. Para ficar perfeito, use
+  recortes de corpo inteiro.
+* Os pontos de embarque não têm mais árvore na frente (a copa escondia a lenda). Isso tirou algumas árvores da calçada.
+
+> **Atenção (direito de imagem):** os sprites são **fotos recortadas de artistas reais** (e fotos de terceiros). Nos outros jogos a
+> regra é usar personagem estilizado, nunca retrato. Antes de divulgar, **conferir com o jurídico** o uso de nome e imagem desses
+> artistas numa peça promocional da loja; a alternativa segura é trocar por versões caricatas/estilizadas.
 
 ---
 
@@ -144,12 +190,17 @@ estrela, nota). Os únicos textos são o letreiro da própria loja ("Máquina do
 | `asphalt` | ruas (repete a cada 8 m) | 512², 55 KB |
 | `sidewalk` | calçadas | 512², 41 KB |
 | `facade_a/b/c` | prédios de tijolo, residencial e escritório, com janelas que acendem à noite | 512×1024, 46 a 65 KB |
-| `store` | fachada da Máquina do Mal (e fundo do quadro 1 da HQ) | 1024×512, 64 KB |
+| `store` | fachada da Máquina do Mal, refeita a partir da **foto da loja real** (letreiro gótico, vitrines com guitarras e discos, grafites genéricos no lugar dos murais) | 1024×512, 123 KB |
 | `sky` | céu do crepúsculo em volta da cidade | 1024×512, 27 KB |
 | `bus_side`, `bus_front` | ônibus preto e roxo com labaredas (a frente também é o quadro 3 da HQ e o ícone) | 1024×512 e 512², 44 e 39 KB |
 | `tree` | árvores (dois planos cruzados) | 256², 16 KB |
 
-Job id e prompt de cada uma ficam em `assets/manifest.json`. Para trocar: gere de novo no Higgsfield (o modelo não aceita seed; use a
+**HQ de abertura** (`assets/comic/p1..p3.webp`, 600×600, ~100 a 125 KB cada): gerada com o mesmo modelo, usando 2 fotos do Felipe
+e a foto da fachada como referência para o quadro 1; o quadro 1 escolhido serviu de referência para os quadros 2 e 3 e para a fachada
+do jogo (o modelo não aceita seed). O Felipe é um personagem desenhado, não um retrato. Os murais reais da fachada (que têm
+personagem de terceiros) foram trocados por grafite genérico. As fotos de referência ficam em `assets/_raw/refs/`, fora do git.
+
+Job id e prompt de cada uma ficam em `assets/manifest.json` (`textures`, `comic` e `characters`). Para trocar: gere de novo no Higgsfield (o modelo não aceita seed; use a
 geração anterior como imagem de referência para manter o estilo), salve em `assets/_raw/<id>.webp` e rode
 `python tools/process_textures.py` (requer `pip install pillow`).
 
@@ -161,7 +212,7 @@ O ônibus é montado em 3D (caixa longa com frente achatada, janelas e labaredas
 ## 6. Dados, dashboard e QR code
 
 * `analytics.game = 'busao-do-rock'`, mesmo endpoint `/exec` dos outros jogos. Eventos: `start` (ao tocar em COMEÇAR),
-  `milestone` (cada lenda resgatada vira "nível" com o nome dela; pontos nos marcos 500, 1.500, 2.500, 3.500, 5.000 e 6.000),
+  `milestone` (cada lenda resgatada vira "nível" com o nome dela; pontos nos marcos 30, 60, 100 e 120),
   `end` e `save`.
 * Colunas: `motivo_fim` = `vitoria`, `tempo` ou `encerrou`; `nivel` e `itens` = lendas resgatadas; `erros` = batidas de frente;
   `meta` = título.
@@ -196,6 +247,32 @@ do CDN (o ambiente de teste não acessa o cdnjs). Para repetir, abra o console: 
 | 9b | Celular em pé | 390×844: aparece "Gire o celular para a horizontal" ✔ |
 | 10 | Desempenho | 30 draw calls por quadro e ~19 mil triângulos (cidade inteira mesclada por material, rodas instanciadas, sem sombras dinâmicas, resolução máxima 1,5×) ✔ |
 | 11 | Cache e QR | Service worker novo; pentest do QR (mesmos ataques da Fuga) | O `three.js` da cdnjs (149 KB) fica no cache do aparelho e a 2ª abertura funciona offline. QR: 1 partida por QR; sem QR o jogo é livre (`ticket.required: false`) ✔ |
+
+### Testes da tirinha e dos sprites (09/11/2026)
+
+Chromium (Playwright) e o navegador do app, deitado, com a coleta de dados **bloqueada no teste** (nada foi para a planilha).
+
+| # | Cenário | Resultado |
+|---|---|---|
+| 11 | HQ com arte | 740×360, 932×430 e 1000×480: os 3 quadros carregam a arte, balões, cartaz e relógio legíveis e sem cobrir o rosto do Felipe, sem rolagem horizontal ✔ |
+| 12 | Lenda na calçada | Ozzy em pé no ponto de embarque, visível de ~40 m (cerca de 8% da altura da tela) e de ~18 m ✔ |
+| 13 | Balão de fala | Retrato do Ozzy recortado no meio do canvas, nome e fala ✔ |
+| 14 | Show final | 10 resgates e chegada: as 9 lendas com sprite + Rita (boneco) em duas fileiras em frente à fachada nova ✔ |
+| 15 | Console | Sem erros nem avisos nas 3 resoluções ✔ |
+
+### Testes da dificuldade e da HUD nova (09/11/2026)
+
+Chromium (Playwright), deitado, coleta de dados bloqueada no teste.
+
+| # | Cenário | Resultado |
+|---|---|---|
+| 16 | Começo | `__bus.newGame()`: `timeLeft` = 40, pontos 0 ✔ |
+| 17 | Ganho de tempo | Resgate dirigindo até a zona: +10 s e +10 pontos, letreiro "RESGATE: OZZY OSBOURNE +10 PTS +10 S", balão da fala ✔ |
+| 18 | Fim do tempo | Sem dirigir: aos 30 s faltam 10 s (TEMPO pisca, barra vermelha); aos 40 s "Deu 19:00...", `motivo_fim = tempo`, relógio em 19:00 ✔ |
+| 19 | Layout | 740×360, 932×430 e 1000×480: HUD, balão, letreiro, controles, HQ e tela de fim sem sobreposição e sem rolagem horizontal ✔ |
+| 20 | Console | Sem erros nem avisos ✔ |
+
+Corrigido junto: o `resize()` tentava posicionar a seta antes de ela existir (erro `reading 'tilt'` no console em alguns carregamentos).
 
 **Não testado em celular físico** (iPhone e Android médio): falta confirmar fps, aquecimento, áudio depois do toque, tela cheia
 (o iPhone não tem tela cheia de verdade no Safari; o jogo segue normal sem ela), safe-area e multitoque (virar e acelerar juntos).

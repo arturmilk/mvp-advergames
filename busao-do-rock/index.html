@@ -10,6 +10,8 @@
 <title>Máquina do Mal em: Busão do Rock</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Special+Elite&family=UnifrakturMaguntia&display=swap">
 <style>
 :root {
   --blood: #B0151B; --fire: #FF5A1F; --bone: #F2EBDD; --night: #140A1A; --ink: #120B0E; --chrome: #C9CED6; --tacky: #FFD21F;
@@ -19,6 +21,12 @@
   --font: "Arial Black", "Helvetica Neue", Impact, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --comic: "Comic Sans MS", "Chalkboard SE", "Comic Neue", "Arial Black", sans-serif;
   --body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* HUD: números em Anton (condensada pesada), rótulos de máquina de escrever, logo provisório em gótica */
+  --num: "Anton", Impact, "Arial Narrow", "Arial Black", sans-serif;
+  --type: "Special Elite", "Courier New", Courier, monospace;
+  --goth: "UnifrakturMaguntia", "Old English Text MT", "Times New Roman", serif;
+  /* granulado de xerox (ruído SVG) */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .28 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; background: #0b0510; color: var(--bone); font-family: var(--body);
@@ -28,81 +36,124 @@ button, input { font-family: inherit; }
   touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 #cv { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
-/* ---------- HUD ---------- */
-#hud { position: absolute; left: 0; right: 0; top: 0; padding: calc(var(--sat) + 6px) calc(var(--sar) + 8px) 0 calc(var(--sal) + 8px); display: none; pointer-events: none; z-index: 5; }
+/* ---------- HUD (rock/skate anos 90: pôster xerocado, fita crepe, stencil; sem gradiente e sem emoji) ---------- */
+#hud { position: absolute; inset: 0; padding: calc(var(--sat) + 8px) calc(var(--sar) + 10px) 0 calc(var(--sal) + 10px); display: none; pointer-events: none; z-index: 5; }
 #hud.on { display: block; }
-.hud-row { display: flex; align-items: flex-start; gap: 5px; }
-.chip { display: inline-flex; align-items: center; gap: 4px; background: rgba(12,6,14,.78); border: 2px solid rgba(201,206,214,.35);
-  border-radius: 10px; padding: 4px 7px; font-family: var(--font); font-weight: 900; font-size: 14px; line-height: 1; color: #fff;
-  text-shadow: 0 1px 0 #000; white-space: nowrap; }
-.chip small { font-size: 9.5px; opacity: .75; letter-spacing: .5px; }
-#hTime { font-size: 22px; border-color: var(--tacky); background: linear-gradient(180deg, rgba(60,30,0,.92), rgba(20,8,0,.92)); min-width: 74px; justify-content: center; }
-#hTime.warn { border-color: #ff2a2a; color: #ffd0d0; animation: blink .5s steps(2) infinite; }
-#hTime .plus { position: absolute; }
-#hClock { font-size: 15px; }
-#hScore { font-size: 16px; border-color: var(--blood); background: linear-gradient(180deg, rgba(176,21,27,.95), rgba(90,6,10,.95)); }
-#hLeg { gap: 3px; }
-#hLeg i { width: 7px; height: 12px; border-radius: 3px; background: rgba(255,255,255,.2); display: block; }
-#hLeg i.on { background: var(--neon); box-shadow: 0 0 6px var(--neon); }
-.hud-spacer { flex: 1; }
-.hbtn { pointer-events: auto; width: 42px; height: 42px; border-radius: 12px; border: 2px solid rgba(201,206,214,.45);
-  background: rgba(12,6,14,.78); color: #fff; font-size: 19px; display: grid; place-items: center; cursor: pointer; padding: 0; position: relative; }
+.h-left { position: absolute; left: calc(var(--sal) + 10px); top: calc(var(--sat) + 6px); display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
+.h-right { position: absolute; right: calc(var(--sar) + 10px); top: calc(var(--sat) + 6px); display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+/* logo (provisório em letra gótica até chegar o arquivo; config.js > logo.image) */
+.mdm-logo { display: inline-block; font-family: var(--goth); font-weight: 400; color: var(--bone); background: var(--ink); line-height: 1;
+  padding: 3px 9px 4px; border-bottom: 3px solid var(--blood); box-shadow: 3px 3px 0 rgba(0,0,0,.55); letter-spacing: .3px; white-space: nowrap;
+  background-image: var(--grain); }
+.mdm-logo img { display: block; height: 100%; width: auto; }
+.mdm-logo.img { background: none; border: 0; box-shadow: none; padding: 0; }
+#hLogo { font-size: 15px; transform: rotate(-4deg); transform-origin: 0 50%; margin-top: 5px; }
+#hLogo.img { height: 30px; }
+/* tempo: placa de stencil inclinada, número grande */
+#hTime { position: relative; display: flex; align-items: flex-end; gap: 6px; padding: 2px 12px 3px 8px; background: var(--ink); background-image: var(--grain);
+  transform: skewX(-10deg); box-shadow: 4px 4px 0 var(--blood); border-left: 5px solid var(--tacky); }
+#hTime > * { transform: skewX(10deg); }
+#hTime .hl { writing-mode: vertical-rl; transform: rotate(180deg) skewX(0); font-size: 9px; letter-spacing: 1.5px; color: var(--tacky); padding-bottom: 2px; }
+#hTimeV { font-family: var(--num); font-size: 38px; line-height: .95; color: var(--tacky); letter-spacing: 1px; min-width: 2.2em; }
+#hTime.warn { border-left-color: var(--blood); box-shadow: 4px 4px 0 var(--tacky); }
+#hTime.warn #hTimeV { color: #fff; animation: blink .5s steps(2) infinite; }
+#hTime.gain #hTimeV { animation: jolt .45s ease-out; }
+.meter { width: 128px; height: 9px; background: var(--ink); border: 2px solid var(--bone); transform: skewX(-20deg); margin-left: 6px; overflow: hidden; }
+.meter i { display: block; height: 100%; width: 0; background: repeating-linear-gradient(90deg, var(--tacky) 0 7px, #E8B800 7px 9px); transition: width .25s linear; }
+.meter.warn i { background: repeating-linear-gradient(90deg, var(--blood) 0 7px, #7A0A10 7px 9px); }
+/* fita crepe: relógio 18:00 e lendas */
+.tape { display: inline-flex; align-items: center; gap: 6px; font-family: var(--type); font-size: 13px; color: #1A1414; background: #E9DCB8; background-image: var(--grain);
+  padding: 2px 9px 1px; box-shadow: 1px 2px 0 rgba(0,0,0,.45); clip-path: polygon(0 8%, 4% 0, 9% 10%, 15% 0, 22% 7%, 30% 0, 40% 9%, 52% 0, 63% 8%, 75% 0, 86% 9%, 96% 0, 100% 10%,
+  98% 92%, 93% 100%, 85% 90%, 74% 100%, 62% 91%, 50% 100%, 38% 90%, 27% 100%, 15% 92%, 6% 100%, 0 90%); }
+#hClock { transform: rotate(1.5deg); margin-left: 8px; }
+#hClock b { font-family: var(--num); font-weight: 400; font-size: 16px; letter-spacing: .5px; }
+/* pontos */
+#hScore { display: flex; align-items: baseline; gap: 6px; margin-top: 2px; }
+#hScoreV { font-family: var(--num); font-size: 42px; line-height: 1; color: var(--bone); font-style: italic; letter-spacing: 1px;
+  -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--blood); }
+#hScore .hl { font-family: var(--type); font-size: 11px; color: var(--ink); background: var(--tacky); padding: 1px 5px; transform: rotate(-3deg); }
+#hScore.bump #hScoreV { animation: jolt .45s ease-out; }
+/* lendas: riscos de contagem, cada lenda resgatada acende um */
+#hLeg { transform: rotate(-1.5deg); }
+#hLeg .ticks { display: inline-flex; gap: 2px; }
+#hLeg .ticks i { width: 5px; height: 13px; background: rgba(26,20,20,.22); transform: skewX(-14deg); display: block; }
+#hLeg .ticks i.on { background: var(--blood); }
+#hLeg b { font-family: var(--num); font-weight: 400; font-size: 15px; }
+.h-btns { display: flex; gap: 6px; pointer-events: auto; }
+.hbtn { pointer-events: auto; width: 40px; height: 40px; border: 2px solid var(--bone); background: var(--ink); color: var(--bone); display: grid; place-items: center;
+  cursor: pointer; padding: 0; position: relative; box-shadow: 3px 3px 0 rgba(0,0,0,.6); }
+.hbtn svg { width: 22px; height: 22px; display: block; }
 .hbtn::after { content: ''; position: absolute; inset: -5px; }
-.hbtn:active { transform: scale(.94); }
+.hbtn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 rgba(0,0,0,.6); }
+#hHorn { color: var(--tacky); }
 @keyframes blink { 50% { opacity: .35; } }
-#hSpeed { position: absolute; right: calc(var(--sar) + 230px); bottom: calc(var(--sab) + 12px); font-size: 20px; display: none; }
+@keyframes jolt { 0% { transform: scale(1.45) rotate(-4deg); } 40% { transform: scale(.94) rotate(2deg); } 100% { transform: none; } }
+/* velocímetro: embaixo no meio, entre os controles */
+#hSpeed { position: absolute; left: 50%; bottom: calc(var(--sab) + 10px); transform: translateX(-50%) skewX(-10deg); display: none; align-items: baseline; gap: 4px;
+  background: var(--ink); background-image: var(--grain); padding: 1px 10px 2px; border-bottom: 3px solid var(--tacky); z-index: 5; pointer-events: none; }
 #hSpeed.on { display: inline-flex; }
+#hSpeedV { font-family: var(--num); font-size: 24px; line-height: 1; color: var(--bone); min-width: 1.6em; text-align: right; }
+#hSpeed small { font-family: var(--type); font-size: 11px; color: var(--tacky); }
 
 /* seta: o desenho 3D fica no canvas; aqui só a distância e o nome do alvo */
 #target { position: absolute; left: 50%; top: calc(var(--sat) + 25vh); transform: translateX(-50%); z-index: 5; pointer-events: none; display: none;
-  text-align: center; font-family: var(--font); color: #fff; -webkit-text-stroke: 1.5px #000; paint-order: stroke fill; line-height: 1.05; }
-#target.on { display: block; }
-#tDist { font-size: 22px; color: var(--tacky); }
-#tName { font-size: 12px; letter-spacing: .5px; -webkit-text-stroke: 1px #000; text-shadow: 0 1px 2px #000; }
+  text-align: center; line-height: 1.05; }
+#target.on { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+#tDist { font-family: var(--num); font-size: 26px; font-style: italic; color: var(--tacky); -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 2px 2px 0 var(--ink); }
+#tName { font-family: var(--type); font-size: 12px; color: #1A1414; background: #E9DCB8; padding: 1px 7px; transform: rotate(-1deg); box-shadow: 1px 2px 0 rgba(0,0,0,.45); }
+#tName:empty { display: none; }
 
 /* ---------- Controles (segurar; multitoque) ---------- */
 .ctrl { position: absolute; z-index: 6; display: none; touch-action: none; cursor: pointer; border: 3px solid #000; padding: 0;
-  font-family: var(--font); font-weight: 900; color: #fff; text-shadow: 0 2px 0 #000; transition: transform .05s, filter .05s; }
+  font-family: var(--num); font-weight: 400; color: var(--bone); transition: transform .05s, filter .05s; }
 .ctrl.on { display: block; }
 .ctrl::after { content: ''; position: absolute; inset: -10px; } /* área de toque maior que o botão */
 .ctrl.down { transform: translateY(3px) scale(.97); filter: brightness(1.25); }
-.steer { bottom: calc(var(--sab) + 14px); width: 84px; height: 84px; border-radius: 22px; font-size: 34px; line-height: 1;
-  background: linear-gradient(180deg, #4A3A6A, #231833); box-shadow: 0 5px 0 #000, inset 0 2px 0 rgba(255,255,255,.25); opacity: .9; }
+.steer { bottom: calc(var(--sab) + 14px); width: 84px; height: 84px; background: var(--ink); background-image: var(--grain);
+  outline: 2px solid var(--bone); outline-offset: -7px; box-shadow: 5px 5px 0 rgba(0,0,0,.7); opacity: .93; }
+.steer svg { width: 44%; height: 44%; display: block; margin: auto; color: var(--tacky); }
 #bLeft { left: calc(var(--sal) + 14px); }
 #bRight { left: calc(var(--sal) + 112px); }
-.steer.down { box-shadow: 0 2px 0 #000, inset 0 2px 0 rgba(255,255,255,.25); }
+.steer.down { box-shadow: 2px 2px 0 rgba(0,0,0,.7); }
 /* pedal do acelerador: borracha com frisos, mais alto que largo */
-#bGas { right: calc(var(--sar) + 16px); bottom: calc(var(--sab) + 12px); width: 92px; height: 146px; border-radius: 16px 16px 22px 22px;
-  background: repeating-linear-gradient(180deg, #3a3a3a 0 9px, #1c1c1c 9px 15px), #222; box-shadow: 0 6px 0 #000, inset 0 0 0 3px #555, inset 0 0 18px rgba(0,0,0,.8);
-  transform-origin: 50% 100%; font-size: 13px; letter-spacing: .5px; }
-#bGas span { position: absolute; left: 0; right: 0; bottom: 8px; background: rgba(0,0,0,.6); border-radius: 0 0 14px 14px; padding: 4px 0; color: var(--neon); }
+#bGas { right: calc(var(--sar) + 16px); bottom: calc(var(--sab) + 12px); width: 92px; height: 146px; border-radius: 10px 10px 16px 16px;
+  background: repeating-linear-gradient(180deg, #3a3a3a 0 9px, #1c1c1c 9px 15px), #222; box-shadow: 5px 5px 0 rgba(0,0,0,.7), inset 0 0 0 3px #555;
+  transform-origin: 50% 100%; font-size: 17px; letter-spacing: 1px; }
+#bGas span { position: absolute; left: -3px; right: -3px; bottom: 10px; background: var(--tacky); color: var(--ink); padding: 3px 0 2px; transform: rotate(-4deg); }
 #bGas.down { transform: perspective(300px) rotateX(18deg); filter: brightness(1.3); }
-#bBrake { right: calc(var(--sar) + 120px); bottom: calc(var(--sab) + 12px); width: 86px; height: 82px; border-radius: 14px;
-  background: repeating-linear-gradient(180deg, #4a2020 0 8px, #2a0e0e 8px 13px); box-shadow: 0 5px 0 #000, inset 0 0 0 3px #6a3030;
-  font-size: 12px; line-height: 1.15; transform-origin: 50% 100%; }
+#bBrake { right: calc(var(--sar) + 120px); bottom: calc(var(--sab) + 12px); width: 86px; height: 82px; border-radius: 10px;
+  background: repeating-linear-gradient(180deg, #4a2020 0 8px, #2a0e0e 8px 13px); box-shadow: 5px 5px 0 rgba(0,0,0,.7), inset 0 0 0 3px #6a3030;
+  font-size: 17px; line-height: 1; letter-spacing: 1px; transform-origin: 50% 100%; }
 #bBrake.down { transform: perspective(300px) rotateX(18deg); }
 
 /* ---------- Pop-ups durante a partida ---------- */
-#talk { position: absolute; left: calc(var(--sal) + 10px); top: calc(var(--sat) + 56px); width: min(330px, 44vw); z-index: 7; pointer-events: none;
-  display: flex; gap: 8px; align-items: flex-start; background: #FFF8E6; color: var(--ink); border: 3px solid #000; border-radius: 14px; padding: 7px 9px;
-  box-shadow: 0 5px 0 #000; opacity: 0; transform: scale(.6) rotate(-3deg); transform-origin: 0 0; transition: transform .25s cubic-bezier(.2,1.6,.4,1), opacity .2s; }
-#talk.on { opacity: 1; transform: scale(1) rotate(-1deg); }
-#talk img { width: 46px; height: 70px; object-fit: contain; flex: none; background: #E8DCC6; border: 2px solid #000; border-radius: 8px; }
-#talk b { display: block; font-family: var(--font); font-size: 13px; color: var(--blood); text-transform: uppercase; }
-#talk p { margin: 2px 0 0; font-family: var(--comic); font-weight: 700; font-size: 13px; line-height: 1.25; }
-#talk em { display: block; font-style: normal; font-family: var(--font); font-size: 12px; color: #1a7a2a; margin-top: 3px; }
-#toast { position: absolute; left: 50%; top: 46%; width: min(92%, 560px); transform: translate(-50%, -50%) scale(.6); z-index: 31; pointer-events: none;
-  opacity: 0; font-family: var(--font); font-weight: 900; font-size: 22px; color: #fff; -webkit-text-stroke: 2px #000; paint-order: stroke fill;
-  text-shadow: 0 3px 0 var(--blood); text-align: center; line-height: 1.15; transition: transform .25s cubic-bezier(.2,1.6,.4,1), opacity .25s; }
-#toast.on { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-#count { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); z-index: 8; pointer-events: none; font-family: var(--font);
-  font-size: min(26vh, 150px); color: var(--tacky); -webkit-text-stroke: 4px #000; paint-order: stroke fill; text-shadow: 0 8px 0 var(--blood); display: none; }
+/* fala da lenda: flyer xerocado preso com fita */
+#talk { position: absolute; left: calc(var(--sal) + 10px); top: calc(var(--sat) + 132px); width: min(330px, 44vw); z-index: 7; pointer-events: none;
+  display: flex; gap: 8px; align-items: flex-start; background: #EFE6D2; background-image: var(--grain); color: var(--ink); border: 2px solid var(--ink); padding: 8px 9px 7px;
+  box-shadow: 5px 5px 0 rgba(0,0,0,.65); opacity: 0; transform: scale(.6) rotate(-6deg); transform-origin: 0 0; transition: transform .22s cubic-bezier(.2,1.6,.4,1), opacity .18s; }
+#talk::before { content: ''; position: absolute; left: 38%; top: -9px; width: 64px; height: 16px; background: rgba(233,220,184,.88); transform: rotate(-4deg); box-shadow: 0 1px 0 rgba(0,0,0,.25); }
+#talk.on { opacity: 1; transform: scale(1) rotate(-1.5deg); }
+#talk img { width: 60px; height: 76px; object-fit: cover; object-position: 50% 100%; flex: none; background: #CFC3A8; border: 2px solid var(--ink); filter: contrast(1.08); }
+#talk b { display: block; font-family: var(--num); font-weight: 400; font-size: 17px; letter-spacing: .5px; color: var(--blood); text-transform: uppercase; line-height: 1; }
+#talk p { margin: 3px 0 0; font-family: var(--type); font-size: 12.5px; line-height: 1.25; }
+#talk em { display: inline-block; font-style: normal; font-family: var(--num); font-size: 14px; letter-spacing: .5px; color: var(--ink); background: var(--tacky); padding: 0 5px; margin-top: 4px; transform: rotate(-2deg); }
+#toast { position: absolute; left: 50%; top: 46%; width: min(92%, 560px); transform: translate(-50%, -50%) scale(.6) skewX(-8deg); z-index: 31; pointer-events: none;
+  opacity: 0; font-family: var(--num); font-size: 30px; letter-spacing: 1px; color: var(--bone); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill;
+  text-shadow: 4px 4px 0 var(--blood); text-align: center; line-height: 1.1; text-transform: uppercase; transition: transform .25s cubic-bezier(.2,1.6,.4,1), opacity .25s; }
+#toast.on { opacity: 1; transform: translate(-50%, -50%) scale(1) skewX(-8deg); }
+#count { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); z-index: 8; pointer-events: none; font-family: var(--num); font-style: italic;
+  font-size: min(30vh, 170px); line-height: 1; color: var(--tacky); -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; text-shadow: 8px 8px 0 var(--blood); display: none; }
 #count.on { display: block; animation: pop .9s ease-out; }
-@keyframes pop { from { transform: translate(-50%, -50%) scale(1.8); opacity: 0; } 30% { opacity: 1; } to { transform: translate(-50%, -50%) scale(1); } }
-#plus { position: absolute; left: 50%; top: calc(var(--sat) + 37vh); transform: translateX(-50%); white-space: nowrap; z-index: 7; pointer-events: none; font-family: var(--font); font-size: 22px;
-  color: var(--neon); -webkit-text-stroke: 2px #000; paint-order: stroke fill; opacity: 0; }
-#plus.on { animation: rise 1.4s ease-out; }
-@keyframes rise { 0% { opacity: 0; transform: translate(-50%, 10px); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -26px); } }
+@keyframes pop { from { transform: translate(-50%, -50%) scale(1.8) rotate(-8deg); opacity: 0; } 30% { opacity: 1; } to { transform: translate(-50%, -50%) scale(1) rotate(-3deg); } }
+/* resgate: letreiro de manobra (nome + pontos), embaixo no meio */
+#plus { position: absolute; left: 50%; bottom: calc(var(--sab) + 50px); transform: translateX(-50%); white-space: nowrap; z-index: 7; pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; opacity: 0; }
+#plus .pn { font-family: var(--num); font-size: 22px; letter-spacing: 1px; color: var(--bone); text-transform: uppercase; background: var(--ink); padding: 1px 10px; transform: skewX(-10deg); }
+#plus .pv { display: flex; gap: 10px; font-family: var(--num); font-style: italic; font-size: 30px; line-height: 1; color: var(--tacky); -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 3px 3px 0 var(--blood); }
+#plus .pv small { font-size: .55em; }
+#plus.on { animation: trick 1.6s ease-out; }
+@keyframes trick { 0% { opacity: 0; transform: translateX(-50%) scale(1.6); } 12% { opacity: 1; transform: translateX(-50%) scale(.95); } 20% { transform: translateX(-50%) scale(1); }
+  80% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-18px); } }
 
 /* ---------- Telas ---------- */
 .screen { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: flex-start;
@@ -136,9 +187,11 @@ button, input { font-family: inherit; }
   background-image: radial-gradient(rgba(0,0,0,.22) 1.1px, transparent 1.4px), radial-gradient(rgba(176,21,27,.18) 1.1px, transparent 1.4px);
   background-size: 7px 7px, 7px 7px; background-position: 0 0, 3.5px 3.5px; }
 .c-head { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 980px; }
-#cTitle { margin: 0; font-family: var(--font); font-size: clamp(17px, 5.4vh, 32px); line-height: 1; color: #fff; text-transform: uppercase;
-  -webkit-text-stroke: 2px #000; paint-order: stroke fill; text-shadow: 3px 3px 0 var(--blood); flex: 1; touch-action: none; }
-#cTitle small { display: block; font-size: .5em; color: var(--tacky); letter-spacing: 2px; }
+#cTitle { margin: 0; flex: 1; touch-action: none; display: flex; align-items: center; gap: 10px; line-height: 1; font-weight: 400; }
+#cTitle .ct { font-family: var(--num); font-style: italic; font-size: clamp(22px, 7.4vh, 44px); color: var(--tacky); text-transform: uppercase; letter-spacing: 1px;
+  -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 4px 4px 0 var(--blood); transform: skewX(-6deg); }
+#cLogo { font-size: clamp(15px, 4.8vh, 26px); transform: rotate(-4deg); }
+#cLogo.img { height: clamp(30px, 10vh, 56px); }
 .c-links { display: flex; gap: 6px; }
 .c-links .btn { width: auto; margin: 0; padding: 0 12px; min-height: 38px; font-size: 13px; }
 .panels { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 10px; width: 100%; max-width: 980px; height: min(54vh, 330px); }
@@ -157,6 +210,21 @@ button, input { font-family: inherit; }
 .p2 .bubble { right: 5px; top: 13%; width: 74%; } .p2 .bubble::after { left: 16%; } .p2 .felipe { left: 2%; height: 64%; }
 .p3 .bubble { left: 6px; top: 18%; width: 64%; } .p3 .bubble::after { right: 24%; } .p3 .felipe { right: 3%; height: 56%; }
 .p1 .bg { filter: saturate(1.1) contrast(1.05); }
+/* Quadros com arte (comic.panels[].image): o Felipe já vem desenhado; retícula e papel impresso por cima */
+.panel.art .felipe { display: none; }
+.panel.art .bg { filter: none; background-size: cover; background-position: center; }
+.panel.art::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: multiply; opacity: .55;
+  background-image: radial-gradient(rgba(60,30,10,.35) .9px, transparent 1.2px), linear-gradient(115deg, rgba(233,221,191,.25), rgba(200,170,120,.18));
+  background-size: 4px 4px, 100% 100%; }
+.p1.art .bubble { top: auto; bottom: 9%; right: 4px; width: 56%; padding-top: 8px; }
+.p1.art .bubble::after { top: -9px; bottom: auto; left: 22%; z-index: -1; transform: rotate(225deg) skew(12deg, 12deg); }
+.p2.art .bubble { top: 11%; right: 2px; width: 68%; padding: 4px 12px 8px; border-radius: 46% / 42%; font-size: clamp(8px, 2.2vh, 13px); }
+.p2.art .bubble::after { left: 4%; z-index: -1; }
+.p2.art .poster { left: 49%; top: 54%; width: 31%; transform: rotate(-4deg); }
+.p2.art .clock { right: 3%; top: 58%; width: 15%; }
+.p3.art .bubble { top: 15%; left: 5px; width: 50%; }
+.p3.art .bubble::after { right: 18%; z-index: -1; }
+.p3.art .vroom { left: 4%; bottom: 6%; }
 .poster { position: absolute; left: 44%; top: 56%; width: 30%; transform: rotate(5deg); background: var(--tacky); border: 3px solid #000;
   font-family: var(--font); color: #000; text-align: center; font-size: clamp(8px, 2.3vh, 13px); line-height: 1.05; padding: 6px 4px; z-index: 1; box-shadow: 3px 3px 0 #000; }
 .poster b { display: block; font-size: 1.6em; color: var(--blood); }
@@ -237,7 +305,7 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
   #bRight { left: calc(var(--sal) + 100px); }
   #bGas { width: 84px; height: 128px; }
   #bBrake { width: 78px; height: 72px; right: calc(var(--sar) + 110px); }
-  #hSpeed { right: calc(var(--sar) + 200px); }
+  #hTimeV { font-size: 33px; } #hScoreV { font-size: 36px; } .meter { width: 112px; }
 }
 @media (max-height: 380px) { .c-side { display: none; } .panels { height: 56vh; } }
 #modal { z-index: 30; }
@@ -265,6 +333,30 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
   align-items: center; justify-content: center; text-align: center; padding: 24px; font-size: 18px; }
 @media (orientation: portrait) and (pointer: coarse) { #rotate { display: flex; } }
 @media (prefers-reduced-motion: reduce) { .screen.on, #bGo, #hTime.warn { animation: none; } }
+
+/* ---------- Pele rock (telas e botões no mesmo traço da HUD: papel xerocado, cantos secos, sombra dura) ---------- */
+.btn { border-radius: 2px; font-family: var(--num); font-weight: 400; font-size: 19px; letter-spacing: 1px; text-transform: uppercase; text-shadow: none;
+  background: var(--blood); background-image: var(--grain); box-shadow: 4px 4px 0 #000; }
+.btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 #000; }
+.btn.ghost { background: var(--bone); background-image: var(--grain); color: var(--ink); }
+.btn.small { font-size: 15px; }
+#bGo, #bRetry { background: var(--tacky); background-image: var(--grain); color: var(--ink); text-shadow: none; }
+#bGo { transform: skewX(-6deg); font-size: clamp(19px, 5.6vh, 28px); }
+@keyframes pulse { 50% { transform: skewX(-6deg) scale(1.03); box-shadow: 4px 4px 0 #000, 0 0 0 3px var(--blood); } }
+.c-links .btn { border-radius: 2px; }
+.card { border-radius: 3px; background: #EFE6D2; background-image: var(--grain); box-shadow: 6px 6px 0 #000, 0 14px 40px rgba(0,0,0,.5); }
+.card h2 { font-family: var(--num); font-weight: 400; font-size: 28px; letter-spacing: 1px; }
+.go-score { font-family: var(--num); font-style: italic; font-size: 56px; color: var(--blood); -webkit-text-stroke: 0; text-shadow: 4px 4px 0 var(--ink); }
+.goal-badge { border-radius: 0; background: var(--tacky); background-image: var(--grain); font-family: var(--num); font-weight: 400; font-size: 16px; letter-spacing: .5px;
+  color: var(--ink); transform: rotate(-2deg); box-shadow: 3px 3px 0 #000; }
+.stats div, .invite, .rank-wrap, .kpis div, .nick input, .txt, #modal input { border-radius: 2px; }
+.stats b { font-family: var(--num); font-weight: 400; font-size: 20px; }
+.nick input { font-family: var(--num); letter-spacing: 4px; }
+.newrec { font-family: var(--num); font-weight: 400; letter-spacing: .5px; }
+#splash h1 { font-family: var(--num); font-weight: 400; font-style: italic; font-size: 40px; color: var(--tacky); letter-spacing: 1px; text-shadow: 4px 4px 0 var(--blood); }
+#splash .sub { font-family: var(--type); letter-spacing: 2px; }
+.win-mark { font-family: var(--num); font-size: 10px; letter-spacing: .5px; color: var(--ink); background: var(--tacky); padding: 0 3px; margin-left: 4px; vertical-align: 1px; }
+@media (max-height: 520px) { .go-score { font-size: 42px; } .card h2 { font-size: 22px; } .btn { font-size: 17px; } }
 </style>
 </head>
 <body>
@@ -272,25 +364,30 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
   <canvas id="cv" aria-label="Cidade 3D do jogo"></canvas>
 
   <div id="hud" aria-live="off">
-    <div class="hud-row">
-      <div class="chip" id="hTime"><span id="hTimeV">1:30</span></div>
-      <div class="chip" id="hClock">🕕 <span id="hClockV">18:00</span></div>
-      <div class="chip" id="hScore"><small>PTS</small><span id="hScoreV">0</span></div>
-      <div class="chip" id="hLeg" aria-label="Lendas resgatadas"></div>
-      <div class="hud-spacer"></div>
-      <button class="hbtn" id="hHorn" aria-label="Buzina">📯</button>
-      <button class="hbtn" id="hMute" aria-label="Som ligado/desligado">🔊</button>
-      <button class="hbtn" id="hPause" aria-label="Pausar">⏸</button>
+    <div class="h-left">
+      <div class="mdm-logo" id="hLogo"></div>
+      <div id="hTime"><span class="hl">TEMPO</span><span id="hTimeV">0:40</span></div>
+      <div class="meter" id="hMeter"><i></i></div>
+      <div class="tape" id="hClock">RELÓGIO <b id="hClockV">18:00</b></div>
+    </div>
+    <div class="h-right">
+      <div class="h-btns">
+        <button class="hbtn" id="hHorn" aria-label="Buzina"></button>
+        <button class="hbtn" id="hMute" aria-label="Som ligado/desligado"></button>
+        <button class="hbtn" id="hPause" aria-label="Pausar"></button>
+      </div>
+      <div id="hScore"><span class="hl">PONTOS</span><span id="hScoreV">0</span></div>
+      <div class="tape" id="hLeg" aria-label="Lendas resgatadas">LENDAS <span class="ticks"></span> <b id="hLegV">0/10</b></div>
     </div>
   </div>
   <div id="target"><div id="tDist">0 m</div><div id="tName"></div></div>
-  <div class="chip" id="hSpeed"><span id="hSpeedV">0</span><small>km/h</small></div>
-  <button class="ctrl steer" id="bLeft" aria-label="Virar à esquerda (segure)">◀</button>
-  <button class="ctrl steer" id="bRight" aria-label="Virar à direita (segure)">▶</button>
+  <div id="hSpeed"><span id="hSpeedV">0</span><small>km/h</small></div>
+  <button class="ctrl steer" id="bLeft" aria-label="Virar à esquerda (segure)"></button>
+  <button class="ctrl steer" id="bRight" aria-label="Virar à direita (segure)"></button>
   <button class="ctrl" id="bBrake" aria-label="Freio e ré (segure)">FREIO<br>RÉ</button>
   <button class="ctrl" id="bGas" aria-label="Acelerar (segure)"><span>ACELERA</span></button>
   <div id="talk"><img id="talkI" alt=""><div><b id="talkN"></b><p id="talkL"></p><em id="talkB"></em></div></div>
-  <div id="plus">+15 s</div>
+  <div id="plus"><div class="pn"></div><div class="pv"></div></div>
   <div id="count"></div>
   <div id="toast"></div>
 
@@ -305,8 +402,8 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
   <!-- HQ de abertura -->
   <section class="screen" id="comic">
     <div class="c-head">
-      <h1 id="cTitle"><small>Máquina do Mal em:</small>Busão do Rock</h1>
-      <div class="c-links"><button class="btn ghost small" id="bHow">Como jogar</button><button class="btn ghost small" id="bRank">🏆 Ranking</button></div>
+      <h1 id="cTitle"><span class="mdm-logo" id="cLogo"></span><span class="ct">Busão do Rock</span></h1>
+      <div class="c-links"><button class="btn ghost small" id="bHow">Como jogar</button><button class="btn ghost small" id="bRank">Ranking</button></div>
     </div>
     <div class="panels">
       <div class="panel p1"><div class="bg" id="p1bg"></div><div class="cap" id="cap1"></div><img class="felipe" alt=""><div class="bubble" id="bub1"></div><span class="num">1</span></div>
@@ -356,7 +453,7 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
           <p class="err" id="nickErr" role="alert"></p>
         </form>
         <div class="row2">
-          <button class="btn ghost small" id="bGoRank">🏆 Ranking</button>
+          <button class="btn ghost small" id="bGoRank">Ranking</button>
           <button class="btn ghost small" id="bGoMenu">Início</button>
         </div>
       </div>
@@ -369,7 +466,7 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
       <h2 id="svTitle"></h2>
       <p id="svText" style="font-size:17px;font-weight:800"></p>
       <p id="svGoal"></p>
-      <button class="btn" id="bSvRank">🏆 Ver ranking</button>
+      <button class="btn" id="bSvRank">Ver ranking</button>
       <button class="btn ghost small" id="bSvMenu">Início</button>
     </div>
   </section>
@@ -377,7 +474,7 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
   <!-- Ranking -->
   <section class="screen dim" id="rankings">
     <div class="card">
-      <h2>🏆 Ranking</h2>
+      <h2>Ranking</h2>
       <p style="font-size:13px">Top <span id="rkTop">50</span> deste aparelho</p>
       <div class="rank-wrap" id="rkList"></div>
       <p id="rkMine" style="font-size:13px;font-weight:800"></p>
@@ -437,7 +534,7 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
     </div>
   </section>
 </div>
-<div id="rotate">📱 Gire o celular para a horizontal (deitado) para dirigir o busão.</div>
+<div id="rotate">Gire o celular para a horizontal (deitado) para dirigir o busão.</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="config.js"></script>
@@ -861,7 +958,9 @@ function buildCity() {
     let k = 0;
     for (let s = 5; s < BS - 3; s += CT.lampEvery / 2, k++) {
       const pts = [[x0 + s, z1 - edge, 0, 1], [x1 - s, z0 + edge, 0, -1], [x0 + edge, z0 + s, -1, 0], [x1 - edge, z1 - s, 1, 0]];
-      for (const [px, pz, dx, dz] of pts) { if (k % 2 === 0) lampAt(px, pz, dx, dz); else if (!isStore) treeAt(px - dx * .4, pz - dz * .4, .85); }
+      // sem árvore perto dos pontos de embarque (BS*.3 e BS*.7): a copa escondia a lenda em pé na calçada
+      const nearSpot = Math.min(Math.abs(s - BS * .3), Math.abs(s - BS * .7)) < 4.5;
+      for (const [px, pz, dx, dz] of pts) { if (k % 2 === 0) lampAt(px, pz, dx, dz); else if (!isStore && !nearSpot) treeAt(px - dx * .4, pz - dz * .4, .85); }
     }
     // pontos de embarque: na beira da calçada, de frente para a rua
     if (!isStore) for (const f of [.3, .7]) {
@@ -1002,7 +1101,7 @@ function buildTargets() {
 function showTargetChar(i) {
   const ch = CHARS[i], sp = W.char, s = G.route[i];
   sp.material.map = CHARTEX[ch.id]; sp.material.needsUpdate = true;
-  const h = 3.6, a = CHARTEX[ch.id].userData.aspect || .5;
+  const h = C.charHeight || 3.6, a = CHARTEX[ch.id].userData.aspect || .5;
   sp.scale.set(h * a, h, 1); sp.position.set(s.sx, .25, s.sz); sp.visible = true;
 }
 function placeZone() {
@@ -1160,7 +1259,7 @@ function board() {
   G.rescued++; G.score += C.points.rescue; G.timeLeft += C.time.bonus; G.warnSec = 99;
   Sound.sfx('riff'); setTimeout(() => Sound.sfx('chime'), 450);
   showTalk(ch);
-  plus('+' + C.time.bonus + ' s  +' + C.points.rescue);
+  plus((C.texts.rescueTag || 'RESGATE') + ': ' + ch.name, C.points.rescue, C.time.bonus);
   RA.level(G.rescued, G.elapsed, ch.name, G.score); RA.progress(G.score, G.elapsed);
   G.idx++;
   if (G.idx === NLEG) setTimeout(() => { if (G.state === 'play') toast(T.goStore, 2200); }, 900);
@@ -1174,8 +1273,8 @@ function victory() {
   // o show: as 10 lendas no palco em frente à loja
   W.crowd = CHARS.map((ch, i) => {
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: CHARTEX[ch.id], transparent: true, alphaTest: .05 }));
-    const h = 3.4, a = CHARTEX[ch.id].userData.aspect || .5; sp.center.set(.5, 0); sp.scale.set(h * a, h, 1);
-    sp.position.set(W.store.x - 13 + i * 2.9, .25, W.store.doorZ + 3); sp.userData.ph = i * .7; scene.add(sp); return sp;
+    const h = (C.charHeight || 3.6) * .85, a = CHARTEX[ch.id].userData.aspect || .5; sp.center.set(.5, 0); sp.scale.set(h * a, h, 1);
+    sp.position.set(W.store.x - 13 + i * 2.9, .25, W.store.doorZ + 3 + (i % 2) * 2.2); sp.userData.ph = i * .7; scene.add(sp); return sp;
   });
   endGame('vitoria');
 }
@@ -1289,8 +1388,9 @@ function resize() {
   ui.cam.aspect = w / h; ui.cam.updateProjectionMatrix();
   // seta a ~11% do topo, a 9 unidades da câmera da seta
   const half = Math.tan(THREE.MathUtils.degToRad(ui.cam.fov / 2)) * 9;
-  W.arrowY = half * .7; W.arrow.tilt.position.set(0, W.arrowY, -9);
-  W.arrow.tilt.scale.setScalar(.72);
+  W.arrowY = half * .7;
+  if (W.arrow) W.arrow.tilt.position.set(0, W.arrowY, -9);
+  if (W.arrow) W.arrow.tilt.scale.setScalar(.72);
   if (isPortraitPhone() && G && G.state === 'play') pauseGame();
 }
 
@@ -1323,21 +1423,40 @@ document.addEventListener('dblclick', e => e.preventDefault());
 
 /* ======================= HUD ======================= */
 const hudCache = {};
+const ICON = {
+  horn: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="3.2"/><path d="M8 10.5h3L21 4v16l-10-6.5H8z"/></svg>',
+  sound: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M4 9v6h4l6 5V4L8 9H4z"/><path d="M17 8.5c1.6 2 1.6 5 0 7M19.5 6c3 3.4 3 8.6 0 12"/></svg>',
+  mute: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M4 9v6h4l6 5V4L8 9H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>',
+  left: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 12L16 3v6h5v6h-5v6z"/></svg>',
+  right: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12L8 3v6H3v6h5v6z"/></svg>'
+};
+function renderLogo(el) {
+  const L = C.logo || {}; el.classList.toggle('img', !!L.image);
+  el.innerHTML = L.image ? `<img src="${esc(L.image)}" alt="${esc(L.text || C.clientName)}">` : esc(L.text || C.clientName);
+}
+function setHudIcons() {
+  $('#hHorn').innerHTML = ICON.horn; $('#hPause').innerHTML = ICON.pause; $('#bLeft').innerHTML = ICON.left; $('#bRight').innerHTML = ICON.right;
+  $('#hMute').innerHTML = Sound.muted ? ICON.mute : ICON.sound;
+  renderLogo($('#hLogo')); renderLogo($('#cLogo'));
+}
 function setHud(on) { $('#hud').classList.toggle('on', on); $$('.ctrl').forEach(b => b.classList.toggle('on', on)); $('#target').classList.toggle('on', on); $('#hSpeed').classList.toggle('on', on); }
 function setTxt(id, v) { if (hudCache[id] !== v) { hudCache[id] = v; $(id).textContent = v; } }
 function updateHud(force) {
-  if (force) { for (const k in hudCache) delete hudCache[k]; $('#hLeg').innerHTML = CHARS.map(() => '<i></i>').join(''); }
+  if (force) { for (const k in hudCache) delete hudCache[k]; $('#hLeg .ticks').innerHTML = CHARS.map(() => '<i></i>').join(''); }
   setTxt('#hTimeV', fmtTime(G.timeLeft));
   const warn = G.state === 'play' && G.timeLeft <= C.time.warnAt;
-  if (hudCache.warn !== warn) { hudCache.warn = warn; $('#hTime').classList.toggle('warn', warn); }
+  if (hudCache.warn !== warn) { hudCache.warn = warn; $('#hTime').classList.toggle('warn', warn); $('#hMeter').classList.toggle('warn', warn); }
+  const mw = Math.round(clamp(G.timeLeft / (C.time.meterMax || 60), 0, 1) * 100);
+  if (hudCache.mw !== mw) { hudCache.mw = mw; $('#hMeter i').style.width = mw + '%'; }
   setTxt('#hClockV', fmtClock(G.clockMin));
   setTxt('#hScoreV', fmt(G.score));
   setTxt('#hSpeedV', String(Math.round(Math.abs(G.bus.v) * 3.6)));
-  if (hudCache.leg !== G.rescued) { hudCache.leg = G.rescued; $$('#hLeg i').forEach((el, i) => el.classList.toggle('on', i < G.rescued)); }
+  if (hudCache.leg !== G.rescued) { hudCache.leg = G.rescued; $$('#hLeg .ticks i').forEach((el, i) => el.classList.toggle('on', i < G.rescued)); $('#hLegV').textContent = G.rescued + '/' + NLEG; }
   const t = curTarget();
   if (t) {
     setTxt('#tDist', fmt(Math.hypot(t.x - G.bus.x, t.z - G.bus.z)) + ' m');
-    setTxt('#tName', t.store ? '🎸 LOJA MÁQUINA DO MAL' : (G.idx + 1) + '/' + NLEG + ' · ' + CHARS[G.idx].name.toUpperCase());
+    setTxt('#tName', t.store ? 'VOLTA PRA LOJA ' + (C.clientName || '').toUpperCase() : (G.idx + 1) + '/' + NLEG + ' · ' + CHARS[G.idx].name.toUpperCase());
   } else { setTxt('#tDist', ''); setTxt('#tName', ''); }
 }
 let toastT = 0;
@@ -1345,13 +1464,18 @@ function toast(msg, ms = 1000) { const t = $('#toast'); t.textContent = msg; t.c
 let talkT = 0;
 function showTalk(ch) {
   $('#talkI').src = PORTRAIT[ch.id]; $('#talkN').textContent = ch.name; $('#talkL').textContent = '“' + ch.line + '”';
-  $('#talkB').textContent = '+' + C.time.bonus + ' s · +' + C.points.rescue + ' pts';
+  $('#talkB').textContent = '+' + C.time.bonus + ' S   +' + C.points.rescue + ' PTS';
   $('#talk').classList.add('on'); clearTimeout(talkT); talkT = setTimeout(hideTalk, C.pickup.lineTime * 1000);
 }
 function hideTalk() { clearTimeout(talkT); $('#talk').classList.remove('on'); }
-function plus(txt) { const p = $('#plus'); p.textContent = txt; p.classList.remove('on'); void p.offsetWidth; p.classList.add('on'); }
+function plus(name, pts, secs) {
+  const p = $('#plus'); p.querySelector('.pn').textContent = name;
+  p.querySelector('.pv').innerHTML = `<span>+${pts} <small>PTS</small></span><span>+${secs} <small>S</small></span>`;
+  p.classList.remove('on'); void p.offsetWidth; p.classList.add('on');
+  for (const id of ['#hScore', '#hTime']) { const el = $(id); el.classList.remove(id === '#hTime' ? 'gain' : 'bump'); void el.offsetWidth; el.classList.add(id === '#hTime' ? 'gain' : 'bump'); }
+}
 function showCount(txt) { const c = $('#count'); c.textContent = txt; c.classList.remove('on'); void c.offsetWidth; c.classList.add('on'); if (txt === 'VAI!') setTimeout(() => c.classList.remove('on'), 800); }
-function toggleMute() { const m = Sound.toggle(); $('#hMute').textContent = m ? '🔇' : '🔊'; $('#bPMute').textContent = m ? 'Ligar som' : 'Desligar som'; }
+function toggleMute() { const m = Sound.toggle(); $('#hMute').innerHTML = m ? ICON.mute : ICON.sound; $('#bPMute').textContent = m ? 'Ligar som' : 'Desligar som'; }
 
 /* ======================= TELAS ======================= */
 let current = 'splash';
@@ -1362,10 +1486,10 @@ function goTitle() {
   W.zone.visible = false; W.char.visible = false; if (W.crowd) { W.crowd.forEach(s => scene.remove(s)); W.crowd = null; }
   Sound.musicLevel(.45);
   const done = hasPlayed(), bg = $('#bGo');
-  bg.disabled = done; bg.textContent = done ? '✔ PARTIDA JÁ JOGADA' : '[ ' + C.comic.button + ' ]';
+  bg.disabled = done; bg.textContent = done ? 'PARTIDA JÁ JOGADA' : '[ ' + C.comic.button + ' ]';
   $('#cPlayed').style.display = done ? '' : 'none'; $('#cPlayed').textContent = done ? playedMsg() : '';
   const pl = player();
-  $('#cBest').textContent = pl.best ? `🏅 Seu recorde: ${fmt(pl.best)} pts${pl.nick ? ' (' + pl.nick + ')' : ''}` : '';
+  $('#cBest').textContent = pl.best ? `Seu recorde: ${fmt(pl.best)} pts${pl.nick ? ' (' + pl.nick + ')' : ''}` : '';
 }
 function buildStatic() {
   const P = C.comic.panels;
@@ -1375,6 +1499,13 @@ function buildStatic() {
   $('#poster').innerHTML = esc(P[1].poster || '').replace(/\s*(HOJE.*)$/i, '<b>$1</b>');
   $('#p1bg').style.backgroundImage = `url("${TEXSRC.store}")`;
   $('#p3bg').style.backgroundImage = `url("${TEXSRC.bus_front}")`;
+  // arte final dos quadros (Higgsfield). Se a imagem não carregar, fica o quadro montado (fachada/ônibus + Felipe)
+  $$('.panel').forEach((el, i) => {
+    const src = (P[i] || {}).image; if (!src) return;
+    const img = new Image();
+    img.onload = () => { el.querySelector('.bg').style.backgroundImage = `url("${src}")`; el.classList.add('art'); };
+    img.src = src;
+  });
   $$('.felipe').forEach(el => { el.src = PORTRAIT.felipe; el.alt = C.felipe.name; });
   $('#cTag').textContent = T.tagline; $('#cFoot').textContent = T.footer;
   $('#howTitle').textContent = T.howTitle;
@@ -1401,13 +1532,13 @@ function startFlow() {
 function showGameOver() {
   setHud(false); hideTalk(); showScreen('gameover');
   const win = G.endReason === 'vitoria';
-  $('#goTitle').textContent = win ? '🤘 ' + T.winTitle + ' 🤘' : G.endReason === 'tempo' ? T.loseTitle : T.quitTitle;
+  $('#goTitle').textContent = win ? T.winTitle : G.endReason === 'tempo' ? T.loseTitle : T.quitTitle;
   $('#goLine').textContent = win ? T.winLine + (G.bonus ? ` Bônus de tempo: +${fmt(G.bonus)}.` : '') : G.endReason === 'tempo' ? pick(T.loseLines) : '';
   $('#goScore').textContent = fmt(G.score);
-  $('#goGoal').textContent = '🏅 ' + (win ? C.winTitle : goalFor(G.score));
+  $('#goGoal').textContent = (win ? C.winTitle : goalFor(G.score));
   $('#goLeg').textContent = G.rescued + '/' + NLEG; $('#goTime').textContent = fmtTime(G.elapsed);
   $('#goDist').textContent = (G.dist / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1, minimumFractionDigits: 1 }); $('#goSpeed').textContent = Math.round(G.maxV * 3.6);
-  $('#goRec').textContent = G.newRecord ? '★ Novo recorde pessoal! ★' : '';
+  $('#goRec').textContent = G.newRecord ? 'Novo recorde pessoal!' : '';
   $('#bRetry').style.display = canRetry() ? '' : 'none';
   const pl = player(); $('#nickIn').value = pl.nick || ''; $('#nickErr').textContent = '';
   $('#saveForm').style.display = G.score > 0 && !G.saved ? '' : 'none'; $('#bSave').disabled = false;
@@ -1437,7 +1568,7 @@ function showRankings(back) {
   const mineIdx = pl.nick ? all.findIndex(e => e.nickname === pl.nick) : -1, myId = mineIdx >= 0 ? all[mineIdx].id : null;
   const d = s => { const x = new Date(s); return isNaN(x) ? '' : x.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }); };
   $('#rkList').innerHTML = top.length ? `<table><thead><tr><th>#</th><th>Nome</th><th style="text-align:right">Pts</th><th>Lendas</th><th>Data</th></tr></thead><tbody>${
-    top.map((e, i) => `<tr class="${e.id === myId ? 'me' : ''}"><td class="n">${i + 1}</td><td><b>${esc(e.nickname)}</b>${e.win ? ' 🤘' : ''}</td><td class="s">${fmt(e.score)}</td><td class="g">${e.legends ?? ''}/${NLEG}</td><td class="d">${d(e.date)}</td></tr>`).join('')
+    top.map((e, i) => `<tr class="${e.id === myId ? 'me' : ''}"><td class="n">${i + 1}</td><td><b>${esc(e.nickname)}</b>${e.win ? '<span class="win-mark">SHOW</span>' : ''}</td><td class="s">${fmt(e.score)}</td><td class="g">${e.legends ?? ''}/${NLEG}</td><td class="d">${d(e.date)}</td></tr>`).join('')
   }</tbody></table>` : '<div class="empty">Ninguém no ranking ainda. Seja o primeiro!</div>';
   $('#rkMine').textContent = mineIdx >= 0 ? `Sua melhor: ${fmt(all[mineIdx].score)} pts — #${mineIdx + 1}` : (pl.best ? `Seu recorde: ${fmt(pl.best)} pts (grave seu apelido para entrar no ranking)` : '');
   rankBack = back || 'comic';
@@ -1479,7 +1610,7 @@ function renderAdmin() {
   $('#admCount').textContent = all.length;
   const d = x => { const t = new Date(x); return isNaN(t) ? '' : t.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }); };
   $('#admList').innerHTML = all.length ? `<table><thead><tr><th>#</th><th>Nome</th><th style="text-align:right">Pts</th><th>Lendas</th><th>Data</th><th></th></tr></thead><tbody>${
-    all.map((e, i) => `<tr><td class="n">${i + 1}</td><td><b>${esc(e.nickname)}</b>${e.win ? ' 🤘' : ''}</td><td class="s">${fmt(e.score)}</td><td>${e.legends ?? ''}</td><td class="d">${d(e.date)}<br>${e.duration ?? ''}s</td><td><button class="ban-x" data-ban="${esc(e.nickname)}" aria-label="Banir ${esc(e.nickname)}">🚫</button></td></tr>`).join('')
+    all.map((e, i) => `<tr><td class="n">${i + 1}</td><td><b>${esc(e.nickname)}</b>${e.win ? '<span class="win-mark">SHOW</span>' : ''}</td><td class="s">${fmt(e.score)}</td><td>${e.legends ?? ''}</td><td class="d">${d(e.date)}<br>${e.duration ?? ''}s</td><td><button class="ban-x" data-ban="${esc(e.nickname)}" aria-label="Banir ${esc(e.nickname)}">🚫</button></td></tr>`).join('')
   }</tbody></table>` : '<div class="empty">Placar vazio.</div>';
   const b = LB.banned();
   $('#admBanned').innerHTML = b.length ? '<b>Banidos</b> (toque para desbanir): ' + b.map(n => `<button data-unban="${esc(n)}">${esc(n)} ✕</button>`).join('') : '';
@@ -1573,7 +1704,7 @@ function fatal(msg) { $('#loadTxt').textContent = msg; $('#loadBar').style.width
   buildCity(); buildBus(); buildTargets();
   G = freshState('menu');
   resize(); buildStatic();
-  $('#hMute').textContent = Sound.muted ? '🔇' : '🔊'; $('#bPMute').textContent = Sound.muted ? 'Ligar som' : 'Desligar som';
+  setHudIcons(); $('#bPMute').textContent = Sound.muted ? 'Ligar som' : 'Desligar som';
   requestAnimationFrame(t => { last = t; frame(t); });
   await new Promise(r => setTimeout(r, Math.max(0, 700 - (performance.now() - t0))));
   goTitle();
