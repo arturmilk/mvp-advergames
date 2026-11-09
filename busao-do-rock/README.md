@@ -50,6 +50,8 @@ na própria arte** (`assets/comic/s1..s3.webp`, Higgsfield), para não depender 
 tarde."; 2) "Já são 18h45!"; 3) "Garagem da loja." com "VRUUUM!". Para mudar um texto é preciso gerar a imagem de novo (prompts no
 `assets/manifest.json`). **"Wacken" é marca de um festival real: conferir com o jurídico antes de divulgar.**
 
+**Felipe forte (09/11):** a pedido do Arthur, o Felipe ficou bem mais forte (ombros, braços e peito de super-herói, mesmo rosto, óculos e barba). A tela de girar o celular é a **referência oficial** do personagem (job no `assets/manifest.json`); os 3 slides foram refeitos a partir dela com o mesmo texto. As versões anteriores ficaram em `_raw/` com `_v1`.
+
 **Celular em pé:** no lugar do aviso de texto, aparece o Felipe desenhado virando o celular: "Deita esse celular aí, roqueiro! Busão não
 anda em pé." (`assets/rotate.webp`, texto na arte).
 

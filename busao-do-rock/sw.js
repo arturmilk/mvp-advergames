@@ -3,7 +3,7 @@
 // - HTML/JS/JSON: rede primeiro (um push no GitHub Pages aparece na próxima abertura), cache se estiver sem internet
 // - three.js da cdnjs (versão fixa, nunca muda): cache primeiro
 // Ao trocar CACHE, os caches antigos deste jogo são apagados (os dos outros jogos ficam).
-const PREFIX = 'busao-do-rock-v', CACHE = PREFIX + '3';
+const PREFIX = 'busao-do-rock-v', CACHE = PREFIX + '4';
 self.addEventListener('install', e => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(
   caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k.startsWith(PREFIX)).map(k => caches.delete(k)))).then(() => self.clients.claim())

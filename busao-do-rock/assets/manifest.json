@@ -228,28 +228,31 @@
       600
     ],
     "slides": {
-      "note": "Slides atuais (3:2, 840x564) com todo o texto desenhado na arte. Gerados a partir dos quadros p1..p3 (referência).",
+      "note": "Slides atuais (3:2, 840x564) com todo o texto desenhado na arte. Gerados a partir dos quadros p1..p3 (referência). Felipe forte (09/11): referência oficial = tela de girar (job 36beeec3-7271-43dc-86fe-c6cd82e85221). Versões anteriores em _raw/comic/sN_v1.webp.",
       "items": [
         {
           "id": "s1",
           "file": "comic/s1.webp",
           "source": "_raw/comic/s1.webp",
-          "higgsfieldJob": "6eb3d5ef-0ed7-4ff8-9456-85eacdd75ea7",
-          "text": "FIM DE TARDE. / MAIS UM DIA NA MÁQUINA DO MAL... ESPERA AÍ..."
+          "higgsfieldJob": "175a4a00-84f8-4e78-be89-d3e3c0012498",
+          "text": "FIM DE TARDE. / MAIS UM DIA NA MÁQUINA DO MAL... ESPERA AÍ...",
+          "previousJob": "6eb3d5ef-0ed7-4ff8-9456-85eacdd75ea7"
         },
         {
           "id": "s2",
           "file": "comic/s2.webp",
           "source": "_raw/comic/s2.webp",
-          "higgsfieldJob": "12cf067b-8459-4e34-8b66-5b8a6ac134ec",
-          "text": "JÁ SÃO 18H45! / PUTA MERDA! O SHOW É LOGO AO ANOITECER E AS BANDAS AINDA TÃO ESPALHADAS PELA CIDADE! / cartaz WACKEN PVH ÀS 19H / relógio 18:45"
+          "higgsfieldJob": "8f27d6a4-d668-43f0-9c32-870c3fd68097",
+          "text": "JÁ SÃO 18H45! / PUTA MERDA! O SHOW É LOGO AO ANOITECER E AS BANDAS AINDA TÃO ESPALHADAS PELA CIDADE! / cartaz WACKEN PVH ÀS 19H / relógio 18:45",
+          "previousJob": "12cf067b-8459-4e34-8b66-5b8a6ac134ec"
         },
         {
           "id": "s3",
           "file": "comic/s3.webp",
           "source": "_raw/comic/s3.webp",
-          "higgsfieldJob": "0d575f6e-213f-4b01-a7da-630e3762a401",
-          "text": "GARAGEM DA LOJA. / BORA BOTAR O ÔNIBUS NA PISTA E JUNTAR ESSA GALERA! / VRUUUM!"
+          "higgsfieldJob": "28ebd710-1ae6-4e14-ad26-6b93ff44310d",
+          "text": "GARAGEM DA LOJA. / BORA BOTAR O ÔNIBUS NA PISTA E JUNTAR ESSA GALERA! / VRUUUM!",
+          "previousJob": "0d575f6e-213f-4b01-a7da-630e3762a401"
         }
       ]
     }
@@ -257,11 +260,13 @@
   "rotate": {
     "file": "rotate.webp",
     "source": "_raw/rotate.webp",
-    "higgsfieldJob": "4c516b03-1d4c-46e9-917b-d5dd43758ac3",
+    "higgsfieldJob": "36beeec3-7271-43dc-86fe-c6cd82e85221",
     "size": [
       470,
       840
     ],
-    "text": "DEITA ESSE CELULAR AÍ, ROQUEIRO! BUSÃO NÃO ANDA EM PÉ."
+    "text": "DEITA ESSE CELULAR AÍ, ROQUEIRO! BUSÃO NÃO ANDA EM PÉ.",
+    "previousJob": "4c516b03-1d4c-46e9-917b-d5dd43758ac3",
+    "note": "Felipe forte; é a referência oficial do personagem. Versão anterior em _raw/rotate_v1.webp."
   }
 }

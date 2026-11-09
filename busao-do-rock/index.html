@@ -1668,7 +1668,10 @@ function goFullscreen() {
 // tela cheia no primeiro toque em qualquer lugar (o navegador só permite dentro de um toque/clique).
 // iPhone: o Safari não tem tela cheia para páginas; ali o jeito é 'Adicionar à Tela de Início' (manifest display: fullscreen).
 if (C.fullscreenOnTouch !== false) {
-  const fsTap = () => { if (!document.fullscreenElement && !document.webkitFullscreenElement) goFullscreen(); };
+  const fsTap = e => {
+    if (!e.isTrusted || (navigator.userActivation && !navigator.userActivation.isActive)) return; // só toque de verdade
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) goFullscreen();
+  };
   ['pointerup', 'touchend', 'click'].forEach(t => addEventListener(t, fsTap, { capture: true, passive: true }));
 }
 function startFlow() {
