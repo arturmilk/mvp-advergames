@@ -197,27 +197,27 @@
     ]
   },
   "comic": {
-    "note": "Quadros da HQ de abertura (1:1). Felipe é personagem estilizado gerado a partir de 2 fotos de referência (fora do git); a mesma geração (p1) serviu de referência para p2, p3 e a fachada, para manter o traço. Textos, cartaz e relógio são HTML por cima.",
+    "note": "Quadros da HQ de abertura (1:1). Felipe é personagem estilizado gerado a partir de 2 fotos de referência (fora do git); a mesma geração (p1) serviu de referência para p2, p3 e a fachada, para manter o traço. Textos, cartaz e relógio são HTML por cima. Os quadros p1..p3 ficaram só em _raw/comic (fonte e referência).",
     "generator": "gpt_image_2_5 (Higgsfield), quality=high, resolution=1k, aspect 1:1",
     "style": "Classic 1970s-80s Marvel comic book panel, bold black ink outlines, flat vivid colors, Ben-Day dot halftone shading, CMYK print texture, aged newsprint paper grain. No balloons, no captions (os textos ficam no config.js).",
     "panels": [
       {
         "id": "p1",
-        "file": "comic/p1.webp",
+        "file": null,
         "source": "_raw/comic/p1.webp",
         "higgsfieldJob": "155434c6-854e-40a1-bcc2-e39088ca013a",
         "prompt": "Late afternoon sunset, the Máquina do Mal storefront (from the reference photo, murals replaced by generic rock graffiti); Felipe in the foreground opening the door and checking his watch, surprised."
       },
       {
         "id": "p2",
-        "file": "comic/p2.webp",
+        "file": null,
         "source": "_raw/comic/p2.webp",
         "higgsfieldJob": "7a3b4a3c-a641-4f09-80f1-72d000407f8b",
         "prompt": "Inside the store, guitars and records; Felipe on the left 40%, shocked, hands on his head; right side an empty brick wall (cartaz e relógio entram em HTML)."
       },
       {
         "id": "p3",
-        "file": "comic/p3.webp",
+        "file": null,
         "source": "_raw/comic/p3.webp",
         "higgsfieldJob": "3d1e4307-2a48-4a63-9f97-9787cc21f761",
         "prompt": "Dusk, the black-and-purple flame tour bus bursting out of the garage, Felipe at the wheel giving a thumbs up; upper left calm for the balloon."
@@ -226,6 +226,42 @@
     "size": [
       600,
       600
-    ]
+    ],
+    "slides": {
+      "note": "Slides atuais (3:2, 840x564) com todo o texto desenhado na arte. Gerados a partir dos quadros p1..p3 (referência).",
+      "items": [
+        {
+          "id": "s1",
+          "file": "comic/s1.webp",
+          "source": "_raw/comic/s1.webp",
+          "higgsfieldJob": "6eb3d5ef-0ed7-4ff8-9456-85eacdd75ea7",
+          "text": "FIM DE TARDE. / MAIS UM DIA NA MÁQUINA DO MAL... ESPERA AÍ..."
+        },
+        {
+          "id": "s2",
+          "file": "comic/s2.webp",
+          "source": "_raw/comic/s2.webp",
+          "higgsfieldJob": "12cf067b-8459-4e34-8b66-5b8a6ac134ec",
+          "text": "JÁ SÃO 18H45! / PUTA MERDA! O SHOW É LOGO AO ANOITECER E AS BANDAS AINDA TÃO ESPALHADAS PELA CIDADE! / cartaz WACKEN PVH ÀS 19H / relógio 18:45"
+        },
+        {
+          "id": "s3",
+          "file": "comic/s3.webp",
+          "source": "_raw/comic/s3.webp",
+          "higgsfieldJob": "0d575f6e-213f-4b01-a7da-630e3762a401",
+          "text": "GARAGEM DA LOJA. / BORA BOTAR O ÔNIBUS NA PISTA E JUNTAR ESSA GALERA! / VRUUUM!"
+        }
+      ]
+    }
+  },
+  "rotate": {
+    "file": "rotate.webp",
+    "source": "_raw/rotate.webp",
+    "higgsfieldJob": "4c516b03-1d4c-46e9-917b-d5dd43758ac3",
+    "size": [
+      470,
+      840
+    ],
+    "text": "DEITA ESSE CELULAR AÍ, ROQUEIRO! BUSÃO NÃO ANDA EM PÉ."
   }
 }

@@ -13,6 +13,11 @@ aparece o aviso para girar e a partida pausa.
 * **Lendas:** 9 sprites recortados (pasta `sprites` do Felipe), padronizados no mesmo canvas em `assets/chars/*.webp` (veja § 3).
   A Rita Lee ainda não tem imagem e segue com o boneco provisório. O Felipe aparece só na HQ, já desenhado nos quadros.
 * **Peso dos assets do jogo:** ~1,2 MB em webp (texturas ~420 KB, fachada nova 123 KB, sprites 330 KB, HQ 337 KB).
+* **Som do motor:** segurando o acelerador o ronco sobe marcha a marcha (4 marchas, com a queda de giro e um estalo em cada troca) e
+  só chega no pico depois de **10 s** (`engineSound.rampSec`, fatias de cada marcha em `engineSound.gears`). Soltando, o giro cai.
+* **Trilha:** riff **original** de hard rock em Mi (power chords com palhetada abafada, bateria e baixo simples, 152 bpm), no clima de
+  banda pesada dos anos 70 pedido como referência, **sem copiar nenhuma música** (direito autoral). Volume em `musicVolume`, andamento
+  em `musicTempo`; o botão de som da HUD tira tudo.
 * Áudio todo sintetizado com Web Audio: ronco do motor (acompanha a velocidade), buzina, riff de guitarra ao resgatar, sirene nos
   últimos segundos, contagem 3-2-1, trilha de rock e solo da vitória.
 * Mesmo modo de operar dos outros jogos: apelido com o mesmo filtro de palavrões, placar local + planilha Google + dashboard, QR code
@@ -38,7 +43,16 @@ Publicado (depois do merge no `main`): https://arturmilk.github.io/mvp-advergame
 
 ## 1. Como jogar
 
-**Abertura:** HQ em 3 quadros no estilo Marvel anos 70/80 (traço preto grosso, cores chapadas, retícula Ben-Day e papel de
+**Abertura (atual):** a HQ é uma sequência de **3 slides**, um quadro por vez, com o botão **PRÓXIMO** (ou toque no quadro) até o
+último, que vira **COMEÇAR**. Todo o texto (legendas, balões, o relógio às 18h45 e o cartaz **"WACKEN PVH ÀS 19H"**) está **desenhado
+na própria arte** (`assets/comic/s1..s3.webp`, Higgsfield), para não depender de fonte nem do modo escuro do celular. 1) "Fim de
+tarde."; 2) "Já são 18h45!"; 3) "Garagem da loja." com "VRUUUM!". Para mudar um texto é preciso gerar a imagem de novo (prompts no
+`assets/manifest.json`). **"Wacken" é marca de um festival real: conferir com o jurídico antes de divulgar.**
+
+**Celular em pé:** no lugar do aviso de texto, aparece o Felipe desenhado virando o celular: "Deita esse celular aí, roqueiro! Busão não
+anda em pé." (`assets/rotate.webp`, texto na arte).
+
+**Abertura (versão anterior, ainda no código como reserva):** HQ em 3 quadros no estilo Marvel anos 70/80 (traço preto grosso, cores chapadas, retícula Ben-Day e papel de
 jornal impresso por cima), arte do Higgsfield em `assets/comic/`. 1) Felipe abrindo a Máquina do Mal ao pôr do sol, olhando o
 relógio; 2) Felipe desesperado dentro da loja, com o cartaz "SHOW DE ROCK HOJE ÀS 19H!" e o relógio marcando 18:00; 3) o ônibus
 saindo da garagem com o Felipe ao volante. Legendas, balões, cartaz e relógio são HTML por cima (texto editável no `config.js`,
@@ -47,9 +61,9 @@ tela cheia (e tenta travar na horizontal), libera o áudio e começa a contagem 
 
 | Controle | Celular | Computador |
 |---|---|---|
-| Virar | segurar **◀** / **▶** (canto inferior esquerdo) | A / D ou ← / → |
-| Acelerar | segurar o **pedal ACELERA** (canto inferior direito) | W ou ↑ |
-| Freio / ré | segurar **FREIO RÉ** (ao lado do pedal); parado, dá ré | S ou ↓ |
+| Virar | segurar as setas **esquerda / direita** (canto inferior esquerdo) | A / D ou ← / → |
+| Acelerar | segurar o pedal com a **seta para cima** (canto inferior direito) | W ou ↑ |
+| Freio / ré | segurar o pedal com a **seta para baixo** (ao lado); parado, dá ré | S ou ↓ |
 | Buzina | 📯 no topo | H ou Espaço |
 | Pausa / som | ⏸ e 🔊 no topo | P ou Esc / M |
 
@@ -57,9 +71,15 @@ Multitoque (virar e acelerar ao mesmo tempo), `touch-action: none` no jogo todo,
 iPhone respeitada. Só toque e segurar, sem swipe. A partida pausa sozinha quando o app perde o foco.
 
 ### Regras
-* **Tempo:** começa com **40 s** (`time.start`). Cada resgate soma **+10 s** (`time.bonus`) e **+10 pontos** (`points.rescue`).
-  Com 40 s o primeiro resgate precisa sair rápido: a rota sorteia a próxima lenda a 110–240 m (`pickup.minDist/maxDist`). Se ficar
-  difícil demais, o ajuste mais suave é subir `time.start` para 50 ou baixar `pickup.maxDist`.
+* **Tempo:** começa com **30 s** (`time.start`). Cada resgate soma **+10 s** (`time.bonus`) e **+10 pontos** (`points.rescue`).
+  Com 30 s o primeiro resgate precisa sair rápido: a rota sorteia a próxima lenda a 110–240 m (`pickup.minDist/maxDist`). Se ficar
+  difícil demais, o ajuste mais suave é subir `time.start` para 40 ou baixar `pickup.maxDist`.
+* **Contagem:** antes de largar aparece 3, 2, 1 e VAI! numa placa preta de stencil com um estouro de raios girando (o VAI! em vermelho).
+* **Provocações** (`taunts`): quando faltam **15, 8 e 3 s**, a próxima lenda a ser buscada aparece num balão amarelo com uma das
+  frases da lista (sem repetir até usar todas). Se um resgate devolver tempo, o marco volta a valer.
+* **Fim da partida:** quem zera vê "Parabéns! Você zerou o Busão do Rock!" (`texts.winTitle`). Quem não zera vê as lendas que
+  ficaram para trás e a primeira delas reclama: "Me deixou aqui esperando? Aí não, né. Compra mais alguma coisa e tenta de novo."
+  (`texts.missedLine`).
 * **Relógio do jogo:** começa em 18:00 e anda até 19:00, chegando a 19:00 exatamente quando o tempo zera (nunca volta, mesmo
   com o bônus). O céu, as luzes e os letreiros vão do pôr do sol para a noite junto com o relógio.
 * **Seta:** seta 3D verde e amarela no topo da tela, girando para apontar o próximo alvo, com a distância em metros e o nome embaixo.
@@ -204,7 +224,7 @@ Job id e prompt de cada uma ficam em `assets/manifest.json` (`textures`, `comic`
 geração anterior como imagem de referência para manter o estilo), salve em `assets/_raw/<id>.webp` e rode
 `python tools/process_textures.py` (requer `pip install pillow`).
 
-O ônibus é montado em 3D (caixa longa com frente achatada, janelas e labaredas nas laterais, para-brisa grande, rodado duplo atrás,
+O ônibus não tem mais o letreiro "ROCK" na traseira. O ônibus é montado em 3D (caixa longa com frente achatada, janelas e labaredas nas laterais, para-brisa grande, rodado duplo atrás,
 6 caixas de som no teto, traseira desenhada em Canvas), com farol no chão que acende ao anoitecer.
 
 ---
@@ -271,6 +291,23 @@ Chromium (Playwright), deitado, coleta de dados bloqueada no teste.
 | 18 | Fim do tempo | Sem dirigir: aos 30 s faltam 10 s (TEMPO pisca, barra vermelha); aos 40 s "Deu 19:00...", `motivo_fim = tempo`, relógio em 19:00 ✔ |
 | 19 | Layout | 740×360, 932×430 e 1000×480: HUD, balão, letreiro, controles, HQ e tela de fim sem sobreposição e sem rolagem horizontal ✔ |
 | 20 | Console | Sem erros nem avisos ✔ |
+
+### Testes da rodada 3 (09/11/2026)
+
+Chromium (Playwright), deitado, coleta de dados bloqueada no teste.
+
+| # | Cenário | Resultado |
+|---|---|---|
+| 21 | Slides | Quadro 1 → PRÓXIMO → 2 → PRÓXIMO → 3 → COMEÇAR; textos legíveis na arte em 740×360, 932×430 e 1000×480 ✔ |
+| 22 | Contagem | 3-2-1-VAI! com a placa e os raios ✔ |
+| 23 | Provocações | Aos 15 s a próxima lenda (Ozzy) fala uma frase; aos 8 s outra, sem repetir ✔ |
+| 24 | Fim sem zerar | 1 lenda: aparecem as 9 que faltaram e o Raul Seixas reclama; em telas baixas os números somem para caber ✔ |
+| 25 | Vitória | "Parabéns! Você zerou o Busão do Rock!" ✔ |
+| 26 | Celular em pé | 390×844: imagem do Felipe pedindo para deitar o celular ✔ |
+| 27 | Motor | Acelerador seguro: troca de marcha em ~2, ~4 e ~7 s, pico em ~10 s; soltando, o giro cai (medido no navegador oculto, que roda mais devagar) ✔ |
+| 28 | Console e rolagem | Sem erros, sem rolagem horizontal ✔ |
+
+A música e o som do motor foram conferidos pelos números (marchas e tempos); **ninguém ouviu ainda**: vale escutar no celular.
 
 Corrigido junto: o `resize()` tentava posicionar a seta antes de ela existir (erro `reading 'tilt'` no console em alguns carregamentos).
 

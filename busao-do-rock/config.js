@@ -14,7 +14,7 @@ const CONFIG = {
 
   /* ---------- Tempo e relógio ---------- */
   time: {
-    start: 40,           // segundos no começo da partida
+    start: 30,           // segundos no começo da partida
     bonus: 10,           // segundos ganhos a cada resgate
     meterMax: 60,        // tempo que enche a barra de tempo da HUD
     warnAt: 10,          // a partir daqui o cronômetro pisca e a sirene toca a cada segundo
@@ -35,6 +35,19 @@ const CONFIG = {
     { min: 100, name: 'Lenda da Estrada' }                // as 10 lendas
   ],
   winTitle: 'O Show Vai Começar!',
+
+  /* ---------- Provocações quando o tempo está acabando ----------
+     Quando faltar cada um destes segundos, a PRÓXIMA lenda a ser buscada fala uma frase da lista (sem repetir até usar todas). */
+  taunts: {
+    at: [15, 8, 3],
+    showSec: 2.6,
+    lines: [
+      'Vem me buscar logo, seu poser! Tô atrasado e a culpa é sua.',
+      'Mesmo com uma seta gigante você ainda consegue se perder... MEU DEUS.',
+      'Vamo logo, cara, é só um jogo de celular.',
+      'Não tá querendo ganhar prêmio nenhum desse jeito, né?'
+    ]
+  },
 
   /* ---------- Cidade ---------- */
   city: {
@@ -113,10 +126,15 @@ const CONFIG = {
      image = arte do quadro (Higgsfield, estilo Marvel com retícula; Felipe já desenhado). Vazio = quadro montado com a fachada/ônibus + Felipe. */
   comic: {
     title: 'Máquina do Mal em: Busão do Rock',
+    // slides: true = um quadro por vez com o botão PRÓXIMO. Os textos (legenda, balão, cartaz "WACKEN PVH ÀS 19H") estão
+    // DESENHADOS na arte (Higgsfield), para não depender de fonte nem do modo escuro do celular. Para mudar um texto é preciso
+    // gerar a imagem de novo; caption/line abaixo ficam só como registro (e reserva se a imagem não carregar).
+    slides: true,
+    next: 'PRÓXIMO',
     panels: [
-      { caption: 'Fim de tarde, centro da cidade.', image: 'assets/comic/p1.webp', line: 'Mais um dia na Máquina do Mal... espera aí...' },
-      { caption: '18:00 em ponto.', image: 'assets/comic/p2.webp', poster: 'SHOW DE ROCK HOJE ÀS 19H!', line: 'Puta merda! O show é logo ao anoitecer e as bandas ainda tão espalhadas pela cidade!' },
-      { caption: 'Garagem da loja.', image: 'assets/comic/p3.webp', line: 'Bora botar o ônibus na pista e juntar essa galera!' }
+      { caption: 'Fim de tarde.', image: 'assets/comic/s1.webp', line: 'Mais um dia na Máquina do Mal... espera aí...' },
+      { caption: 'Já são 18h45!', image: 'assets/comic/s2.webp', poster: 'WACKEN PVH ÀS 19H', line: 'Puta merda! O show é logo ao anoitecer e as bandas ainda tão espalhadas pela cidade!' },
+      { caption: 'Garagem da loja.', image: 'assets/comic/s3.webp', line: 'Bora botar o ônibus na pista e juntar essa galera!' }
     ],
     button: 'COMEÇAR (TELA CHEIA)'
   },
@@ -133,14 +151,16 @@ const CONFIG = {
     howTitle: 'Como jogar',
     howTips: [
       'Siga a SETA verde e amarela no topo da tela: ela aponta para a próxima lenda e mostra a distância.',
-      'Você começa com só 40 segundos. Passe o ônibus pela zona neon no chão para embarcar a lenda: +10 segundos e +10 pontos.',
+      'Você começa com só 30 segundos. Passe o ônibus pela zona neon no chão para embarcar a lenda: +10 segundos e +10 pontos.',
       'Depois da 10ª lenda, a seta aponta de volta para a loja Máquina do Mal. Chegue lá antes do tempo zerar!',
       'Celular: ◀ ▶ à esquerda para virar; à direita, o pedal grande acelera e o FREIO/RÉ freia e dá ré. Teclado: W A S D ou setas; H buzina.'
     ],
     goStore: 'TODO MUNDO A BORDO! Volta pra loja!',
-    winTitle: 'O show vai começar!',
+    winTitle: 'Parabéns! Você zerou o Busão do Rock!',
     winLine: 'As 10 lendas subiram no palco da Máquina do Mal. Que noite!',
     loseTitle: 'Deu 19:00...',
+    // fim sem zerar: aparecem as lendas que faltaram e a primeira delas diz isto
+    missedLine: 'Me deixou aqui esperando? Aí não, né. Compra mais alguma coisa e tenta de novo.',
     loseLines: [
       'O show começou sem as bandas. A galera tá tocando air guitar.',
       'O público cantou à capela e o Felipe ainda tá no trânsito.',
@@ -217,6 +237,8 @@ const CONFIG = {
   musicVolume: 0.2,
   sfxVolume: 0.6,
   engineVolume: 0.16,
-  musicTempo: 150
+  // motor: segurando o acelerador o som sobe marcha a marcha até o pico em rampSec; gears = fatia de tempo de cada marcha (soma 1)
+  engineSound: { rampSec: 10, gears: [0.18, 0.22, 0.27, 0.33], dropRate: 2.5 },
+  musicTempo: 152      // trilha original de hard rock (riff em Mi, palhetada abafada); volume em musicVolume
 };
 window.CONFIG = CONFIG;

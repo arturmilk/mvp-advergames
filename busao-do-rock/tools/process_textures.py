@@ -26,7 +26,8 @@ JOBS = {
 }
 
 # quadros da HQ de abertura (assets/_raw/comic/pN.webp -> assets/comic/pN.webp)
-COMIC = {'p1': (600, 600, 66), 'p2': (600, 600, 66), 'p3': (600, 600, 66)}
+# slides da HQ com o texto desenhado na arte (3:2). Os quadros antigos sem texto (p1..p3) ficam só em _raw/comic.
+COMIC = {'s1': (840, 564, 64), 's2': (840, 564, 64), 's3': (840, 564, 64)}
 
 
 def comic():
@@ -38,6 +39,9 @@ def comic():
         im.save(dst, 'WEBP', quality=q, method=6)
         res[pid] = round(os.path.getsize(dst) / 1024, 1)
         print('comic', pid, res[pid], 'KB')
+    im = Image.open(os.path.join(RAW, 'rotate.webp')).convert('RGB').resize((470, 840), Image.LANCZOS)
+    im.save(os.path.join(ASSETS, 'rotate.webp'), 'WEBP', quality=64, method=6)
+    print('rotate', round(os.path.getsize(os.path.join(ASSETS, 'rotate.webp')) / 1024, 1), 'KB')
     return res
 
 
