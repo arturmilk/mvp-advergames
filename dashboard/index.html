@@ -535,7 +535,10 @@ async function load(silent) {
 function prepare() {
   setGames(RAW.games);
   const now = Date.now();
-  const sessions = (RAW.partidas || []).filter(r => GAME[r.jogo]).map(r => {
+  // "bloqueada" = partida repetida com o mesmo QR (ou sem QR num jogo que exige): não conta em nada, só aparece no quadro de QR
+  const blockedRows = (RAW.partidas || []).filter(r => GAME[r.jogo] && r.status === 'bloqueada'), blockedIds = new Set(blockedRows.map(r => r.session_id));
+  const blocked = blockedRows.map(r => ({ game: r.jogo, start: D(r.inicio) || D(r.atualizado) }));
+  const sessions = (RAW.partidas || []).filter(r => GAME[r.jogo] && r.status !== 'bloqueada').map(r => {
     const start = D(r.inicio) || D(r.atualizado), upd = D(r.atualizado) || start, end = D(r.fim);
     let status = r.status === 'finalizada' ? 'finalizada' : (upd && now - upd.getTime() > ABANDON_MIN * 60000 ? 'abandonada' : 'jogando');
     return {
@@ -553,7 +556,7 @@ function prepare() {
   for (const m of marcos) if (m.kind === 'nivel') { const s = byId.get(m.sid); if (s && m.value > s.level) s.level = m.value; }
   for (const s of sessions) if (!s.level) s.level = 1;
   const events = (RAW.eventos || []).map(e => ({ id: e.event_id, type: e.tipo, game: e.jogo, sid: e.session_id, pid: e.player_id, nick: e.apelido, date: D(e.data), detail: e.detalhe }));
-  DATA = { sessions, byId, marcos, events };
+  DATA = { sessions, byId, marcos: marcos.filter(m => !blockedIds.has(m.sid)), events, blocked };
   setStatus('Atualizado às ' + hms(new Date()) + (demo ? '' : ' · ao vivo'), !demo);
   render();
 }
@@ -1064,7 +1067,9 @@ function setPoll() {
 function renderQr() {
   const all = qrRows(), rows = all.filter(r => gameOk(r.jogo)), cnt = st => rows.filter(r => r.status === st).length;
   const stat = (v, l) => `<div class="qr-stat"><b>${nf(v)}</b><span class="mono">${l}</span></div>`;
-  $('#qr-stats').innerHTML = stat(rows.length, 'gerados') + stat(cnt('usado'), 'usados') + stat(cnt('novo'), 'disponíveis') + (cnt('cancelado') ? stat(cnt('cancelado'), 'cancelados') : '');
+  const nb = ((DATA && DATA.blocked) || []).filter(b => gameOk(b.game) && inRange(b.start)).length;
+  $('#qr-stats').innerHTML = stat(rows.length, 'gerados') + stat(cnt('usado'), 'usados') + stat(cnt('novo'), 'disponíveis') + (cnt('cancelado') ? stat(cnt('cancelado'), 'cancelados') : '') +
+    (nb ? `<div class="qr-stat" data-tip="Partidas que tentaram jogar de novo com um QR já gasto (ou sem QR num jogo que exige). Não contam no ranking."><b>${nf(nb)}</b><span class="mono">bloqueadas</span></div>` : '');
   $('#tb-qr').innerHTML = rows.length ? `<table class="tbl"><thead><tr><th>Criado</th>${F.game === 'all' ? '<th>Jogo</th>' : ''}<th>Onde</th><th>Código</th><th>Situação</th><th>Usado em</th><th></th></tr></thead><tbody>` +
     rows.slice(0, 300).map(r => `<tr><td>${brDate(r.criadoD)}</td>${F.game === 'all' ? `<td><span class="dot" style="background:${GAME[r.jogo].color}"></span>${esc(GAME[r.jogo].short)}</td>` : ''}<td>${esc(String(r.nota || '').replace(/^'/, ''))}</td><td><code>…${esc(r.codigo.slice(-6))}</code></td><td>${QR_ST[r.status] || esc(r.status)}</td><td>${brDate(r.usadoD)}</td>` +
       `<td>${r.status === 'novo' ? `<button class="btn small" data-qr-show="${esc(r.codigo)}">Ver QR</button> <button class="btn small ghost" data-qr-cancel="${esc(r.codigo)}">Cancelar</button>` : ''}</td></tr>`).join('') + '</tbody></table>'

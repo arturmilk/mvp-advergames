@@ -6,7 +6,7 @@
   "assets": [
     {
       "id": "dheep",
-      "file": "dheep.png",
+      "file": "dheep.webp",
       "w": 905,
       "h": 304,
       "frames": 5,
@@ -28,7 +28,7 @@
     },
     {
       "id": "frango",
-      "file": "frango.png",
+      "file": "frango.webp",
       "w": 200,
       "h": 172,
       "frames": 1,
@@ -40,7 +40,7 @@
     },
     {
       "id": "batata",
-      "file": "batata.png",
+      "file": "batata.webp",
       "w": 200,
       "h": 162,
       "frames": 1,
@@ -52,7 +52,7 @@
     },
     {
       "id": "cerveja",
-      "file": "cerveja.png",
+      "file": "cerveja.webp",
       "w": 60,
       "h": 200,
       "frames": 1,
@@ -64,7 +64,7 @@
     },
     {
       "id": "calabresa",
-      "file": "calabresa.png",
+      "file": "calabresa.webp",
       "w": 200,
       "h": 154,
       "frames": 1,
@@ -76,7 +76,7 @@
     },
     {
       "id": "ui_left",
-      "file": "ui_left.png",
+      "file": "ui_left.webp",
       "w": 176,
       "h": 182,
       "frames": 1,
@@ -88,7 +88,7 @@
     },
     {
       "id": "ui_right",
-      "file": "ui_right.png",
+      "file": "ui_right.webp",
       "w": 177,
       "h": 182,
       "frames": 1,
@@ -100,7 +100,7 @@
     },
     {
       "id": "ui_combo",
-      "file": "ui_combo.png",
+      "file": "ui_combo.webp",
       "w": 104,
       "h": 128,
       "frames": 1,
@@ -112,7 +112,7 @@
     },
     {
       "id": "ui_timer",
-      "file": "ui_timer.png",
+      "file": "ui_timer.webp",
       "w": 104,
       "h": 128,
       "frames": 1,
@@ -124,7 +124,7 @@
     },
     {
       "id": "ui_star",
-      "file": "ui_star.png",
+      "file": "ui_star.webp",
       "w": 128,
       "h": 125,
       "frames": 1,
@@ -136,7 +136,7 @@
     },
     {
       "id": "ui_heart",
-      "file": "ui_heart.png",
+      "file": "ui_heart.webp",
       "w": 96,
       "h": 87,
       "frames": 1,
@@ -148,7 +148,7 @@
     },
     {
       "id": "fx_confetti",
-      "file": "fx_confetti.png",
+      "file": "fx_confetti.webp",
       "w": 205,
       "h": 220,
       "frames": 1,
@@ -160,7 +160,7 @@
     },
     {
       "id": "fx_sparkle",
-      "file": "fx_sparkle.png",
+      "file": "fx_sparkle.webp",
       "w": 184,
       "h": 220,
       "frames": 1,
@@ -172,7 +172,7 @@
     },
     {
       "id": "fx_smoke",
-      "file": "fx_smoke.png",
+      "file": "fx_smoke.webp",
       "w": 220,
       "h": 212,
       "frames": 1,
@@ -184,7 +184,7 @@
     },
     {
       "id": "fx_stars",
-      "file": "fx_stars.png",
+      "file": "fx_stars.webp",
       "w": 220,
       "h": 218,
       "frames": 1,
@@ -196,7 +196,7 @@
     },
     {
       "id": "logo_r",
-      "file": "logo_r.png",
+      "file": "logo_r.webp",
       "w": 179,
       "h": 256,
       "frames": 1,
@@ -208,7 +208,7 @@
     },
     {
       "id": "title_banner",
-      "file": "title_banner.png",
+      "file": "title_banner.webp",
       "w": 720,
       "h": 395,
       "frames": 1,
@@ -220,7 +220,7 @@
     },
     {
       "id": "bar_counter",
-      "file": "bar_counter.png",
+      "file": "bar_counter.webp",
       "w": 1080,
       "h": 346,
       "frames": 1,
@@ -232,7 +232,7 @@
     },
     {
       "id": "bg_bar",
-      "file": "bg_bar.png",
+      "file": "bg_bar.webp",
       "w": 600,
       "h": 1072,
       "frames": 1,
@@ -244,7 +244,7 @@
     },
     {
       "id": "floor",
-      "file": "floor.png",
+      "file": "floor.webp",
       "w": 1080,
       "h": 463,
       "frames": 1,

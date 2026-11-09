@@ -195,6 +195,7 @@ do CDN (o ambiente de teste não acessa o cdnjs). Para repetir, abra o console: 
 | 9 | Responsividade (horizontal) | 740×360, 844×390, 932×430 e 1000×480: HQ, HUD, controles e tela de fim cabem sem rolagem horizontal; console limpo ✔ |
 | 9b | Celular em pé | 390×844: aparece "Gire o celular para a horizontal" ✔ |
 | 10 | Desempenho | 30 draw calls por quadro e ~19 mil triângulos (cidade inteira mesclada por material, rodas instanciadas, sem sombras dinâmicas, resolução máxima 1,5×) ✔ |
+| 11 | Cache e QR | Service worker novo; pentest do QR (mesmos ataques da Fuga) | O `three.js` da cdnjs (149 KB) fica no cache do aparelho e a 2ª abertura funciona offline. QR: 1 partida por QR; sem QR o jogo é livre (`ticket.required: false`) ✔ |
 
 **Não testado em celular físico** (iPhone e Android médio): falta confirmar fps, aquecimento, áudio depois do toque, tela cheia
 (o iPhone não tem tela cheia de verdade no Safari; o jogo segue normal sem ela), safe-area e multitoque (virar e acelerar juntos).

@@ -12,6 +12,7 @@ const CONFIG = {
   // Jogo (resolução lógica: a largura é fixa; a altura acompanha a tela do aparelho)
   canvasWidth: 360,
   canvasHeight: 640,     // altura de referência (a velocidade de queda é proporcional à altura real)
+  maxPixelRatio: 2,      // nitidez máxima em telas retina (2 = igual a olho nu e ~35% menos pixels que 2,5 por quadro)
   characterY: 540,       // linha do piso na altura de referência (= altura - 100 px)
   characterWidth: 60,    // largura da hitbox do personagem
   characterSpeed: 330,   // px/s andando

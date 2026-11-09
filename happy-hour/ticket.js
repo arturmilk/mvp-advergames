@@ -8,6 +8,13 @@
    (qr_use): a partir daí só esta aba pode jogar com ele; qualquer outra
    pessoa/aba que abrir o mesmo link vê "QR code já usado".
    Configuração: CONFIG.ticket (required, oneGame, offline, texts).
+
+   Segurança (pentest 09/11/2026): o jogo roda no navegador, então quem
+   sabe mexer no DevTools consegue burlar QUALQUER trava daqui. A garantia
+   de verdade fica no Apps Script: o início de cada partida leva o código
+   e o id da aba (analytics.js), e o Code.gs só aceita UMA partida por QR,
+   da aba que queimou o código; o resto entra como "bloqueada" e não conta
+   no ranking nem no dashboard.
    ===================================================================== */
 (() => {
   'use strict';
@@ -30,12 +37,15 @@
     playedTitle: 'Partida concluída',
     played: 'Este QR code já valeu a sua partida. Obrigado por jogar! Para jogar de novo, peça um novo QR code.'
   };
-  let cfg = {}, T = T0, game = '', tk = null, state = 'off', box = null, pending = null;
+  let cfg = {}, T = T0, game = '', tk = null, state = 'off', box = null, pending = null, needQr = false;
 
   const ss = {
     get() { try { return JSON.parse(sessionStorage.getItem(SKEY) || 'null'); } catch (e) { return null; } },
     set(v) { try { sessionStorage.setItem(SKEY, JSON.stringify(v)); } catch (e) {} }
   };
+  // partidas já jogadas com este código NESTE aparelho (localStorage é dividido entre abas: "duplicar aba" não dá partida extra)
+  const LKEY = c => 'rt_games_' + c;
+  const lsGames = { get(c) { try { return +localStorage.getItem(LKEY(c)) || 0; } catch (e) { return 0; } }, set(c, n) { try { localStorage.setItem(LKEY(c), String(n)); } catch (e) {} } };
   const rid = () => { const a = new Uint8Array(12); crypto.getRandomValues(a); return Array.from(a, b => (b % 36).toString(36)).join(''); };
   const RA = () => window.RoverAnalytics || {};
 
@@ -113,7 +123,8 @@
 
   const RT = {
     get state() { return state; },
-    get code() { return tk ? tk.code : ''; },
+    get code() { return tk && tk.used ? tk.code : ''; },
+    get acc() { return tk && tk.used ? tk.acc : ''; },   // vai junto no início da partida (analytics.js) para o Code.gs conferir
     init(C) {
       cfg = (C && C.ticket) || {}; T = Object.assign({}, T0, cfg.texts || {});
       game = (C && C.analytics && C.analytics.game) || '';
@@ -126,8 +137,10 @@
       if (!tk) {
         if (q) return block('invalid');
         // admin (?admin=true) e testes locais (localhost/?livre) não precisam de QR
-        const free = url.searchParams.get('admin') === 'true' || (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && url.searchParams.has('livre'));
-        if (cfg.required && !free) return block('missing');
+        // ?admin=true só abre o painel: para JOGAR continua precisando de QR (allowStart). Antes, ?admin=true liberava partidas sem fim.
+        const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && url.searchParams.has('livre');
+        needQr = !!cfg.required && !local;
+        if (needQr && url.searchParams.get('admin') !== 'true') return block('missing');
         return; // sem QR e sem exigência: jogo livre
       }
       ss.set(tk);
@@ -136,10 +149,11 @@
     },
     // chamar no começo de cada partida: false = não pode começar (a tela de aviso já aparece)
     allowStart() {
-      if (state === 'off') return true;
+      if (state === 'off') { if (needQr) { overlay('missing', hide, T.back); return false; } return true; }
       if (state !== 'ok') { if (state === 'ready') claim(); return false; }
-      if (cfg.oneGame !== false && tk.games >= 1) { overlay('played', hide, T.back); return false; }
-      tk.games++; ss.set(tk);
+      const played = Math.max(tk.games || 0, lsGames.get(tk.code));
+      if (cfg.oneGame !== false && played >= 1) { tk.games = played; ss.set(tk); overlay('played', hide, T.back); return false; }
+      tk.games = played + 1; ss.set(tk); lsGames.set(tk.code, tk.games);
       return true;
     }
   };

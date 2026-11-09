@@ -95,7 +95,9 @@
     // nova partida
     start(info) {
       sess = { id: uid(), next: 0, score: 0, sec: 0, ended: false };
-      push('start', Object.assign(device(), info || {}));
+      // QR de uso único: o Code.gs confere se este QR ainda não teve partida (ticket.js)
+      const tk = window.RoverTicket, qr = tk && tk.code ? { qr: tk.code, acc: tk.acc } : {};
+      push('start', Object.assign(device(), info || {}, qr));
       flush();
     },
     // chamado a cada ponto ganho: registra quando cada marco de pontuação é alcançado

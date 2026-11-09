@@ -12,6 +12,7 @@ const CONFIG = {
 
   /* ---------- Tela (jogo na HORIZONTAL: altura lógica fixa de 400; a largura acompanha o aparelho) ---------- */
   canvasHeight: 400,     // altura lógica (px)
+  maxPixelRatio: 2,      // nitidez máxima em telas retina (2 = igual a olho nu e ~35% menos pixels que 2,5 por quadro)
   minWidth: 600,         // largura lógica mínima (janela estreita no computador ganha zoom menor)
   floorFromBottom: 66,   // distância do chão até a base da tela
   pxPerMeter: 20,        // 20 px lógicos = 1 metro (distância e velocímetro)

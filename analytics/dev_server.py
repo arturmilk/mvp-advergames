@@ -33,11 +33,13 @@ GAMES = {'rover': 'Rover — A Entrega', 'happy-hour': 'Rover Happy Hour', 'fuga
 COLS = {
     'Partidas': ['session_id', 'jogo', 'player_id', 'apelido', 'inicio', 'fim', 'status', 'pontos', 'duracao_s', 'nivel', 'meta',
                  'motivo_fim', 'entregas', 'combo_max', 'itens', 'erros', 'salvo_ranking', 'apelido_ranking', 'posicao_ranking',
-                 'dispositivo', 'sistema', 'tela', 'idioma', 'origem', 'utm_source', 'utm_campaign', 'versao', 'atualizado'],
+                 'dispositivo', 'sistema', 'tela', 'idioma', 'origem', 'utm_source', 'utm_campaign', 'versao', 'atualizado', 'qr'],
     'Marcos': ['event_id', 'session_id', 'jogo', 'player_id', 'tipo', 'valor', 'segundos', 'pontos', 'data'],
     'Eventos': ['event_id', 'tipo', 'jogo', 'session_id', 'player_id', 'apelido', 'data', 'detalhe'],
-    'QR': ['codigo', 'jogo', 'status', 'criado', 'usado_em', 'player_id', 'acesso', 'nota'],
+    'QR': ['codigo', 'jogo', 'status', 'criado', 'usado_em', 'player_id', 'acesso', 'nota', 'partida'],
 }
+# igual ao QR_OBRIGATORIO do Code.gs (jogos que só abrem com QR)
+QR_OBRIGATORIO = {'rover', 'happy-hour'}
 ID_RE = re.compile(r'^[a-z0-9]{8,40}$', re.I)
 QR_RE = re.compile(r'^[a-p]{18}$')
 lock = Lock()
@@ -83,8 +85,11 @@ def upsert(db, sid, fields, only_if_new=False, only_if_playing=False):
         db['partidas'].append(row)
     if only_if_playing and row['status'] == 'finalizada':
         return
+    blocked = row.get('status') == 'bloqueada'
     for k, v in fields.items():
         if k not in row or (only_if_new and row[k] not in ('', None)):
+            continue
+        if blocked and k in ('status', 'salvo_ranking'):
             continue
         row[k] = v
 
@@ -104,6 +109,20 @@ def handle(db, ev):
         return True
     if not sid:
         return False
+    # QR de uso único (mesma regra do Code.gs): 1 QR = 1 partida, só na aba que queimou o QR
+    if t == 'start':
+        qr = str(d.get('qr') or '')
+        use_qr = bool(QR_RE.match(qr))
+        if use_qr or g in QR_OBRIGATORIO:
+            ok = use_qr and qr_play(db, qr, g, str(d.get('acc') or ''), sid)
+            upsert(db, sid, {'jogo': g, 'player_id': pid, 'apelido': txt(d.get('nick'), 12), 'inicio': ts,
+                             'status': 'jogando' if ok else 'bloqueada', 'qr': qr if use_qr else '', 'atualizado': now})
+            if not ok:
+                return True
+    elif t in ('checkpoint', 'end', 'save') and g in QR_OBRIGATORIO:
+        row = next((r for r in db['partidas'] if r['session_id'] == sid), None)
+        if not row or row.get('status') == 'bloqueada' or not QR_RE.match(str(row.get('qr') or '')):
+            upsert(db, sid, {'jogo': g, 'player_id': pid, 'status': 'bloqueada', 'atualizado': now})
     if t == 'start':
         upsert(db, sid, {'jogo': g, 'player_id': pid, 'apelido': txt(d.get('nick'), 12), 'inicio': ts, 'status': 'jogando',
                          'pontos': 0, 'duracao_s': 0, 'dispositivo': txt(d.get('device'), 20), 'sistema': txt(d.get('os'), 20),
@@ -133,6 +152,16 @@ def handle(db, ev):
                          'atualizado': now})
     else:
         return False
+    return True
+
+
+def qr_play(db, code, g, acc, sid):
+    row = next((r for r in db.setdefault('qr', []) if r['codigo'] == code), None)
+    if not ID_RE.match(acc) or row is None or row['jogo'] != g or row['status'] != 'usado' or row.get('acesso') != acc:
+        return False
+    if row.get('partida') and row['partida'] != sid:
+        return False
+    row['partida'] = sid
     return True
 
 

@@ -6,7 +6,7 @@
   "assets": [
     {
       "id": "hero",
-      "file": "hero.png",
+      "file": "hero.webp",
       "w": 1458,
       "h": 262,
       "frames": 6,
@@ -28,7 +28,7 @@
     },
     {
       "id": "poser",
-      "file": "poser.png",
+      "file": "poser.webp",
       "w": 855,
       "h": 282,
       "frames": 5,
@@ -49,7 +49,7 @@
     },
     {
       "id": "bus",
-      "file": "bus.png",
+      "file": "bus.webp",
       "w": 900,
       "h": 365,
       "frames": 1,
@@ -61,7 +61,7 @@
     },
     {
       "id": "ob_amps",
-      "file": "ob_amps.png",
+      "file": "ob_amps.webp",
       "w": 166,
       "h": 286,
       "frames": 1,
@@ -72,7 +72,7 @@
     },
     {
       "id": "ob_cables",
-      "file": "ob_cables.png",
+      "file": "ob_cables.webp",
       "w": 210,
       "h": 87,
       "frames": 1,
@@ -83,7 +83,7 @@
     },
     {
       "id": "ob_monitor",
-      "file": "ob_monitor.png",
+      "file": "ob_monitor.webp",
       "w": 192,
       "h": 239,
       "frames": 1,
@@ -94,7 +94,7 @@
     },
     {
       "id": "ob_stand",
-      "file": "ob_stand.png",
+      "file": "ob_stand.webp",
       "w": 320,
       "h": 108,
       "frames": 1,
@@ -105,7 +105,7 @@
     },
     {
       "id": "ob_truss",
-      "file": "ob_truss.png",
+      "file": "ob_truss.webp",
       "w": 218,
       "h": 154,
       "frames": 1,
@@ -116,7 +116,7 @@
     },
     {
       "id": "shirt_black",
-      "file": "shirt_black.png",
+      "file": "shirt_black.webp",
       "w": 153,
       "h": 160,
       "frames": 1,
@@ -127,7 +127,7 @@
     },
     {
       "id": "shirt_white",
-      "file": "shirt_white.png",
+      "file": "shirt_white.webp",
       "w": 152,
       "h": 160,
       "frames": 1,
@@ -138,7 +138,7 @@
     },
     {
       "id": "shirt_red",
-      "file": "shirt_red.png",
+      "file": "shirt_red.webp",
       "w": 152,
       "h": 160,
       "frames": 1,
@@ -149,7 +149,7 @@
     },
     {
       "id": "shirt_grey",
-      "file": "shirt_grey.png",
+      "file": "shirt_grey.webp",
       "w": 152,
       "h": 160,
       "frames": 1,
@@ -160,7 +160,7 @@
     },
     {
       "id": "shirt_purple",
-      "file": "shirt_purple.png",
+      "file": "shirt_purple.webp",
       "w": 152,
       "h": 160,
       "frames": 1,
@@ -171,7 +171,7 @@
     },
     {
       "id": "shirt_green",
-      "file": "shirt_green.png",
+      "file": "shirt_green.webp",
       "w": 153,
       "h": 160,
       "frames": 1,
@@ -182,7 +182,7 @@
     },
     {
       "id": "fx_aura",
-      "file": "fx_aura.png",
+      "file": "fx_aura.webp",
       "w": 172,
       "h": 178,
       "frames": 1,
@@ -193,7 +193,7 @@
     },
     {
       "id": "fx_dust",
-      "file": "fx_dust.png",
+      "file": "fx_dust.webp",
       "w": 156,
       "h": 170,
       "frames": 1,
@@ -204,7 +204,7 @@
     },
     {
       "id": "fx_bolt",
-      "file": "fx_bolt.png",
+      "file": "fx_bolt.webp",
       "w": 110,
       "h": 220,
       "frames": 1,
@@ -215,7 +215,7 @@
     },
     {
       "id": "fx_notes",
-      "file": "fx_notes.png",
+      "file": "fx_notes.webp",
       "w": 155,
       "h": 215,
       "frames": 1,
@@ -226,7 +226,7 @@
     },
     {
       "id": "fx_debris",
-      "file": "fx_debris.png",
+      "file": "fx_debris.webp",
       "w": 142,
       "h": 220,
       "frames": 1,
@@ -237,7 +237,7 @@
     },
     {
       "id": "fx_holy",
-      "file": "fx_holy.png",
+      "file": "fx_holy.webp",
       "w": 143,
       "h": 220,
       "frames": 1,
@@ -248,7 +248,7 @@
     },
     {
       "id": "bg_far",
-      "file": "bg_far.jpg",
+      "file": "bg_far.webp",
       "w": 1024,
       "h": 688,
       "frames": 1,

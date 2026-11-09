@@ -17,7 +17,7 @@ config.js               TODA a configuração (textos, falas do Poser, camisas, 
 assets/                 sprites PNG/JPG + manifest.json + ícones do PWA
 assets/logos/           logos oficiais das bandas (<id>.webp, fundo transparente) + logos.json com a lista dos que existem
 assets/_raw/            imagens originais geradas no Higgsfield (fonte para reprocessar)
-tools/process_assets.py converte assets/_raw -> assets/*.png + assets/manifest.json
+tools/process_assets.py converte assets/_raw -> assets/*.webp (q90) + assets/manifest.json
 analytics.js, ticket.js cópias idênticas dos arquivos da raiz (coleta de dados e QR code de uso único)
 manifest.webmanifest, sw.js   PWA básico
 ```
@@ -213,6 +213,8 @@ token `teste`). Para repetir, abra o console: `__fp` expõe `seed(n)`, `newGame(
 | 13 | QR code de uso único | Mesmo link em dois navegadores: A toca em JOGAR e vai para o tutorial; B vê "QR code já usado" ✔ |
 | 14 | Responsividade (horizontal) | 740×360, 844×390, 932×430, 860×480 e 1280×720: sem rolagem horizontal; título em duas colunas, tutorial e fim de jogo (resultado à esquerda, apelido à direita) cabem na tela; console limpo ✔ |
 | 14b | Celular em pé | 390×844: aparece "Gire o celular para a horizontal" e a partida pausa ✔ |
+| 15 | Pentest do QR | Ataques testados com `analytics/dev_server.py` (script de pentest em Chromium, 09/11/2026): mesmo aparelho jogando de novo, F5, aba duplicada, outro celular com o mesmo link, link sem `?qr=`, `?admin=true`, `ticket.js` bloqueado, contadores zerados no DevTools, pontuação forjada direto no Apps Script (sem QR, com QR e id de aba adivinhado), dois aparelhos tocando ao mesmo tempo | Com QR: 1 partida por QR (F5, aba duplicada, outro celular e corrida bloqueados; a 2ª partida pelo DevTools chega como `bloqueada`). Sem QR o jogo é livre porque `ticket.required` é `false` aqui: para exigir QR, troque para `true` e ponha `'fuga-do-poser': true` em `QR_OBRIGATORIO` no `Code.gs` ✔ |
+| 16 | Peso e velocidade | Chromium, 740×360 a 1037×480, 3G simulado (1,6 Mbps, 300 ms) | Sprites, efeitos e fundo em WebP (q90, alfa sem perda): 2.062 → 842 KB por abertura (o resto são os logos das bandas); pronto em 5,6 s no 3G (antes 11,6 s). DPR máximo 2 (`maxPixelRatio`). Console limpo ✔ |
 
 **Não testado em celular físico** (iPhone e Android médio): falta confirmar 60 fps, áudio depois do primeiro toque, safe-area e
 multitoque (segurar DESLIZAR e tocar PULAR ao mesmo tempo).

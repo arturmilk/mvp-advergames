@@ -186,9 +186,9 @@ window.CONFIG = {
       'CHEGUE AO FINAL DO CIRCUITO'
     ],
     cards: [
-      { img: 'assets/tutorial-jump.png',  label: 'PULE',   color: '#FFD21F', alt: 'Dheep pulando de uma plataforma para outra' },
-      { img: 'assets/tutorial-dodge.png', label: 'DESVIE', color: '#E30613', alt: 'Dheep desviando de um barril' },
-      { img: 'assets/tutorial-win.png',   label: 'VENÇA',  color: '#1f9d55', alt: 'Dheep e o Gerente Rival comemorando no topo' }
+      { img: 'assets/tutorial-jump.webp',  label: 'PULE',   color: '#FFD21F', alt: 'Dheep pulando de uma plataforma para outra' },
+      { img: 'assets/tutorial-dodge.webp', label: 'DESVIE', color: '#E30613', alt: 'Dheep desviando de um barril' },
+      { img: 'assets/tutorial-win.webp',   label: 'VENÇA',  color: '#1f9d55', alt: 'Dheep e o Gerente Rival comemorando no topo' }
     ],
     button: 'ENTENDIDO!',
     buttonPlay: 'ENTENDIDO! JOGAR'

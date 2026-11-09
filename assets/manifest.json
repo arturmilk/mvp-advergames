@@ -243,7 +243,7 @@
     },
     {
       "id": "bg_warehouse_far",
-      "file": "bg_warehouse_far.png",
+      "file": "bg_warehouse_far.webp",
       "width": 232,
       "height": 300,
       "runtime": true,
@@ -253,7 +253,7 @@
     },
     {
       "id": "bg_highway_far",
-      "file": "bg_highway_far.png",
+      "file": "bg_highway_far.webp",
       "width": 232,
       "height": 300,
       "runtime": true,
@@ -263,7 +263,7 @@
     },
     {
       "id": "bg_forest_far",
-      "file": "bg_forest_far.png",
+      "file": "bg_forest_far.webp",
       "width": 232,
       "height": 300,
       "runtime": true,
@@ -273,7 +273,7 @@
     },
     {
       "id": "bg_river_far",
-      "file": "bg_river_far.png",
+      "file": "bg_river_far.webp",
       "width": 232,
       "height": 300,
       "runtime": true,
@@ -283,7 +283,7 @@
     },
     {
       "id": "tutorial-jump",
-      "file": "tutorial-jump.png",
+      "file": "tutorial-jump.webp",
       "width": 256,
       "height": 256,
       "runtime": false,
@@ -294,7 +294,7 @@
     },
     {
       "id": "tutorial-dodge",
-      "file": "tutorial-dodge.png",
+      "file": "tutorial-dodge.webp",
       "width": 256,
       "height": 256,
       "runtime": false,
@@ -305,7 +305,7 @@
     },
     {
       "id": "tutorial-win",
-      "file": "tutorial-win.png",
+      "file": "tutorial-win.webp",
       "width": 256,
       "height": 256,
       "runtime": false,

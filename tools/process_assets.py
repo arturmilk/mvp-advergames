@@ -152,7 +152,11 @@ manifest = []
 
 def save(name, im, file=None, **meta):
     file = file or name + '.png'
-    im.save(os.path.join(OUT, file))
+    if meta.get('kind') in ('layer', 'ui'):  # fundos e tutorial: WebP sem perda (pixels idênticos, ~55% menor)
+        file = os.path.splitext(file)[0] + '.webp'
+        im.save(os.path.join(OUT, file), 'WEBP', lossless=True, method=6, exact=True)
+    else:
+        im.save(os.path.join(OUT, file))
     entry = {'id': name, 'file': file, 'width': im.size[0], 'height': im.size[1], 'runtime': True}
     entry.update(meta)
     manifest.append(entry)

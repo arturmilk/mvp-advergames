@@ -16,11 +16,15 @@ var GAMES = { 'rover': 'Rover — A Entrega', 'happy-hour': 'Rover Happy Hour', 
 var COLS = {
   Partidas: ['session_id', 'jogo', 'player_id', 'apelido', 'inicio', 'fim', 'status', 'pontos', 'duracao_s', 'nivel', 'meta',
     'motivo_fim', 'entregas', 'combo_max', 'itens', 'erros', 'salvo_ranking', 'apelido_ranking', 'posicao_ranking',
-    'dispositivo', 'sistema', 'tela', 'idioma', 'origem', 'utm_source', 'utm_campaign', 'versao', 'atualizado'],
+    'dispositivo', 'sistema', 'tela', 'idioma', 'origem', 'utm_source', 'utm_campaign', 'versao', 'atualizado', 'qr'],
   Marcos: ['event_id', 'session_id', 'jogo', 'player_id', 'tipo', 'valor', 'segundos', 'pontos', 'data'],
   Eventos: ['event_id', 'tipo', 'jogo', 'session_id', 'player_id', 'apelido', 'data', 'detalhe'],
-  QR: ['codigo', 'jogo', 'status', 'criado', 'usado_em', 'player_id', 'acesso', 'nota']
+  QR: ['codigo', 'jogo', 'status', 'criado', 'usado_em', 'player_id', 'acesso', 'nota', 'partida']
 };
+// Jogos que SÓ abrem com QR code (deixe igual ao ticket.required do config.js de cada jogo).
+// Nesses jogos, partida que chega sem um QR válido é gravada como "bloqueada" e não entra no ranking nem no dashboard.
+// Em qualquer jogo, um QR vale UMA partida: a 2ª partida com o mesmo QR também vira "bloqueada".
+var QR_OBRIGATORIO = { 'rover': true, 'happy-hour': true };
 var SIMPLE_EVENTS = ['visit', 'register', 'share', 'tutorial'];
 
 /* ======================= INSTALAÇÃO ======================= */
@@ -48,6 +52,10 @@ function sheet_(ss, name) {
   if (sh.getLastRow() === 0) {
     sh.getRange(1, 1, 1, COLS[name].length).setValues([COLS[name]]).setFontWeight('bold').setBackground('#2B2B2B').setFontColor('#FFFFFF');
     sh.setFrozenRows(1);
+  } else if (sh.getLastColumn() < COLS[name].length) {
+    // coluna nova numa aba antiga (ex.: Partidas.qr, QR.partida): escreve só o cabeçalho que falta
+    var n0 = sh.getLastColumn(), extra = COLS[name].slice(n0);
+    sh.getRange(1, n0 + 1, 1, extra.length).setValues([extra]).setFontWeight('bold').setBackground('#2B2B2B').setFontColor('#FFFFFF');
   }
   return sh;
 }
@@ -56,7 +64,7 @@ function sheet_(ss, name) {
 function formulas_(ss) {
   var rk = ss.getSheetByName('Ranking') || ss.insertSheet('Ranking');
   rk.clear();
-  rk.getRange('A1').setFormula('=QUERY(Partidas!A:AB, "select B, D, max(H), count(A), sum(I) where H is not null and D <> \'\' ' +
+  rk.getRange('A1').setFormula('=QUERY(Partidas!A:AC, "select B, D, max(H), count(A), sum(I) where H is not null and D <> \'\' and G <> \'bloqueada\' ' +
     'group by B, D order by max(H) desc label B \'jogo\', D \'apelido\', max(H) \'melhor_pontuacao\', count(A) \'partidas\', sum(I) \'tempo_total_s\'", 1)');
 
   var rs = ss.getSheetByName('Resumo') || ss.insertSheet('Resumo');
@@ -72,9 +80,9 @@ function formulas_(ss) {
       '=ROUND(SUMIF(Partidas!B2:B, ' + k + ', Partidas!I2:I)/3600, 2)',
       '=IFERROR(ROUND(AVERAGEIF(Partidas!B2:B, ' + k + ', Partidas!I2:I), 1), 0)',
       '=IFERROR(ROUND(AVERAGEIF(Partidas!B2:B, ' + k + ', Partidas!H2:H), 0), 0)',
-      '=IFERROR(MAXIFS(Partidas!H2:H, Partidas!B2:B, ' + k + '), 0)',
+      '=IFERROR(MAXIFS(Partidas!H2:H, Partidas!B2:B, ' + k + ', Partidas!G2:G, "<>bloqueada"), 0)',
       '=COUNTIFS(Eventos!B2:B, "visit", Eventos!C2:C, ' + k + ')',
-      '=COUNTIFS(Partidas!B2:B, ' + k + ', Partidas!Q2:Q, "sim")'
+      '=COUNTIFS(Partidas!B2:B, ' + k + ', Partidas!Q2:Q, "sim", Partidas!G2:G, "<>bloqueada")'
     ]]);
   });
 
@@ -130,6 +138,18 @@ function handle_(ctx, ev) {
   }
   if (!sid) return false;
 
+  // QR de uso único: a partida só vale se o QR foi queimado por esta mesma aba e ainda não tem outra partida
+  if (ev.t === 'start') {
+    var qr = String(d.qr || ''), useQr = QR_RE.test(qr);
+    if (useQr || QR_OBRIGATORIO[g]) {
+      var okQr = useQr && qrPlay_(ctx, qr, g, String(d.acc || ''), sid);
+      upsert_(ctx, sid, { jogo: g, player_id: pid, apelido: txt_(d.nick, 12), inicio: ts, status: okQr ? 'jogando' : 'bloqueada', qr: useQr ? qr : '', atualizado: now });
+      if (!okQr) return true;
+    }
+  } else if (['checkpoint', 'end', 'save'].indexOf(ev.t) >= 0 && QR_OBRIGATORIO[g] && !qrRowOk_(ctx, sid)) {
+    upsert_(ctx, sid, { jogo: g, player_id: pid, status: 'bloqueada', atualizado: now }); // fim sem início válido (enviado à mão)
+  }
+
   switch (ev.t) {
     case 'start':
       upsert_(ctx, sid, {
@@ -175,8 +195,10 @@ function upsert_(ctx, sid, fields, onlyIfNew, onlyIfPlaying) {
   if (r) row = sh.getRange(r, 1, 1, cols.length).getValues()[0];
   else { row = cols.map(function () { return ''; }); row[0] = sid; r = sh.getLastRow() + 1; }
   if (onlyIfPlaying && row[cols.indexOf('status')] === 'finalizada') { ctx.rows[sid] = r; return; }
+  var blocked = row[cols.indexOf('status')] === 'bloqueada';
   Object.keys(fields).forEach(function (k) {
     var i = cols.indexOf(k); if (i < 0) return;
+    if (blocked && (k === 'status' || k === 'salvo_ranking')) return; // partida bloqueada (QR) continua bloqueada
     if (onlyIfNew && row[i] !== '' && row[i] != null) return; // o start atrasado não apaga pontos/status já gravados
     row[i] = fields[k];
   });
@@ -289,4 +311,25 @@ function qrGame_(p, use) {
     SpreadsheetApp.flush();
     return { ok: true, status: 'ok' };
   } finally { if (lock) lock.releaseLock(); }
+}
+// Chamado no evento start (já dentro do lock do doPost). Vale só se: QR deste jogo, queimado (usado) pela MESMA aba
+// (acesso = acc) e sem outra partida ligada a ele. A primeira partida fica gravada na coluna "partida" do QR.
+function qrPlay_(ctx, code, g, acc, sid) {
+  if (!/^[a-z0-9]{8,40}$/i.test(acc)) return false;
+  var sh = get_(ctx, 'QR'), r = qrFind_(sh, code);
+  if (!r) return false;
+  var row = sh.getRange(r, 1, 1, COLS.QR.length).getValues()[0];
+  if (row[1] !== g || row[2] !== 'usado' || row[6] !== acc) return false;
+  if (row[8] && row[8] !== sid) return false;            // este QR já teve a sua partida
+  if (!row[8]) sh.getRange(r, 9).setValue(sid);
+  return true;
+}
+// Partida já existe com status válido (começou com QR ok)? Usado para end/save que chegam sem o start.
+function qrRowOk_(ctx, sid) {
+  var sh = get_(ctx, 'Partidas'), cols = COLS.Partidas, r = ctx.rows[sid];
+  if (!r) { var hit = sh.getRange('A:A').createTextFinder(sid).matchEntireCell(true).findNext(); r = hit ? hit.getRow() : 0; }
+  if (!r) return false;
+  ctx.rows[sid] = r;
+  var row = sh.getRange(r, 1, 1, cols.length).getValues()[0];
+  return row[cols.indexOf('status')] !== 'bloqueada' && /^[a-p]{18}$/.test(String(row[cols.indexOf('qr')] || ''));
 }

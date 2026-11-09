@@ -407,7 +407,8 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
 'use strict';
 const C = window.CONFIG, K = C.storageKeys, T = C.texts;
 const RA = window.RoverAnalytics || { init() {}, start() {}, progress() {}, level() {}, end() {}, saved() {}, event() {} };
-const TK = window.RoverTicket || { init() {}, allowStart: () => true };
+// sem o ticket.js (bloqueado ou falhou ao carregar): jogo que exige QR não começa (antes liberava)
+const TK = window.RoverTicket || { init() {}, allowStart: () => !(window.CONFIG && window.CONFIG.ticket && window.CONFIG.ticket.required) };
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -723,7 +724,7 @@ const CACHE = {};
 function safeBottom() { const p = document.createElement('div'); p.style.cssText = 'position:absolute;bottom:0;height:env(safe-area-inset-bottom,0px);'; app.appendChild(p); const h = p.offsetHeight; p.remove(); return h; }
 function resize() {
   const r = app.getBoundingClientRect();
-  V.dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+  V.dpr = Math.min(window.devicePixelRatio || 1, C.maxPixelRatio || 2);
   // horizontal: altura lógica fixa; a largura acompanha a tela (janela estreita = zoom menor)
   V.scale = Math.max(.1, Math.min(r.height / C.canvasHeight, r.width / C.minWidth));
   V.W = r.width / V.scale; V.H = r.height / V.scale;

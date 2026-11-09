@@ -448,7 +448,8 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
 'use strict';
 const C = window.CONFIG, K = C.storageKeys, T = C.texts, B = C.bus, CT = C.city;
 const RA = window.RoverAnalytics || { init() {}, start() {}, progress() {}, level() {}, end() {}, saved() {}, event() {} };
-const TK = window.RoverTicket || { init() {}, allowStart: () => true };
+// sem o ticket.js (bloqueado ou falhou ao carregar): jogo que exige QR não começa (antes liberava)
+const TK = window.RoverTicket || { init() {}, allowStart: () => !(window.CONFIG && window.CONFIG.ticket && window.CONFIG.ticket.required) };
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;

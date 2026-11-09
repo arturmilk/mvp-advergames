@@ -149,9 +149,10 @@ def strip(frames, height, pad=6):
 
 
 def save(im, name, aid, usage, src, **extra):
+    # WebP com perda leve (q90, alfa sem perda): ~4x menor que PNG, sem diferença visível no celular
+    name = os.path.splitext(name)[0] + '.webp'
     path = os.path.join(OUT, name)
-    if name.endswith('.jpg'): im.convert('RGB').save(path, quality=84, optimize=True, progressive=True)
-    else: im.save(path, optimize=True)
+    im.save(path, 'WEBP', quality=90, alpha_quality=100, method=6)
     job, prompt = SOURCES[src]
     entry = {'id': aid, 'file': name, 'w': im.width, 'h': im.height, 'frames': 1, 'usage': usage,
              'source': 'assets/_raw/' + src, 'higgsfieldJob': job, 'prompt': prompt}

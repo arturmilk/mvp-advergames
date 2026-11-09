@@ -14,7 +14,7 @@ index.html              jogo completo (loop, física, colisão, telas, HUD, admi
 config.js               TODA a configuração (textos, cores, limiares, tempos, senhas, nomes)
 assets/                 sprites PNG + manifest.json + ícones do PWA
 assets/_raw/            imagens originais geradas no Higgsfield (fonte para reprocessar)
-tools/process_assets.py converte assets/_raw -> assets/*.png + assets/manifest.json
+tools/process_assets.py converte assets/_raw -> assets/*.webp + assets/manifest.json
 manifest.webmanifest, sw.js   PWA básico (instalar na tela inicial / offline depois da 1ª visita)
 ```
 
@@ -159,6 +159,8 @@ e o mesmo bloco de estilo no fim de cada prompt:
 
 > *Modern cartoon mobile game art, vibrant saturated colors, smooth rounded shapes, soft flat shading with subtle soft shadow, thin dark-brown outline (2px max), no pixel art, no text, no logos. Fully transparent background.*
 
+Os arquivos do jogo saem em **WebP** (q90, alfa sem perda; ~6× menores que PNG): onde a tabela diz `.png` na coluna "Vira", o arquivo é `.webp`, menos `logo_r.png` (favicon) e os ícones.
+
 | Bruto (`assets/_raw`) | Vira |
 |---|---|
 | `dheep_sheet_rembg.png` (5 poses, passou pelo `remove_background`) | `dheep.png`: tira de 5 quadros (parado, esquerda, direita, comendo, derrota), alinhados pelos pés |
@@ -218,6 +220,8 @@ Executados no navegador em viewport mobile. Para repetir sem jogar à mão, abra
 | 17 | **Responsividade** | 360×740, 375×812, 430×932, 480×860 | Sem rolagem horizontal; título, tutorial, game over, salvo, ranking e pausa cabem numa tela; "Sobre" rola sem cortar o topo; nenhum botão visível abaixo de 44 px ✔ |
 | 18 | **Desempenho** | 120 quadros de update + render com 11 itens e partículas, canvas 960×1720 (DPR 2) | ~3 ms por quadro no computador de teste ✔ |
 | 19 | **QR code de uso único** | `analytics/dev_server.py`: o mesmo link aberto em dois aparelhos antes de alguém tocar; A toca em Jogar, depois B; A joga, termina e toca em "Jogar de novo" | A segue direto para o tutorial (o toque que queimou o código é repetido). B vê "QR code já usado". Com `oneGame: true`, o "Jogar de novo" mostra "Partida concluída" com botão Voltar. Sem `?qr=`, `__hh.newGame()` funciona como antes. 480 e 360 px sem rolagem, console limpo ✔ |
+| 20 | **Pentest do QR** | Ataques testados com `analytics/dev_server.py` (script de pentest em Chromium, 09/11/2026): mesmo aparelho jogando de novo, F5, aba duplicada, outro celular com o mesmo link, link sem `?qr=`, `?admin=true`, `ticket.js` bloqueado, contadores zerados no DevTools, pontuação forjada direto no Apps Script (sem QR, com QR e id de aba adivinhado), dois aparelhos tocando ao mesmo tempo | Antes: 7 de 11 ataques barrados (`?admin=true` e `ticket.js` bloqueado jogavam sem QR; 3 pontuações forjadas entravam). Depois: 11 de 11; a burla pelo DevTools ainda abre o jogo, mas a partida chega como `bloqueada` e não conta ✔ |
+| 21 | **Peso e velocidade** | Chromium, 360/430/480 px, 3G simulado (1,6 Mbps, 300 ms) | Sprites e fundos em WebP (q90, alfa sem perda): 3.021 → 612 KB por abertura; pronto em 4,3 s no 3G (antes 16,5 s). Telas com DPR 3 desenham no máximo a 2× (`maxPixelRatio`, ~35% menos pixels por quadro). Console limpo, sem rolagem horizontal ✔ |
 
 Ainda não testado em aparelhos físicos (iPhone e Android médio): vale confirmar 60 fps, áudio depois do primeiro toque, safe-area do notch e multitoque.
 

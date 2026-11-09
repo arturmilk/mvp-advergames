@@ -177,18 +177,37 @@ Configuração em `config.js` › `ticket` (cada jogo):
 | `offline` | `'block'` | Sem internet não dá para conferir o código: `'block'` mostra "Sem conexão" com "Tentar de novo"; `'allow'` deixa jogar sem queimar |
 | `texts` | `{}` | Troca qualquer texto dos avisos (nomes no começo do `ticket.js`: `used`, `usedTitle`, `invalid`, `missing`, `offline`, `played`…) |
 
+**Uma partida por QR, conferida no servidor** (desde 09/11/2026):
+
+* O início de cada partida (`start`, no `analytics.js`) leva o código do QR e o id da aba que o queimou. O `Code.gs` só aceita
+  a partida se o QR é deste jogo, foi queimado por **esta mesma aba** e ainda não tem partida; a primeira fica gravada na coluna
+  `partida` da aba QR, e o código vai na coluna `qr` da aba Partidas.
+* Qualquer outra (2ª partida com o mesmo QR, id de aba errado, pontuação mandada direto para o `/exec`) entra na aba Partidas com
+  status **`bloqueada`**: não aparece no Ranking, no Resumo nem no dashboard (o quadro de QR mostra quantas foram bloqueadas).
+* `QR_OBRIGATORIO`, no começo do `Code.gs`, lista os jogos que **só** aceitam partida com QR (hoje `rover` e `happy-hour`,
+  iguais ao `ticket.required: true` dos `config.js`). Se mudar o `required` de um jogo, mude aqui também; senão as partidas
+  sem QR desse jogo vão aparecer como bloqueadas.
+* No aparelho: `?admin=true` só abre o painel (para **jogar** continua precisando de QR), "duplicar aba" não dá partida extra
+  (o contador também fica no `localStorage`) e, se o `ticket.js` não carregar, um jogo com `required: true` não começa.
+
 **Limites:**
 
 * Precisa de internet no aparelho: a validação é na planilha. Sem internet, com `offline: 'block'`, o jogo não abre.
-* Quem já abriu e tocou pode manter a aba aberta (e recarregar) pelo tempo que quiser; o bloqueio vale para os **outros** acessos.
-* Com `required: true`, o painel admin (`?admin=true`) continua abrindo sem QR. Para testar em `localhost` sem QR (ganchos `__rover`/`__hh`), abra com `?livre`.
-* Com `required: false`, quem receber um QR já usado pode apagar o `?qr=` do link e jogar pelo link normal. Para valer de verdade, use `required: true`.
-* O jogo roda no navegador: alguém com conhecimento técnico consegue burlar a tela de aviso no próprio aparelho. O QR impede que o
-  **mesmo link** seja passado adiante; não é uma trava contra fraude. Antes de premiar, confira a partida como em § 5.
+* Quem já abriu e tocou pode manter a aba aberta (e recarregar) pelo tempo que quiser, mas só a primeira partida conta.
+* Para testar em `localhost` sem QR (ganchos `__rover`/`__hh`), abra com `?livre`.
+* Com `required: false` (hoje Fuga do Poser e Busão do Rock), quem receber um QR já usado pode apagar o `?qr=` do link e jogar pelo
+  link normal. Para valer de verdade, use `required: true` e ponha o jogo em `QR_OBRIGATORIO`.
+* O jogo roda no navegador: quem sabe usar o DevTools consegue abrir a tela do jogo de novo no próprio aparelho. Essa partida
+  chega na planilha como `bloqueada` e não conta. A pontuação em si continua sendo informada pelo aparelho: antes de premiar,
+  confira duração e marcos como em § 5.
+
+**Pentest (09/11/2026, `dev_server.py` + Chromium):** 11 ataques no Happy Hour (jogar de novo, F5, aba duplicada, outro celular,
+link sem `?qr=`, `?admin=true`, `ticket.js` bloqueado, contadores zerados no DevTools, 3 pontuações forjadas direto no `/exec`,
+corrida de dois aparelhos). Antes: 7 barrados. Depois: 11 barrados, com exatamente 1 partida válida por QR na planilha.
 
 **Depois de atualizar o `Code.gs`** (este recurso precisa da versão nova): cole o código novo, salve e use
 **Implantar › Gerenciar implantações › ✏️ › Versão: Nova versão › Implantar**. Não use "Nova implantação" (o URL `/exec` mudaria).
-A aba `QR` é criada sozinha no primeiro QR gerado. Sem a versão nova, o botão do dashboard avisa que o Apps Script precisa ser publicado.
+A aba `QR` é criada sozinha no primeiro QR gerado. Depois de colar o `Code.gs` de 09/11/2026, rode **`setup`** uma vez pelo editor (Executar › setup): ele refaz as fórmulas do Ranking e do Resumo para ignorar partidas `bloqueada` e mantém o token. As colunas novas (`qr` em Partidas, `partida` em QR) aparecem sozinhas. Publique primeiro os jogos (push) e só depois a versão nova do Apps Script. Sem a versão nova, o botão do dashboard avisa que o Apps Script precisa ser publicado.
 
 ## 8. Colocar um jogo novo no painel
 
