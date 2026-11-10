@@ -137,6 +137,7 @@ Palavras curtas ficam na lista `exact` para não bloquear nomes normais (`PAULO`
 > **Importante:** o login do admin é só uma barreira de interface, e este painel mostra apenas as partidas jogadas **naquele aparelho**.
 > Os dados de **todos os aparelhos** (ranking geral, jogadores, tempo jogado, tempo até cada pontuação) ficam na planilha Google
 > e no **dashboard do dono** (`dashboard/`). Instalação: `analytics/README.md` (preencha `analytics.endpoint` no `config.js`).
+> Painel do cliente Máquina do Mal (usuário e senha, só Fuga do Poser e Busão do Rock): `painel-maquina-do-mal/`, ver `analytics/README.md` § 9.
 
 ---
 

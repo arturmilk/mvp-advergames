@@ -9,6 +9,7 @@
  *   QR        QR codes de uso único gerados no dashboard (novo → usado no primeiro toque do jogo)
  *
  * O dashboard (dashboard/index.html) lê os dados por GET com o token secreto.
+ * Painéis de cliente (ex.: painel-maquina-do-mal/) entram com usuário e senha (POST) e só recebem os jogos do cliente (PAINEIS).
  * Instalação passo a passo: analytics/README.md
  */
 
@@ -96,6 +97,7 @@ function formulas_(ss) {
 function doPost(e) {
   var body;
   try { body = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: 'json' }); }
+  if (body && body.painel) return json_(painel_(body)); // painel do cliente (login com usuário e senha)
   var events = (body && Array.isArray(body.events)) ? body.events.slice(0, 100) : [];
   if (!events.length) return json_({ ok: true, n: 0 });
 
@@ -333,3 +335,186 @@ function qrRowOk_(ctx, sid) {
   var row = sh.getRange(r, 1, 1, cols.length).getValues()[0];
   return row[cols.indexOf('status')] !== 'bloqueada' && /^[a-p]{18}$/.test(String(row[cols.indexOf('qr')] || ''));
 }
+
+/* ======================= PAINEL DO CLIENTE (usuário e senha) ======================= */
+// Painel de um cliente (ex.: painel-maquina-do-mal/): entra com usuário e senha e o servidor só devolve os jogos da lista
+// do painel (os outros nem saem daqui). As contas ficam nas Propriedades do script (PAINEL_USUARIOS), com a senha guardada
+// só como hash com sal. Nenhuma senha vai para este arquivo (o repositório é público). Contas: analytics/README.md § 9.
+var PAINEIS = {
+  'maquina-do-mal': { nome: 'Máquina do Mal', jogos: ['fuga-do-poser', 'busao-do-rock'] }
+};
+var PAINEL_ITER = 1000;          // rodadas de SHA-256 no hash da senha
+var PAINEL_DIAS = 7;             // a sessão vale 7 dias (trocar a senha derruba as outras sessões da conta)
+var PAINEL_TENTATIVAS = 5;       // senhas erradas seguidas antes de bloquear a conta...
+var PAINEL_BLOQUEIO_MIN = 15;    // ...por 15 minutos
+var PAINEL_SENHA_MIN = 8;        // tamanho mínimo da senha nova
+
+function painel_(b) {
+  var acao = String(b.painel || '');
+  if (acao === 'login') return painelEntrar_(b);
+  var s = painelConferir_(b.sessao);
+  if (!s) return { ok: false, error: 'sessao' };
+  var cfg = PAINEIS[s.u.painel];
+  if (acao === 'dados') return painelDados_(s, cfg);
+  if (acao === 'senha') return painelTrocar_(s, b);
+  if (acao === 'qr_new') return cfg.jogos.indexOf(String(b.g || '')) < 0 ? { ok: false, error: 'jogo' } : qrNew_({ g: b.g, n: b.n, nota: b.nota });
+  if (acao === 'qr_cancel') return painelQrCancel_(cfg, b);
+  if (acao === 'usuarios' || acao === 'redefinir') {
+    if (!s.u.admin) return { ok: false, error: 'admin' };
+    return acao === 'usuarios' ? painelLista_(s.u.painel) : painelRedefinir_(s, b);
+  }
+  return { ok: false, error: 'acao' };
+}
+
+function painelUsuarios_() {
+  try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('PAINEL_USUARIOS') || '{}'); } catch (e) { return {}; }
+}
+function painelGravar_(users) { PropertiesService.getScriptProperties().setProperty('PAINEL_USUARIOS', JSON.stringify(users)); }
+function painelNome_(login) { return String(login || '').trim().toLowerCase().slice(0, 80); }
+function hex_(bytes) { return bytes.map(function (x) { return ('0' + ((x + 256) % 256).toString(16)).slice(-2); }).join(''); }
+// hash = SHA-256(sal + ":" + senha), repetido PAINEL_ITER vezes sobre os bytes
+function painelHash_(senha, sal, iter) {
+  var A = Utilities.DigestAlgorithm.SHA_256, h = Utilities.computeDigest(A, sal + ':' + senha, Utilities.Charset.UTF_8);
+  for (var i = 1; i < (iter || PAINEL_ITER); i++) h = Utilities.computeDigest(A, h);
+  return hex_(h);
+}
+function igual_(a, b) {
+  a = String(a); b = String(b);
+  var d = a.length ^ b.length;
+  for (var i = 0; i < a.length && i < b.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
+}
+function painelSal_() { return Utilities.getUuid().replace(/-/g, ''); }
+function painelSegredo_() {
+  var p = PropertiesService.getScriptProperties(), s = p.getProperty('PAINEL_SEGREDO');
+  if (!s) { s = painelSal_() + painelSal_(); p.setProperty('PAINEL_SEGREDO', s); }
+  return s;
+}
+// sessão = login(base64) . validade . assinatura HMAC (com a versão da senha: trocar a senha invalida as sessões antigas)
+function painelAssinar_(login, exp, ver) { return hex_(Utilities.computeHmacSha256Signature(login + '|' + exp + '|' + ver, painelSegredo_())).slice(0, 40); }
+function painelSessao_(login, u) {
+  var exp = Date.now() + PAINEL_DIAS * 864e5;
+  return Utilities.base64EncodeWebSafe(login, Utilities.Charset.UTF_8) + '.' + exp + '.' + painelAssinar_(login, exp, u.ver || 0);
+}
+function painelConferir_(sessao) {
+  var p = String(sessao || '').split('.');
+  if (p.length !== 3 || p[0].length > 200) return null;
+  var login;
+  try { login = Utilities.newBlob(Utilities.base64DecodeWebSafe(p[0])).getDataAsString('UTF-8'); } catch (e) { return null; }
+  var exp = Number(p[1]);
+  if (!(exp > Date.now())) return null;
+  var u = painelUsuarios_()[login];
+  if (!u || !PAINEIS[u.painel] || !igual_(p[2], painelAssinar_(login, exp, u.ver || 0))) return null;
+  return { login: login, u: u };
+}
+function painelPublico_(login, u) {
+  return { login: login, nome: u.nome || login, admin: !!u.admin, trocar: !!u.trocar, painel: u.painel, painelNome: (PAINEIS[u.painel] || {}).nome || '' };
+}
+function painelChave_(login) { return 'pt_' + hex_(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, login, Utilities.Charset.UTF_8)).slice(0, 40); }
+
+function painelEntrar_(b) {
+  var login = painelNome_(b.login), senha = String(b.senha || '').slice(0, 200);
+  if (!login || !senha) return { ok: false, error: 'senha' };
+  var cache = CacheService.getScriptCache(), key = painelChave_(login), n = Number(cache.get(key) || 0);
+  if (n >= PAINEL_TENTATIVAS) return { ok: false, error: 'bloqueado', minutos: PAINEL_BLOQUEIO_MIN };
+  var u = painelUsuarios_()[login];
+  var h = painelHash_(senha, u ? u.sal : 'x', u ? u.iter : PAINEL_ITER); // calcula mesmo sem conta (mesmo tempo de resposta)
+  if (!u || !PAINEIS[u.painel] || !igual_(h, u.hash)) {
+    cache.put(key, String(n + 1), PAINEL_BLOQUEIO_MIN * 60);
+    return n + 1 >= PAINEL_TENTATIVAS ? { ok: false, error: 'bloqueado', minutos: PAINEL_BLOQUEIO_MIN } : { ok: false, error: 'senha', restam: PAINEL_TENTATIVAS - n - 1 };
+  }
+  cache.remove(key);
+  return { ok: true, sessao: painelSessao_(login, u), usuario: painelPublico_(login, u) };
+}
+
+// Dados só dos jogos do painel (filtrados aqui no servidor). Sem link da planilha e sem o id de aba dos QR.
+function painelDados_(s, cfg) {
+  var games = {};
+  cfg.jogos.forEach(function (g) { if (GAMES[g]) games[g] = GAMES[g]; });
+  var ss = SpreadsheetApp.getActiveSpreadsheet(), out = { ok: true, now: new Date().toISOString(), games: games, usuario: painelPublico_(s.login, s.u) };
+  Object.keys(COLS).forEach(function (name) {
+    var sh = ss.getSheetByName(name);
+    var rows = sh ? rows_(sh, COLS[name]).filter(function (r) { return games.hasOwnProperty(r.jogo); }) : [];
+    if (name === 'QR') rows.forEach(function (r) { delete r.acesso; });
+    out[name.toLowerCase()] = rows;
+  });
+  return out;
+}
+function painelQrCancel_(cfg, b) {
+  var code = String(b.qr || '');
+  if (!QR_RE.test(code)) return { ok: false, error: 'codigo' };
+  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('QR'), r = sh ? qrFind_(sh, code) : 0;
+  if (!r || cfg.jogos.indexOf(sh.getRange(r, 2).getValue()) < 0) return { ok: false, error: 'codigo' };
+  return qrCancel_({ qr: code });
+}
+
+function painelFraca_(nova) {
+  if (nova.length < PAINEL_SENHA_MIN) return 'curta';
+  if (nova.length > 100) return 'longa';
+  if (/^(.)\1+$/.test(nova) || /^\d+$/.test(nova) && nova.length < 12 || /^(senha|password|12345678|qwerty)/i.test(nova)) return 'fraca';
+  return '';
+}
+function painelTrocar_(s, b) {
+  var atual = String(b.atual || ''), nova = String(b.nova || '');
+  if (!igual_(painelHash_(atual, s.u.sal, s.u.iter), s.u.hash)) return { ok: false, error: 'atual' };
+  if (atual === nova) return { ok: false, error: 'igual' };
+  var e = painelFraca_(nova);
+  if (e) return { ok: false, error: e };
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(20000); } catch (err) { return { ok: false, error: 'busy' }; }
+  try {
+    var users = painelUsuarios_(), u = users[s.login];
+    u.sal = painelSal_(); u.iter = PAINEL_ITER; u.hash = painelHash_(nova, u.sal, u.iter);
+    u.ver = (u.ver || 0) + 1; u.trocar = false; u.alterado = new Date().toISOString();
+    painelGravar_(users);
+    return { ok: true, sessao: painelSessao_(s.login, u), usuario: painelPublico_(s.login, u) };
+  } finally { lock.releaseLock(); }
+}
+function painelLista_(painel) {
+  var users = painelUsuarios_();
+  return { ok: true, usuarios: Object.keys(users).filter(function (k) { return users[k].painel === painel; }).map(function (k) {
+    var u = users[k]; return { login: k, nome: u.nome || k, admin: !!u.admin, trocar: !!u.trocar, alterado: u.alterado || '' };
+  }) };
+}
+// Conta de administrador do painel gera uma senha provisória para outra conta do mesmo painel (ex.: o cliente esqueceu a senha).
+function painelRedefinir_(s, b) {
+  var alvo = painelNome_(b.alvo);
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(20000); } catch (err) { return { ok: false, error: 'busy' }; }
+  try {
+    var users = painelUsuarios_(), u = users[alvo];
+    if (!u || u.painel !== s.u.painel || alvo === s.login) return { ok: false, error: 'alvo' };
+    var abc = 'abcdefghjkmnpqrstuvwxyz23456789', h = painelSal_() + painelSal_(), senha = '';
+    for (var i = 0; i < 10; i++) senha += abc[parseInt(h.substr(i * 2, 2), 16) % abc.length];
+    u.sal = painelSal_(); u.iter = PAINEL_ITER; u.hash = painelHash_(senha, u.sal, u.iter);
+    u.ver = (u.ver || 0) + 1; u.trocar = true; u.alterado = new Date().toISOString();
+    painelGravar_(users);
+    CacheService.getScriptCache().remove(painelChave_(alvo)); // desbloqueia a conta, se estava bloqueada
+    return { ok: true, login: alvo, senha: senha };
+  } finally { lock.releaseLock(); }
+}
+
+/* ---- contas do painel pelo editor (Executar) ---- */
+// Cria ou substitui uma conta. "senha" pode ser o texto da senha OU { sal, hash } já calculado (assim a senha não fica escrita).
+// Ex. (num arquivo .gs temporário, apague depois de rodar): painelConta_('fulano@cliente', 'senha-boa', { nome: 'Fulano', painel: 'maquina-do-mal' })
+function painelConta_(login, senha, opt) {
+  login = painelNome_(login); opt = opt || {};
+  if (!login || !PAINEIS[opt.painel]) throw new Error('Informe o login e um painel que exista em PAINEIS.');
+  var users = painelUsuarios_(), old = users[login] || {}, u = { nome: opt.nome || login, painel: opt.painel, admin: !!opt.admin, trocar: !!opt.trocar,
+    ver: (old.ver || 0) + 1, iter: PAINEL_ITER, alterado: new Date().toISOString() };
+  if (typeof senha === 'string') { u.sal = painelSal_(); u.hash = painelHash_(senha, u.sal, u.iter); }
+  else { u.sal = senha.sal; u.hash = senha.hash; u.iter = senha.iter || PAINEL_ITER; }
+  users[login] = u;
+  painelGravar_(users);
+  Logger.log('Conta do painel gravada: ' + login + ' (' + opt.painel + (u.admin ? ', administrador' : '') + ')');
+}
+// Mostra as contas no Registro de execução (sem senha nem hash).
+function painelContas() {
+  var users = painelUsuarios_();
+  Object.keys(users).forEach(function (k) { var u = users[k]; Logger.log(k + ' · ' + u.painel + (u.admin ? ' · administrador' : '') + (u.trocar ? ' · senha provisória' : '') + ' · ' + (u.alterado || '')); });
+  if (!Object.keys(users).length) Logger.log('Nenhuma conta de painel criada.');
+}
+// Apaga uma conta: troque o login abaixo e rode.
+function painelApagarConta() { var login = 'troque-pelo-login', users = painelUsuarios_(); delete users[login]; painelGravar_(users); painelContas(); }
+// Desconecta todas as sessões de todos os painéis (troca o segredo das assinaturas).
+function painelSairTodos() { PropertiesService.getScriptProperties().setProperty('PAINEL_SEGREDO', painelSal_() + painelSal_()); Logger.log('Todas as sessões dos painéis foram encerradas.'); }

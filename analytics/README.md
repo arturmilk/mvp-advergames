@@ -11,6 +11,7 @@ analytics/dev_server.py      servidor de TESTE local (mesma API, sem conta Googl
 ticket.js                    QR code de uso único (o mesmo arquivo está em happy-hour/ticket.js)
 dashboard/index.html         dashboard do dono (login com endereço + token)
 dashboard/config.js          nome do cliente e lista de jogos do dashboard (público: nada de token aqui)
+painel-maquina-do-mal/       painel do cliente Máquina do Mal (usuário e senha; só Fuga do Poser e Busão do Rock), § 9
 ```
 
 Não há servidor para manter: a planilha e o script ficam na conta Google do cliente, de graça.
@@ -141,6 +142,8 @@ python analytics/dev_server.py
 * Fuga do Poser: <http://localhost:8790/fuga-do-poser/?analytics=http://localhost:8790/exec>
 * Busão do Rock: <http://localhost:8790/busao-do-rock/?analytics=http://localhost:8790/exec>
 * Dashboard: <http://localhost:8790/dashboard/> (endereço `http://localhost:8790/exec`, token `teste`)
+* Painel do cliente: <http://localhost:8790/painel-maquina-do-mal/?api=http://localhost:8790/exec> (contas de teste
+  `admin@teste` / `teste1234` e `cliente@teste` / `123456`; só existem no servidor de teste e voltam ao padrão quando ele reinicia)
 
 O parâmetro `?analytics=` só funciona em `localhost`. Os dados de teste ficam em `analytics/dev_data.json` (fora do git); apague o arquivo para zerar.
 Os QR codes gerados no dashboard de teste já levam o `?analytics=` no link, então funcionam direto em `localhost`.
@@ -230,3 +233,54 @@ O QR obrigatório (`ticket.required` no `config.js` do jogo) fica desligado até
 **Busão do Rock (05/11/2026), servidor de teste:** partida (2 lendas, fim por tempo) aparece no painel com o filtro "Busão do Rock",
 nível "Lendas 2" e motivo "Fim do tempo"; QR gerado para o Busão abre o jogo, tira o `?qr=` do link, fica `usado` no primeiro
 toque e o mesmo link em outra aba mostra "QR code já usado". Não testado em celular físico.
+
+## 9. Painel do cliente (Máquina do Mal)
+
+<https://arturmilk.github.io/mvp-advergames/painel-maquina-do-mal/> é uma cópia do dashboard para o cliente **Máquina do Mal**
+(Felipe), com o mesmo visual da Montaggio. Diferenças:
+
+* **Entrada com usuário e senha** (não com URL + token). Duas contas: a do Arthur (administrador) e a do Felipe.
+* **Só os jogos Fuga do Poser e Busão do Rock.** O filtro é feito **no Apps Script**: o servidor nem envia as partidas, marcos,
+  eventos e QR da A Entrega, do Happy Hour ou de qualquer outro jogo. A página ainda descarta qualquer linha de outro jogo (segunda trava).
+  O gerador de QR só aceita os dois jogos, e só dá para cancelar QR desses jogos. Sem link da planilha.
+* **Trocar senha** (botão com a chave no topo): pede a senha atual e a nova (mínimo 8 caracteres, não só números).
+  Trocar a senha desconecta os outros aparelhos dessa conta.
+* **Senha provisória:** a conta do Felipe começa com a senha que o Arthur escolheu e marcada como provisória: no primeiro acesso o painel
+  já abre "Trocar senha" (dá para clicar em "Agora não"; uma faixa verde fica lembrando até ele trocar).
+* **Esqueci a senha:** não há e-mail para recuperação. O Arthur entra na conta dele › **Contas** › **Gerar senha provisória**
+  para a conta do Felipe. A senha antiga deixa de valer na hora; o Felipe entra com a provisória e escolhe uma nova.
+* O `?demo` no endereço continua mostrando dados de exemplo (só dos dois jogos).
+
+**Segurança**
+
+* Nenhuma senha fica no repositório (que é público). As contas ficam nas **Propriedades do script** (`PAINEL_USUARIOS`), com
+  a senha guardada só como hash SHA-256 com sal (1.000 rodadas). O `painel-maquina-do-mal/config.js` só tem o URL `/exec`, que já era público.
+* A sessão é um código assinado pelo servidor (HMAC com `PAINEL_SEGREDO`, que fica nas Propriedades) e vale 7 dias. Trocar ou
+  redefinir a senha invalida as sessões antigas. A senha vai no corpo de um POST, nunca no endereço.
+* **5 senhas erradas seguidas bloqueiam a conta por 15 minutos** (isso também impede adivinhar senha por tentativa).
+* Limites: não há verificação em duas etapas nem recuperação por e-mail.
+  Quem conseguir a senha vê os dados dos dois jogos e gera QR codes deles, mas não vê os outros jogos nem a planilha.
+
+**Instalação (uma vez, com a conta Google dona do projeto "jogos")**
+
+1. Abra o projeto "jogos" no Apps Script, apague o conteúdo de `Code.gs`, cole o `analytics/apps-script/Code.gs` novo e salve.
+2. Rode **`setup`** uma vez (Executar › setup). Mantém o token e atualiza as fórmulas (necessário também para o QR de uso único de 09/11).
+3. **Contas:** o arquivo privado `contas-apps-script.gs.txt` (fora do git; entregue no projeto do Claude) cria as duas contas só com o hash
+   das senhas. Crie um arquivo de script novo no editor, cole, rode `instalarContasMaquinaDoMal`, confira no Registro de execução e apague o arquivo.
+   Para criar outra conta: num arquivo temporário, `painelConta_('login', 'senha', { nome: 'Nome', painel: 'maquina-do-mal' })`, rode e apague.
+   `painelContas` lista as contas (sem senha); `painelSairTodos` desconecta todo mundo.
+4. **Implantar › Gerenciar implantações › ✏️ › Versão: Nova versão › Implantar.** Nunca "Nova implantação" (o URL `/exec` mudaria).
+5. Abra o painel e entre com as duas contas.
+
+Até a versão nova estar publicada, a tela de entrada mostra "O servidor ainda não tem o painel do cliente".
+
+**Outro cliente:** acrescente um painel em `PAINEIS` (no `Code.gs`) com a lista de jogos, copie a pasta `painel-maquina-do-mal/`,
+troque o `config.js` (nome, jogos) e crie as contas com `painel: '<id do painel>'`.
+
+**Testes (10/11/2026):** `Code.gs` rodado em Node com os serviços do Google simulados (34 verificações: login certo e errado, bloqueio
+na 5ª tentativa, sessão adulterada ou de outro login recusada, dados só dos dois jogos, sem `acesso` dos QR, troca e redefinição de senha
+derrubando a sessão antiga, cliente sem acesso a "Contas", QR da Rover recusado, coleta dos jogos intacta) e conferência do arquivo de contas
+com as duas senhas reais. Painel com `dev_server.py` + Chromium oculto em 360, 430, 480 e 1280 px (28 verificações: só "Fuga do Poser" e
+"Busão do Rock" nos filtros e nenhum texto da Rover na página, primeiro acesso pedindo troca de senha, senha fraca recusada, troca, sair e
+entrar, sessão mantida ao recarregar, senha provisória pelo administrador, bloqueio, sem rolagem lateral, console limpo).
+Não testado com o Apps Script de verdade (depende do passo 4) nem em celular físico.

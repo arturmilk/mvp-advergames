@@ -5,6 +5,7 @@ Implementa o mesmo contrato do analytics/apps-script/Code.gs:
   GET  /exec?action=data&token=...   devolve partidas/marcos/eventos/qr para o dashboard
   GET  /exec?action=qr_new|qr_cancel&token=...   QR codes de uso único (dashboard)
   GET  /exec?action=qr_check|qr_use&qr=...&g=...&c=...   conferir/queimar o QR (jogos)
+  POST /exec {"painel": "login"|"dados"|"senha"|"qr_new"|"qr_cancel"|"usuarios"|"redefinir", ...}   painel do cliente
 e serve os arquivos do repositório (jogos e dashboard) na mesma porta.
 
     python analytics/dev_server.py            -> http://localhost:8790/
@@ -13,10 +14,17 @@ e serve os arquivos do repositório (jogos e dashboard) na mesma porta.
     fuga poser http://localhost:8790/fuga-do-poser/?analytics=http://localhost:8790/exec
     busao rock http://localhost:8790/busao-do-rock/?analytics=http://localhost:8790/exec
     dashboard: http://localhost:8790/dashboard/   (endpoint http://localhost:8790/exec, token "teste")
+    painel do cliente: http://localhost:8790/painel-maquina-do-mal/?api=http://localhost:8790/exec
+        contas de teste (só neste servidor, voltam ao padrão quando ele reinicia):
+        admin@teste / teste1234 (administrador)   cliente@teste / 123456 (pede para trocar a senha)
 
 Os dados ficam em analytics/dev_data.json (fora do git). Só stdlib.
 """
+import base64
 import datetime as dt
+import hashlib
+import hmac
+import time
 import json
 import os
 import re
@@ -43,7 +51,6 @@ QR_OBRIGATORIO = {'rover', 'happy-hour'}
 ID_RE = re.compile(r'^[a-z0-9]{8,40}$', re.I)
 QR_RE = re.compile(r'^[a-p]{18}$')
 lock = Lock()
-
 
 def load():
     try:
@@ -184,6 +191,173 @@ def qr_game(db, q, use):
     return {'ok': True, 'status': 'ok'}
 
 
+# ---- painel do cliente (mesmas regras do Code.gs › PAINEL DO CLIENTE) ----
+PAINEIS = {'maquina-do-mal': {'nome': 'Máquina do Mal', 'jogos': ['fuga-do-poser', 'busao-do-rock']}}
+P_ITER, P_DIAS, P_TENT, P_BLOQ_MIN, P_MIN = 1000, 7, 5, 15, 8
+P_SEGREDO = secrets.token_hex(32)
+P_FALHAS = {}  # login -> (n, até quando)
+
+
+def p_hash(senha, sal, it=P_ITER):
+    x = hashlib.sha256((sal + ':' + senha).encode('utf-8')).digest()
+    for _ in range(1, it):
+        x = hashlib.sha256(x).digest()
+    return x.hex()
+
+
+def p_conta(login, senha, **opt):
+    sal = secrets.token_hex(16)
+    return {'nome': opt.get('nome', login), 'painel': opt['painel'], 'admin': opt.get('admin', False), 'trocar': opt.get('trocar', False),
+            'ver': 1, 'iter': P_ITER, 'sal': sal, 'hash': p_hash(senha, sal), 'alterado': now_iso()}
+
+
+P_USERS = {
+    'admin@teste': p_conta('admin@teste', 'teste1234', nome='Admin (teste)', painel='maquina-do-mal', admin=True),
+    'cliente@teste': p_conta('cliente@teste', '123456', nome='Cliente (teste)', painel='maquina-do-mal', trocar=True),
+}
+
+
+def p_sign(login, exp, ver):
+    return hmac.new(P_SEGREDO.encode(), f'{login}|{exp}|{ver}'.encode(), hashlib.sha256).hexdigest()[:40]
+
+
+def p_sessao(login, u):
+    exp = int(time.time() * 1000) + P_DIAS * 86400000
+    return base64.urlsafe_b64encode(login.encode()).decode() + f'.{exp}.' + p_sign(login, exp, u['ver'])
+
+
+def p_conferir(sessao):
+    parts = str(sessao or '').split('.')
+    if len(parts) != 3:
+        return None
+    try:
+        login, exp = base64.urlsafe_b64decode(parts[0].encode()).decode(), int(parts[1])
+    except (ValueError, UnicodeDecodeError):
+        return None
+    u = P_USERS.get(login)
+    if exp < time.time() * 1000 or not u or not hmac.compare_digest(parts[2], p_sign(login, exp, u['ver'])):
+        return None
+    return login, u
+
+
+def p_publico(login, u):
+    return {'login': login, 'nome': u['nome'], 'admin': u['admin'], 'trocar': u['trocar'], 'painel': u['painel'],
+            'painelNome': PAINEIS[u['painel']]['nome']}
+
+
+def p_fraca(nova):
+    if len(nova) < P_MIN:
+        return 'curta'
+    if len(nova) > 100:
+        return 'longa'
+    if re.fullmatch(r'(.)\1+', nova) or (nova.isdigit() and len(nova) < 12) or re.match(r'(senha|password|12345678|qwerty)', nova, re.I):
+        return 'fraca'
+    return ''
+
+
+def p_novo_hash(u, senha, trocar):
+    u.update(sal=secrets.token_hex(16), iter=P_ITER, ver=u['ver'] + 1, trocar=trocar, alterado=now_iso())
+    u['hash'] = p_hash(senha, u['sal'])
+
+
+def painel(b):
+    acao = str(b.get('painel') or '')
+    if acao == 'login':
+        login, senha = str(b.get('login') or '').strip().lower()[:80], str(b.get('senha') or '')[:200]
+        n, ate = P_FALHAS.get(login, (0, 0))
+        if ate < time.time():
+            n = 0
+        if n >= P_TENT:
+            return {'ok': False, 'error': 'bloqueado', 'minutos': P_BLOQ_MIN}
+        u = P_USERS.get(login)
+        if not u or not hmac.compare_digest(p_hash(senha, u['sal'], u['iter']), u['hash']):
+            P_FALHAS[login] = (n + 1, time.time() + P_BLOQ_MIN * 60)
+            if n + 1 >= P_TENT:
+                return {'ok': False, 'error': 'bloqueado', 'minutos': P_BLOQ_MIN}
+            return {'ok': False, 'error': 'senha', 'restam': P_TENT - n - 1}
+        P_FALHAS.pop(login, None)
+        return {'ok': True, 'sessao': p_sessao(login, u), 'usuario': p_publico(login, u)}
+    s = p_conferir(b.get('sessao'))
+    if not s:
+        return {'ok': False, 'error': 'sessao'}
+    login, u = s
+    jogos = PAINEIS[u['painel']]['jogos']
+    if acao == 'dados':
+        with lock:
+            db = load()
+        ok = {g: GAMES[g] for g in jogos if g in GAMES}
+        qr = [{k: v for k, v in r.items() if k != 'acesso'} for r in db.get('qr', []) if r['jogo'] in ok]
+        return {'ok': True, 'now': now_iso(), 'games': ok, 'usuario': p_publico(login, u),
+                'partidas': [r for r in db['partidas'] if r['jogo'] in ok], 'marcos': [r for r in db['marcos'] if r['jogo'] in ok],
+                'eventos': [r for r in db['eventos'] if r['jogo'] in ok], 'qr': qr}
+    if acao == 'senha':
+        atual, nova = str(b.get('atual') or ''), str(b.get('nova') or '')
+        if not hmac.compare_digest(p_hash(atual, u['sal'], u['iter']), u['hash']):
+            return {'ok': False, 'error': 'atual'}
+        if atual == nova:
+            return {'ok': False, 'error': 'igual'}
+        e = p_fraca(nova)
+        if e:
+            return {'ok': False, 'error': e}
+        p_novo_hash(u, nova, False)
+        return {'ok': True, 'sessao': p_sessao(login, u), 'usuario': p_publico(login, u)}
+    if acao == 'qr_new':
+        if b.get('g') not in jogos:
+            return {'ok': False, 'error': 'jogo'}
+        return qr_new({'g': b.get('g'), 'n': b.get('n'), 'nota': b.get('nota')})
+    if acao == 'qr_cancel':
+        with lock:
+            db = load()
+        row = next((r for r in db.get('qr', []) if r['codigo'] == b.get('qr')), None)
+        if row is None or row['jogo'] not in jogos:
+            return {'ok': False, 'error': 'codigo'}
+        return qr_cancel({'qr': b.get('qr')})
+    if acao in ('usuarios', 'redefinir'):
+        if not u['admin']:
+            return {'ok': False, 'error': 'admin'}
+        if acao == 'usuarios':
+            return {'ok': True, 'usuarios': [{'login': k, 'nome': v['nome'], 'admin': v['admin'], 'trocar': v['trocar'], 'alterado': v['alterado']}
+                                             for k, v in P_USERS.items() if v['painel'] == u['painel']]}
+        alvo = str(b.get('alvo') or '').strip().lower()
+        t = P_USERS.get(alvo)
+        if not t or t['painel'] != u['painel'] or alvo == login:
+            return {'ok': False, 'error': 'alvo'}
+        senha = ''.join(secrets.choice('abcdefghjkmnpqrstuvwxyz23456789') for _ in range(10))
+        p_novo_hash(t, senha, True)
+        P_FALHAS.pop(alvo, None)
+        return {'ok': True, 'login': alvo, 'senha': senha}
+    return {'ok': False, 'error': 'acao'}
+
+
+def qr_new(q):
+    g = q.get('g', '')
+    if g not in GAMES:
+        return {'ok': False, 'error': 'jogo'}
+    try:
+        n = max(1, min(50, int(float(q.get('n') or 1))))
+    except (TypeError, ValueError):
+        n = 1
+    rows = [{'codigo': ''.join(chr(97 + secrets.randbelow(16)) for _ in range(18)), 'jogo': g, 'status': 'novo',
+             'criado': now_iso(), 'usado_em': '', 'player_id': '', 'acesso': '', 'nota': txt(q.get('nota'), 80)} for _ in range(n)]
+    with lock:
+        db = load()
+        db.setdefault('qr', []).extend(rows)
+        save(db)
+    return {'ok': True, 'qr': rows}
+
+
+def qr_cancel(q):
+    with lock:
+        db = load()
+        row = next((r for r in db.setdefault('qr', []) if r['codigo'] == q.get('qr')), None)
+        if row is None:
+            return {'ok': False, 'error': 'codigo'}
+        if row['status'] == 'novo':
+            row['status'] = 'cancelado'
+            save(db)
+    return {'ok': True, 'status': row['status']}
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=ROOT, **kw)
@@ -207,6 +381,8 @@ class Handler(SimpleHTTPRequestHandler):
         n = int(self.headers.get('Content-Length') or 0)
         try:
             body = json.loads(self.rfile.read(min(n, 1_000_000)).decode('utf-8'))
+            if isinstance(body, dict) and body.get('painel'):
+                return self.send_json(painel(body))
             events = body.get('events', [])[:100]
         except (ValueError, AttributeError):
             return self.send_json({'ok': False, 'error': 'json'})
@@ -240,30 +416,9 @@ class Handler(SimpleHTTPRequestHandler):
         if q.get('token') != TOKEN:
             return self.send_json({'ok': False, 'error': 'token'})
         if act == 'qr_new':
-            g = q.get('g', '')
-            if g not in GAMES:
-                return self.send_json({'ok': False, 'error': 'jogo'})
-            try:
-                n = max(1, min(50, int(float(q.get('n') or 1))))
-            except ValueError:
-                n = 1
-            rows = [{'codigo': ''.join(chr(97 + secrets.randbelow(16)) for _ in range(18)), 'jogo': g, 'status': 'novo',
-                     'criado': now_iso(), 'usado_em': '', 'player_id': '', 'acesso': '', 'nota': txt(q.get('nota'), 80)} for _ in range(n)]
-            with lock:
-                db = load()
-                db.setdefault('qr', []).extend(rows)
-                save(db)
-            return self.send_json({'ok': True, 'qr': rows})
+            return self.send_json(qr_new(q))
         if act == 'qr_cancel':
-            with lock:
-                db = load()
-                row = next((r for r in db.setdefault('qr', []) if r['codigo'] == q.get('qr')), None)
-                if row is None:
-                    return self.send_json({'ok': False, 'error': 'codigo'})
-                if row['status'] == 'novo':
-                    row['status'] = 'cancelado'
-                    save(db)
-            return self.send_json({'ok': True, 'status': row['status']})
+            return self.send_json(qr_cancel(q))
         with lock:
             db = load()
         self.send_json({'ok': True, 'sheetUrl': '', 'now': now_iso(), 'games': GAMES,
@@ -277,4 +432,5 @@ class Handler(SimpleHTTPRequestHandler):
 if __name__ == '__main__':
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8790
     print(f'Servidor de teste em http://localhost:{port}/  (dashboard: /dashboard/, token "{TOKEN}")')
+    print(f'Painel do cliente: http://localhost:{port}/painel-maquina-do-mal/?api=http://localhost:{port}/exec  (admin@teste / teste1234, cliente@teste / 123456)')
     ThreadingHTTPServer(('127.0.0.1', port), Handler).serve_forever()
