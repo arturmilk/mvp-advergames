@@ -13,7 +13,17 @@
  * Instalação passo a passo: analytics/README.md
  */
 
-var GAMES = { 'rover': 'Rover — A Entrega', 'happy-hour': 'Rover Happy Hour', 'fuga-do-poser': 'Máquina do Mal em: Fuga do Poser', 'busao-do-rock': 'Máquina do Mal em: Busão do Rock' };
+// Todos os jogos conhecidos. Uma planilha pode guardar só alguns: Propriedades do script › JOGOS = ids separados por vírgula
+// (ex.: "fuga-do-poser,busao-do-rock" na planilha da Máquina do Mal). Sem JOGOS = todos. Ids fora da lista são descartados.
+var GAMES = jogosDestaPlanilha_({ 'rover': 'Rover — A Entrega', 'happy-hour': 'Rover Happy Hour', 'fuga-do-poser': 'Máquina do Mal em: Fuga do Poser', 'busao-do-rock': 'Máquina do Mal em: Busão do Rock' });
+function jogosDestaPlanilha_(todos) {
+  var p = '';
+  try { p = PropertiesService.getScriptProperties().getProperty('JOGOS') || ''; } catch (e) {}
+  var ids = p.split(',').map(function (x) { return x.trim(); }).filter(function (x) { return todos[x]; });
+  if (!ids.length) return todos;
+  var out = {}; ids.forEach(function (x) { out[x] = todos[x]; });
+  return out;
+}
 var COLS = {
   Partidas: ['session_id', 'jogo', 'player_id', 'apelido', 'inicio', 'fim', 'status', 'pontos', 'duracao_s', 'nivel', 'meta',
     'motivo_fim', 'entregas', 'combo_max', 'itens', 'erros', 'salvo_ranking', 'apelido_ranking', 'posicao_ranking',
