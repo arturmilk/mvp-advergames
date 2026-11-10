@@ -183,7 +183,7 @@ const CONFIG = {
   // endpoint = URL do Web App do Apps Script (termina em /exec). Vazio = não envia nada. Veja ../analytics/README.md
   analytics: {
     game: 'fuga-do-poser', // não troque: é a chave deste jogo na planilha (constante GAMES do Code.gs)
-    endpoint: 'https://script.google.com/macros/s/AKfycbyOZORbDFYrL_rfN4JM_fgma4S2ReeeZjYA6e11ZdyVexaaIVB5ZD8KOt95Q3QTCNpJhA/exec',
+    endpoint: 'https://script.google.com/macros/s/AKfycbw24WT-cKnY3N0KLAg3jOtrtRoG_r1i0uLnizYLvMfOCgadOSZQYExGAKBKfH20pk5Y1Q/exec',
     milestones: [100, 200, 300, 500, 750, 1000, 1500, 2000, 3000]
   },
 

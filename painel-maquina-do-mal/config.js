@@ -6,7 +6,7 @@ window.DASH_CONFIG = {
   title: 'Painel dos jogos',
   filePrefix: 'maquina_do_mal',
   // URL do Web App do Apps Script (o mesmo /exec que está no config.js dos jogos; não é segredo)
-  endpoint: 'https://script.google.com/macros/s/AKfycbyOZORbDFYrL_rfN4JM_fgma4S2ReeeZjYA6e11ZdyVexaaIVB5ZD8KOt95Q3QTCNpJhA/exec',
+  endpoint: 'https://script.google.com/macros/s/AKfycbw24WT-cKnY3N0KLAg3jOtrtRoG_r1i0uLnizYLvMfOCgadOSZQYExGAKBKfH20pk5Y1Q/exec',
   // Contato mostrado em "Esqueci a senha"
   supportText: 'Fale com a Montaggio: ela gera uma senha provisória para você entrar e escolher uma nova.',
   siteUrl: 'https://arturmilk.github.io/mvp-advergames/',

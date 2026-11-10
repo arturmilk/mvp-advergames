@@ -284,3 +284,23 @@ com as duas senhas reais. Painel com `dev_server.py` + Chromium oculto em 360, 4
 "Busão do Rock" nos filtros e nenhum texto da Rover na página, primeiro acesso pedindo troca de senha, senha fraca recusada, troca, sair e
 entrar, sessão mantida ao recarregar, senha provisória pelo administrador, bloqueio, sem rolagem lateral, console limpo).
 Não testado com o Apps Script de verdade (depende do passo 4) nem em celular físico.
+
+## 10. Duas planilhas: Rover e Máquina do Mal (10/11/2026)
+
+Os dados da Máquina do Mal ficam numa planilha separada, também na conta emailmontaggio@gmail.com:
+
+| Planilha | Projeto do Apps Script | Jogos (propriedade `JOGOS`) | Quem usa o `/exec` |
+|---|---|---|---|
+| **Jogos Rover — dados** | `jogos` | `rover,happy-hour` | `config.js` (A Entrega), `happy-hour/config.js`, `dashboard/` (token) |
+| **Máquina do Mal — jogos (dados)** | `jogos - Máquina do Mal` | `fuga-do-poser,busao-do-rock` | `fuga-do-poser/config.js`, `busao-do-rock/config.js`, `painel-maquina-do-mal/` (usuário e senha) |
+
+* Os dois projetos rodam o **mesmo `Code.gs`**. A diferença é só a propriedade do script `JOGOS` (Configurações do projeto ›
+  Propriedades do script): o servidor só aceita, guarda, mostra e gera QR para os jogos dessa lista. Sem `JOGOS`, aceita todos.
+* Cada projeto tem o próprio token do dashboard e as próprias contas do painel. As contas do Arthur e do Felipe estão no projeto
+  da Máquina do Mal (as do projeto `jogos` não são mais usadas).
+* **Histórico:** o Fuga do Poser e o Busão do Rock foram copiados da planilha antiga para a nova (Marcos 137 linhas, Eventos 137,
+  QR 75, com os QR ainda disponíveis valendo na planilha nova). A aba Partidas da planilha antiga já estava vazia, então não havia
+  partidas para copiar. Nada foi apagado da planilha antiga; as linhas antigas da Máquina do Mal continuam lá, mas o projeto `jogos` não as mostra.
+* Para ver os jogos da Máquina do Mal no `dashboard/` do dono, entre nele com o `/exec` da Máquina do Mal e o token desse projeto
+  (aparece no Registro de execução ao rodar `setup` ou `novoToken` no projeto `jogos - Máquina do Mal`).
+* Atualizar o `Code.gs`: cole nos **dois** projetos e publique em cada um (Gerenciar implantações › Nova versão).
