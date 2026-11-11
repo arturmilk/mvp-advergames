@@ -260,6 +260,25 @@ const CONFIG = {
   engineVolume: 0.16,
   // motor: segurando o acelerador o som sobe marcha a marcha até o pico em rampSec; gears = fatia de tempo de cada marcha (soma 1)
   engineSound: { rampSec: 10, gears: [0.18, 0.22, 0.27, 0.33], dropRate: 2.5 },
-  musicTempo: 176      // trilha original de hard rock (riff em Mi com galope, bateria cheia); volume em musicVolume
+  musicTempo: 176,     // trilha original de hard rock (riff em Mi com galope, bateria cheia); volume em musicVolume
+
+  /* ---------- Selo "Produzido por Montaggio" (montaggio-selo.js) ----------
+     Aparece só nas telas fora da partida, no fim de cada tela (não cobre o jogo nem os controles).
+     cta = convite "Quero um jogo para o meu negócio", que abre o WhatsApp da Montaggio com a mensagem pronta. */
+  montaggio: {
+    enabled: true,
+    byText: 'Produzido por',
+    cta: true,
+    ctaText: 'Quero um jogo para o meu negócio',
+    whatsapp: '556993630689',          // (69) 9363-0689, só dígitos com 55 + DDD
+    message: 'Olá, quero um jogo para o meu negócio!',
+    siteUrl: '',                       // vazio = o logo não é link
+    places: [
+      { in: '#comic .c-foot', tone: 'dark', align: 'left' },
+      { in: '#gameover', tone: 'light' },
+      { in: '#saved', tone: 'light' },
+      { in: '#rankings', tone: 'light' }
+    ]
+  }
 };
 window.CONFIG = CONFIG;

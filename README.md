@@ -76,6 +76,24 @@ server {
 
 ---
 
+### Selo "Produzido por Montaggio" (`montaggio`)
+
+Rodapé discreto com o logotipo da Montaggio e, ao lado, o convite **"Quero um jogo para o meu negócio"**, que abre o
+WhatsApp da Montaggio ((69) 9363-0689) com a mensagem pronta *"Olá, quero um jogo para o meu negócio!"* em nova aba.
+Aparece só nas telas fora da partida (início, fim de jogo, placar, "Sobre a Rover" e privacidade), no fim de cada tela, dentro do fluxo: não cobre o jogo, a HUD nem os
+controles de toque, e respeita a safe-area (fica dentro do padding das telas). Quando não cabe numa linha, empilha
+(logo em cima, convite embaixo). O código é `montaggio-selo.js`, **idêntico** na raiz e nas pastas dos jogos (como o
+`analytics.js`; os painéis usam o da raiz). O logotipo é SVG (Bricolage Grotesque ExtraBold), não depende de fonte nem de internet.
+
+| Chave | Para quê |
+|---|---|
+| `montaggio.enabled` | `false` tira o selo |
+| `montaggio.cta` | `false` deixa só o logo, sem o convite |
+| `montaggio.ctaText` / `message` | texto do convite / mensagem que já vem escrita no WhatsApp |
+| `montaggio.whatsapp` | número só com dígitos (55 + DDD) |
+| `montaggio.siteUrl` | se preenchido, o logo vira link |
+| `montaggio.places` | em quais telas entra (`in`), tom do texto (`tone`: `light`/`dark`) e `align: 'left'` |
+
 ## 3. Como jogar (resumo da mecânica)
 
 **Fluxo:** título → **JOGAR** → cadastro rápido (só na primeira vez) → **pop-up "Como jogar"** (aparece sempre antes da partida; o botão "ENTENDIDO! JOGAR" começa o jogo) → partida → fim de jogo (salvar nome, ver ranking, compartilhar).
@@ -239,6 +257,14 @@ Os testes 2 a 8 foram feitos na v1. O código do placar e do admin não mudou na
 Ainda não testado em aparelhos físicos (iPhone e Android médio): vale confirmar 60 fps, áudio após o primeiro toque, safe-area do notch e multitoque (andar e pular ao mesmo tempo).
 
 ---
+
+### Testes do selo Montaggio (11/11/2026)
+
+Chromium (Playwright), retrato 360×740, 430×932 e 480×900, QR desligado só no teste e coleta de dados bloqueada (nada foi para a planilha).
+Selo presente em todas as telas listadas, sem rolagem horizontal, sem sobrepor nenhum botão ou campo, console limpo.
+Durante a partida nenhum selo fica visível. Tocar no convite abre nova aba em
+`https://wa.me/556993630689?text=Ol%C3%A1%2C%20quero%20um%20jogo%20para%20o%20meu%20neg%C3%B3cio!` e a tela do jogo não muda.
+Não testado: celular físico (inclusive o app do WhatsApp abrindo de verdade) e iPhone com notch.
 
 ## 8. Pendências de autorização (antes de publicar)
 

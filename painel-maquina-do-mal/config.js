@@ -19,5 +19,12 @@ window.DASH_CONFIG = {
   },
   endReasons: {
     vidas: 'Perdeu as vidas', tempo: 'Fim do tempo', encerrou: 'Encerrou na pausa', poser: 'O Poser alcançou', vitoria: 'Vitória'
+  },
+  /* Selo "Produzido por Montaggio" no rodapé (../montaggio-selo.js). Nos painéis vai só o selo, sem o convite. */
+  montaggio: {
+    enabled: true,
+    byText: 'Produzido por',
+    cta: false,
+    places: [{ in: 'footer.foot', replace: ':scope > span:first-child', tone: 'inherit', align: 'left' }]
   }
 };

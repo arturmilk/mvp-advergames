@@ -239,6 +239,25 @@ const CONFIG = {
   /* ---------- Áudio (riff e efeitos sintetizados no navegador) ---------- */
   musicVolume: 0.26,
   sfxVolume: 0.6,
-  musicTempo: 168
+  musicTempo: 168,
+
+  /* ---------- Selo "Produzido por Montaggio" (montaggio-selo.js) ----------
+     Aparece só nas telas fora da partida, no fim de cada tela (não cobre o jogo nem os controles).
+     cta = convite "Quero um jogo para o meu negócio", que abre o WhatsApp da Montaggio com a mensagem pronta. */
+  montaggio: {
+    enabled: true,
+    byText: 'Produzido por',
+    cta: true,
+    ctaText: 'Quero um jogo para o meu negócio',
+    whatsapp: '556993630689',          // (69) 9363-0689, só dígitos com 55 + DDD
+    message: 'Olá, quero um jogo para o meu negócio!',
+    siteUrl: '',                       // vazio = o logo não é link
+    places: [
+      { in: '#title .menu', tone: 'light' },
+      { in: '#gameover', tone: 'light' },
+      { in: '#saved', tone: 'light' },
+      { in: '#rankings', tone: 'light' }
+    ]
+  }
 };
 window.CONFIG = CONFIG;

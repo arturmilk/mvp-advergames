@@ -304,3 +304,11 @@ Os dados da Máquina do Mal ficam numa planilha separada, também na conta email
 * Para ver os jogos da Máquina do Mal no `dashboard/` do dono, entre nele com o `/exec` da Máquina do Mal e o token desse projeto
   (aparece no Registro de execução ao rodar `setup` ou `novoToken` no projeto `jogos - Máquina do Mal`).
 * Atualizar o `Code.gs`: cole nos **dois** projetos e publique em cada um (Gerenciar implantações › Nova versão).
+
+## 11. Selo "Produzido por Montaggio" (11/11/2026)
+
+Os dois painéis (`dashboard/` e `painel-maquina-do-mal/`) mostram no rodapé o selo "Produzido por montaggio", no lugar do
+antigo texto "montaggio · advergames". Nos painéis vai **só o selo**, sem o convite do WhatsApp (que fica só nos jogos).
+O código é o `montaggio-selo.js` da raiz (`../montaggio-selo.js`); a configuração fica em `montaggio` no `config.js` de cada
+painel (`enabled`, `byText`, `places`). O selo herda a cor do rodapé, então acompanha o tema claro e o escuro.
+Testado no Chromium com os dados de exemplo, em 360 px e 1280 px, claro e escuro: sem rolagem horizontal, console limpo.
