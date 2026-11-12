@@ -97,7 +97,6 @@ const CONFIG = {
 
   /* ---------- HUD ---------- */
   hud: { arrowScale: 0.5 },   // tamanho da seta 3D (era 0.72)
-  fullscreenOnTouch: true,    // tela cheia no primeiro toque em qualquer lugar (Android/computador; no iPhone, só pela Tela de Início)
 
   /* ---------- Câmera ---------- */
   // distance/height = parado; com velocidade a câmera se afasta (speedDistance), sobe (speedHeight), olha mais à frente
@@ -264,6 +263,17 @@ const CONFIG = {
   // motor: segurando o acelerador o som sobe marcha a marcha até o pico em rampSec; gears = fatia de tempo de cada marcha (soma 1)
   engineSound: { rampSec: 10, gears: [0.18, 0.22, 0.27, 0.33], dropRate: 2.5 },
   musicTempo: 176,     // trilha original de hard rock (riff em Mi com galope, bateria cheia); volume em musicVolume
+
+  /* ---------- Tela cheia (fullscreen.js; igual em todos os jogos) ----------
+     Android/iPad/computador: tela cheia de verdade no 1º toque. iPhone/Safari não tem tela cheia para páginas:
+     lá o jogo ocupa a tela toda (pseudo tela cheia), sem zoom de pinça. */
+  fullscreen: {
+    enabled: true,
+    onFirstTouch: true,        // pede tela cheia no primeiro toque em qualquer lugar
+    devices: 'all',          // 'touch' = só celular/tablet; 'all' = também no computador
+    orientation: 'landscape',   // trava depois de entrar em tela cheia (só Android); '' = não trava
+    blockZoom: true            // sem zoom de pinça (o iPhone ignora user-scalable=no)
+  },
 
   /* ---------- Selo "Produzido por Montaggio" (montaggio-selo.js) ----------
      Aparece só nas telas fora da partida, no fim de cada tela (não cobre o jogo nem os controles).

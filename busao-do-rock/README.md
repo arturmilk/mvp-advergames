@@ -120,10 +120,11 @@ Roadie de Respeito (30 = 3 lendas), Piloto do Apocalipse (60), Lenda da Estrada 
   entre as setas e os pedais. Ele pode cobrir a traseira do ônibus por alguns segundos, mas nunca a pista à frente nem o horizonte.
 
 ### Tela cheia
-`fullscreenOnTouch: true`: o primeiro toque em **qualquer lugar** da tela liga a tela cheia (e trava na horizontal onde o navegador deixa).
-Funciona no Android (Chrome, Samsung Internet) e no computador. **No iPhone o Safari não tem tela cheia para páginas** (só para vídeo): lá
-o jeito é o jogador tocar em Compartilhar › **Adicionar à Tela de Início** e abrir pelo ícone, que abre sem as barras do Safari (o
-`manifest.webmanifest` e as metas `apple-mobile-web-app-*` já estão prontos). No iPad o Safari aceita a tela cheia normal.
+Padrão de todos os jogos, explicado em [`TELA-CHEIA.md`](../TELA-CHEIA.md) (`fullscreen.js`; opções em `CONFIG.fullscreen`,
+que substitui o antigo `fullscreenOnTouch`). O primeiro toque em **qualquer lugar** liga a tela cheia e trava na horizontal
+onde o navegador deixa: Android (Chrome, Samsung Internet), iPad e computador (`devices: 'all'`, como antes). **No iPhone o
+Safari não tem tela cheia para páginas** (só para vídeo): o jogo já ocupa a tela toda, sem zoom de pinça. Nenhum aviso de
+"Adicionar à Tela de Início" aparece, em momento algum.
 
 ### QR code
 `ticket.quietWait: true`: o jogo confere e valida o QR **sem** a tela "Conferindo/Validando o QR code" (a regra de uma partida por QR e os
@@ -403,6 +404,13 @@ para a planilha). Simulação determinística com `__bus.seed/newGame/skipCount/
 
 Não testado: celular físico. Observação: como o cronômetro só começa na 1ª lenda, quem nunca pega a primeira fica na partida sem
 limite de tempo (dá para sair pela pausa).
+
+### Testes da tela cheia (12/11/2026)
+
+Chromium (Playwright), deitado 740×360, 844×390 e 932×430 (three.js r128 servido localmente, o cdnjs não abre no ambiente de teste), QR e coleta de dados como no `config.js` (nada foi para a planilha), simulação por hooks.
+User-agent de Android: um toque pede tela cheia **uma vez**, com `navigationUI: 'hide'`. User-agent de iPhone sem Fullscreen API:
+nenhum pedido, nenhum erro e nenhum aviso na tela (inclusive como Instagram e como app instalado). Sem rolagem horizontal, console limpo, partida simulada sem erro.
+Não testado: Safari de verdade num iPhone e Android físico.
 
 ## 8. Pendências antes de divulgar
 

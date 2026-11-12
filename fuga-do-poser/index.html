@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#140A1A">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="description" content="Máquina do Mal em: Fuga do Poser — fuja do poser chato e pegue as camisas!">
 <title>Máquina do Mal em: Fuga do Poser</title>
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="icon" href="assets/icon-192.png">
 <style>
 :root {
@@ -400,6 +402,7 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
 <div id="rotate">📱 Gire o celular para a horizontal (deitado) para jogar.</div>
 
 <script src="config.js"></script>
+<script src="fullscreen.js"></script>
 <script src="analytics.js"></script>
 <script src="ticket.js"></script>
 <script src="montaggio-selo.js"></script>
@@ -1345,7 +1348,7 @@ function goTitle() {
   const pl = player();
   $('#tBest').textContent = pl.best ? `🏅 Seu recorde: ${fmt(pl.best)} pts${pl.nick ? ' (' + pl.nick + ')' : ''}` : '';
 }
-function startFlow() { Sound.unlock(); Sound.sfx('click'); if (hasPlayed()) { toast(playedMsg(), 1800); return goTitle(); } showTutorial(true); }
+function startFlow() { if (window.GameFullscreen) GameFullscreen.enter(); Sound.unlock(); Sound.sfx('click'); if (hasPlayed()) { toast(playedMsg(), 1800); return goTitle(); } showTutorial(true); }
 function showTutorial(fromPlay) { $('#bTutBack').textContent = fromPlay ? 'Voltar' : 'Fechar'; $('#bStart').style.display = fromPlay ? '' : 'none'; showScreen('tutorial'); }
 function buildStatic() {
   $('#tTag').textContent = T.tagline;

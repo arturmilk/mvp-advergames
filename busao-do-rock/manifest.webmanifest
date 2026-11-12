@@ -4,6 +4,7 @@
   "lang": "pt-BR",
   "start_url": "./index.html",
   "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
   "orientation": "landscape",
   "background_color": "#140A1A",
   "theme_color": "#140A1A",

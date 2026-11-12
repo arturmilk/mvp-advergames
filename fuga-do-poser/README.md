@@ -146,6 +146,14 @@ controles de toque, e respeita a safe-area (fica dentro do padding das telas). Q
 | `montaggio.siteUrl` | se preenchido, o logo vira link |
 | `montaggio.places` | em quais telas entra (`in`), tom do texto (`tone`: `light`/`dark`) e `align: 'left'` |
 
+### Tela cheia (`fullscreen`)
+
+Padrão de todos os jogos, explicado em [`TELA-CHEIA.md`](../TELA-CHEIA.md) (`fullscreen.js` idêntico em todas as pastas).
+Android e iPad: tela cheia de verdade no 1º toque e no botão de começar, travando na horizontal (no computador não muda nada: `devices: 'touch'`).
+iPhone/Safari: não existe tela cheia para páginas; o jogo já ocupa a tela toda (pseudo tela cheia), sem zoom de pinça.
+Nenhum aviso de "Adicionar à Tela de Início" aparece, em momento algum.
+Opções em `CONFIG.fullscreen` (`enabled`, `onFirstTouch`, `devices`, `orientation`, `blockZoom`).
+
 ## 3. `localStorage` (prefixo `fp_`)
 
 | Chave | Conteúdo |
@@ -246,6 +254,13 @@ Selo presente em todas as telas listadas, sem rolagem horizontal, sem sobrepor n
 Durante a partida nenhum selo fica visível. Tocar no convite abre nova aba em
 `https://wa.me/556993630689?text=Ol%C3%A1%2C%20quero%20um%20jogo%20para%20o%20meu%20neg%C3%B3cio!` e a tela do jogo não muda.
 Não testado: celular físico (inclusive o app do WhatsApp abrindo de verdade) e iPhone com notch.
+
+### Testes da tela cheia (12/11/2026)
+
+Chromium (Playwright), deitado 740×360, 844×390 e 932×430, QR e coleta de dados como no `config.js` (nada foi para a planilha), simulação por hooks.
+User-agent de Android: um toque pede tela cheia **uma vez**, com `navigationUI: 'hide'`. User-agent de iPhone sem Fullscreen API:
+nenhum pedido, nenhum erro e nenhum aviso na tela (inclusive como Instagram e como app instalado). Sem rolagem horizontal, console limpo, partida simulada sem erro.
+Não testado: Safari de verdade num iPhone e Android físico.
 
 ## 7. Pendências antes de divulgar
 

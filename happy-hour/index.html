@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#2B2B2B">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="description" content="Rover Happy Hour — pegue os petiscos que caem do balcão! Um jogo da Rover Distribuidora.">
 <title>Rover Happy Hour</title>
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="icon" href="assets/logo_r.png">
 <style>
 :root {
@@ -373,6 +375,7 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--red); }
 <div id="rotate">📱 Gire o celular para a posição em pé para jogar.</div>
 
 <script src="config.js"></script>
+<script src="fullscreen.js"></script>
 <script src="analytics.js"></script>
 <script src="ticket.js"></script>
 <script src="montaggio-selo.js"></script>
@@ -1003,6 +1006,7 @@ function goTitle() {
   $('#tBest').textContent = pl.best ? `🏅 Seu recorde: ${fmt(pl.best)} pts${pl.nick ? ' (' + pl.nick + ')' : ''}` : '';
 }
 function startFlow() {
+  if (window.GameFullscreen) GameFullscreen.enter(); // tela cheia (fullscreen.js) dentro do toque de começar
   Sound.unlock(); Sound.sfx('click');
   if (!store.get(K.tutorialSeen, false)) showTutorial(true); else newGame();
 }

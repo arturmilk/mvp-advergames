@@ -9,8 +9,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Rover — A Entrega</title>
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="icon" href="assets/icon-192.png">
 <script src="config.js"></script>
+<script src="fullscreen.js"></script>
 <script src="analytics.js"></script>
 <script src="ticket.js"></script>
 <script src="montaggio-selo.js"></script>
@@ -1322,6 +1324,7 @@ function startPlay() {
   openTutorial(true); // pop-up "Como jogar" sempre antes de começar
 }
 function beginGame() {
+  if (window.GameFullscreen) GameFullscreen.enter(); // tela cheia (fullscreen.js) dentro do toque de começar
   if (hasPlayed()) return goTitle();
   if (!TK.allowStart()) return; // QR code de uso único (ticket.js)
   markPlayed(); show(null); paused = false; newGame();

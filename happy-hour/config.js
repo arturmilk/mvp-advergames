@@ -158,6 +158,17 @@ const CONFIG = {
   sfxVolume: 0.6,
   musicTempo: 112, // BPM do sambinha de boteco
 
+  /* ---------- Tela cheia (fullscreen.js; igual em todos os jogos) ----------
+     Android/iPad/computador: tela cheia de verdade no 1º toque. iPhone/Safari não tem tela cheia para páginas:
+     lá o jogo ocupa a tela toda (pseudo tela cheia), sem zoom de pinça. */
+  fullscreen: {
+    enabled: true,
+    onFirstTouch: true,        // pede tela cheia no primeiro toque em qualquer lugar
+    devices: 'touch',          // 'touch' = só celular/tablet; 'all' = também no computador
+    orientation: 'portrait',   // trava depois de entrar em tela cheia (só Android); '' = não trava
+    blockZoom: true            // sem zoom de pinça (o iPhone ignora user-scalable=no)
+  },
+
   /* ---------- Selo "Produzido por Montaggio" (montaggio-selo.js) ----------
      Aparece só nas telas fora da partida, no fim de cada tela (não cobre o jogo nem os controles).
      cta = convite "Quero um jogo para o meu negócio", que abre o WhatsApp da Montaggio com a mensagem pronta. */

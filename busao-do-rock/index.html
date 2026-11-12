@@ -11,6 +11,7 @@
 <meta name="description" content="Máquina do Mal em: Busão do Rock — resgate 10 lendas do rock pela cidade antes do show das 19h!">
 <title>Máquina do Mal em: Busão do Rock</title>
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
 <link rel="icon" href="assets/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Special+Elite&family=UnifrakturMaguntia&display=swap">
@@ -592,6 +593,7 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="config.js"></script>
+<script src="fullscreen.js"></script>
 <script src="analytics.js"></script>
 <script src="ticket.js"></script>
 <script src="montaggio-selo.js"></script>
@@ -1665,27 +1667,9 @@ function buildStatic() {
   $('#bRetry').textContent = '↻ ' + T.retry;
   $('#rkTop').textContent = C.publicTop; $('#admMax').textContent = C.leaderboardMax;
 }
-// COMEÇAR: tela cheia + áudio + partida (o navegador só libera os dois dentro do toque)
-function goFullscreen() {
-  const el = document.documentElement;
-  try {
-    const req = el.requestFullscreen || el.webkitRequestFullscreen;
-    if (req && !document.fullscreenElement && !document.webkitFullscreenElement) {
-      const p = req.call(el, { navigationUI: 'hide' });
-      const lock = () => { try { const o = screen.orientation; if (o && o.lock) o.lock('landscape').catch(() => {}); } catch (e) {} };
-      if (p && p.then) p.then(lock).catch(() => {}); else lock();
-    }
-  } catch (e) {}
-}
-// tela cheia no primeiro toque em qualquer lugar (o navegador só permite dentro de um toque/clique).
-// iPhone: o Safari não tem tela cheia para páginas; ali o jeito é 'Adicionar à Tela de Início' (manifest display: fullscreen).
-if (C.fullscreenOnTouch !== false) {
-  const fsTap = e => {
-    if (!e.isTrusted || (navigator.userActivation && !navigator.userActivation.isActive)) return; // só toque de verdade
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) goFullscreen();
-  };
-  ['pointerup', 'touchend', 'click'].forEach(t => addEventListener(t, fsTap, { capture: true, passive: true }));
-}
+// COMEÇAR: tela cheia + áudio + partida (o navegador só libera os dois dentro do toque).
+// A tela cheia (1º toque, trava de paisagem, aviso do iPhone) mora no fullscreen.js, com as opções em CONFIG.fullscreen.
+function goFullscreen() { if (window.GameFullscreen) GameFullscreen.enter(); }
 function startFlow() {
   if (hasPlayed()) { toast(playedMsg(), 1800); return goTitle(); }
   goFullscreen(); Sound.unlock(); Sound.sfx('click'); newGame();
