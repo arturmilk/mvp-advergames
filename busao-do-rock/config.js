@@ -26,14 +26,15 @@ const CONFIG = {
 
   /* ---------- Pontos ---------- */
   points: {
-    rescue: 10,          // por lenda resgatada
-    winPerSecond: 1      // bônus na vitória: pontos por segundo que sobrou no cronômetro
+    rescue: 8,           // por lenda resgatada (10 lendas = 80)
+    delivery: 20,        // ao levar as 10 lendas até a loja Máquina do Mal (80 + 20 = 100)
+    winPerSecond: 0      // bônus por segundo que sobrou na vitória: 0 = desligado, o máximo é 100 (pedido do Arthur, 12/11)
   },
   goals: [               // título no fim da partida (min = pontuação mínima)
-    { min: 0,   name: 'Motorista de Primeira Viagem' },   // 10 pts por lenda: 30 = 3 lendas
-    { min: 30,  name: 'Roadie de Respeito' },
-    { min: 60,  name: 'Piloto do Apocalipse' },
-    { min: 100, name: 'Lenda da Estrada' }                // as 10 lendas
+    { min: 0,   name: 'Motorista de Primeira Viagem' },   // 8 pts por lenda: 24 = 3 lendas
+    { min: 24,  name: 'Roadie de Respeito' },             // 3 lendas
+    { min: 48,  name: 'Piloto do Apocalipse' },           // 6 lendas
+    { min: 80,  name: 'Lenda da Estrada' }                // as 10 lendas, sem chegar à loja (quem chega ganha winTitle)
   ],
   winTitle: 'O Show Vai Começar!',
 
@@ -173,11 +174,12 @@ const CONFIG = {
     howTitle: 'Como jogar',
     howTips: [
       'Siga a SETA verde e amarela no topo da tela: ela aponta para a próxima lenda e mostra a distância.',
-      'Você tem só 30 segundos, mas o tempo só começa a contar depois que a 1ª lenda embarca. Passe o ônibus pela zona neon no chão para embarcar a lenda: +10 segundos e +10 pontos.',
-      'Depois da 10ª lenda, a seta aponta de volta para a loja Máquina do Mal. Chegue lá antes do tempo zerar!',
+      'Você tem só 30 segundos, mas o tempo só começa a contar depois que a 1ª lenda embarca. Passe o ônibus pela zona neon no chão para embarcar a lenda: +10 segundos e +8 pontos.',
+      'Depois da 10ª lenda, a seta aponta de volta para a loja Máquina do Mal. Chegue lá antes do tempo zerar: a entrega vale +20 pontos e fecha os 100!',
       'Celular: setas à esquerda para virar; à direita, o pedal com seta para cima acelera e o com seta para baixo freia e dá ré. Rápido, virando e freando, o busão faz drift! Pode subir na calçada, mas poste, árvore e prédio param o ônibus. Teclado: W A S D ou setas; H buzina.'
     ],
     goStore: 'TODO MUNDO A BORDO! Volta pra loja!',
+    deliveryTag: 'ENTREGA NA MÁQUINA DO MAL', // letreiro dos pontos da entrega (points.delivery)
     winTitle: 'Parabéns! Você zerou o Busão do Rock!',
     winLine: 'As 10 lendas subiram no palco da Máquina do Mal. Que noite!',
     loseTitle: 'Deu 19:00...',
@@ -208,7 +210,7 @@ const CONFIG = {
   analytics: {
     game: 'busao-do-rock', // não troque: é a chave deste jogo na planilha
     endpoint: 'https://script.google.com/macros/s/AKfycbw24WT-cKnY3N0KLAg3jOtrtRoG_r1i0uLnizYLvMfOCgadOSZQYExGAKBKfH20pk5Y1Q/exec',
-    milestones: [30, 60, 100, 120]
+    milestones: [24, 48, 80, 100]
   },
 
   /* ---------- QR code de uso único (ticket.js) ----------

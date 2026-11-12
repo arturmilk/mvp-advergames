@@ -74,7 +74,7 @@ Multitoque (virar e acelerar ao mesmo tempo), `touch-action: none` no jogo todo,
 iPhone respeitada. Só toque e segurar, sem swipe. A partida pausa sozinha quando o app perde o foco.
 
 ### Regras
-* **Tempo:** começa com **30 s** (`time.start`). Cada resgate soma **+10 s** (`time.bonus`) e **+10 pontos** (`points.rescue`).
+* **Tempo:** começa com **30 s** (`time.start`). Cada resgate soma **+10 s** (`time.bonus`) e **+8 pontos** (`points.rescue`).
   **O cronômetro só começa a contar depois que a 1ª lenda embarca** (`time.startOnFirstPickup: true`): até lá ele fica parado em 0:30 na
   HUD e o relógio do jogo parado em 18:00. A **1ª lenda** aparece mais perto da largada, a **60–120 m** (`pickup.firstMinDist/firstMaxDist`);
   as outras seguem a 110–240 m uma da outra (`pickup.minDist/maxDist`). Se ficar difícil demais, o ajuste mais suave é subir
@@ -98,7 +98,8 @@ iPhone respeitada. Só toque e segurar, sem swipe. A partida pausa sozinha quand
   fala da lenda e a seta passa para o próximo.
 * **Volta para a loja:** depois da 10ª lenda, a seta aponta para a fachada da Máquina do Mal ("TODO MUNDO A BORDO! Volta pra loja!").
 * **Vitória:** chegar à zona em frente à loja antes do tempo zerar. A câmera gira em volta da loja com as 10 lendas pulando na
-  calçada (o show) e o solo de guitarra. Bônus: **1 ponto por segundo que sobrou** (`points.winPerSecond`).
+  calçada (o show) e o solo de guitarra. A entrega vale **+20 pontos** (`points.delivery`, letreiro "ENTREGA NA MÁQUINA DO MAL") e
+  fecha os 100. O bônus por segundo que sobrou foi **desligado** (`points.winPerSecond: 0`): o máximo é 100.
 * **Derrota:** o tempo zera ("Deu 19:00..."). A tela de fim tem **TENTAR NOVAMENTE**.
 * A rota (onde cada lenda está) é sorteada a cada partida: a 1ª a 60–120 m da largada e as outras com 110 a 240 m entre um resgate e
   o próximo (`pickup.minDist/maxDist`). A **ordem** das lendas é a da lista `characters` do `config.js`: Raul Seixas primeiro e
@@ -107,9 +108,11 @@ iPhone respeitada. Só toque e segurar, sem swipe. A partida pausa sozinha quand
 * Bater de frente num prédio faz o ônibus quicar para trás e tremer a tela; raspar de lado só freia um pouco.
 
 ### Pontos e títulos
-10 por lenda (máximo 100) + 1 ponto por segundo que sobrou na vitória. Títulos (`goals`): Motorista de Primeira Viagem (0),
-Roadie de Respeito (30 = 3 lendas), Piloto do Apocalipse (60), Lenda da Estrada (100 = as 10 lendas). Quem vence ganha
-**O Show Vai Começar!**
+**8 por lenda** (10 lendas = 80) + **20 na entrega** na loja Máquina do Mal = **100**. Pegar todas as lendas e não chegar à loja
+fica em 80; os 100 só fecham com a entrega. **Máximo: 100** (o bônus por segundo que sobrou está desligado, `points.winPerSecond: 0`).
+No ranking do aparelho, empate de pontos é desempatado por quem fez **mais rápido** (`duration`). Títulos (`goals`): Motorista de
+Primeira Viagem (0), Roadie de Respeito (24 = 3 lendas), Piloto do Apocalipse (48 = 6 lendas), Lenda da Estrada (80 = as 10 lendas
+sem a entrega). Quem vence ganha **O Show Vai Começar!**
 
 ### Onde fica cada coisa na tela (a pista e o horizonte ficam sempre livres)
 * **Alto, à esquerda:** logo, tempo (sem rótulo), barra de tempo, horário do jogo (18:00→19:00) e **velocímetro**.
@@ -139,7 +142,7 @@ fonte, logo ou elemento de nenhum jogo. Sem gradiente "de app", sem vidro fosco,
 * **Esquerda:** logo da Máquina do Mal; placa de TEMPO inclinada com número grande (pisca em vermelho nos 10 s finais) e barra de tempo
   listrada (cheia = `time.meterMax`, 60 s); relógio 18:00→19:00 numa tira de fita crepe.
 * **Direita:** buzina, som e pausa (ícones SVG desenhados à mão no código); PONTOS em número grande; LENDAS com 10 riscos de contagem.
-* **Resgate:** letreiro de manobra embaixo no meio ("RESGATE: OZZY OSBOURNE", "+10 PTS +10 S"), o tempo e os pontos dão um tranco, e a
+* **Resgate:** letreiro de manobra embaixo no meio ("RESGATE: OZZY OSBOURNE", "+8 PTS +10 S"), o tempo e os pontos dão um tranco, e a
   fala da lenda aparece num flyer preso com fita.
 * **Controles:** setas em placas pretas com contorno; pedais com etiqueta de fita amarela; velocímetro no meio, embaixo.
 * **Telas** (HQ, como jogar, fim, ranking, pausa): botões e cartões com cantos secos, papel granulado e sombra dura.
@@ -282,7 +285,7 @@ O ônibus não tem mais o letreiro "ROCK" na traseira. O ônibus é montado em 3
 ## 6. Dados, dashboard e QR code
 
 * `analytics.game = 'busao-do-rock'`, mesmo endpoint `/exec` dos outros jogos. Eventos: `start` (ao tocar em COMEÇAR),
-  `milestone` (cada lenda resgatada vira "nível" com o nome dela; pontos nos marcos 30, 60, 100 e 120),
+  `milestone` (cada lenda resgatada vira "nível" com o nome dela; pontos nos marcos 24, 48, 80 e 100; o de 100 só acontece com a entrega),
   `end` e `save`.
 * Colunas: `motivo_fim` = `vitoria`, `tempo` ou `encerrou`; `nivel` e `itens` = lendas resgatadas; `erros` = batidas de frente;
   `meta` = título.
@@ -411,6 +414,23 @@ Chromium (Playwright), deitado 740×360, 844×390 e 932×430 (three.js r128 serv
 User-agent de Android: um toque pede tela cheia **uma vez**, com `navigationUI: 'hide'`. User-agent de iPhone sem Fullscreen API:
 nenhum pedido, nenhum erro e nenhum aviso na tela (inclusive como Instagram e como app instalado). Sem rolagem horizontal, console limpo, partida simulada sem erro.
 Não testado: Safari de verdade num iPhone e Android físico.
+
+### Testes da pontuação com entrega (12/11/2026)
+
+Chromium (Playwright) com WebGL por software, deitado 740×360, 932×430 e 1000×480, Three.js r128 servido localmente, coleta no
+`analytics/dev_server.py` (porta 8790) pelo `?analytics=`; o endpoint real foi bloqueado no teste (nada foi para a planilha).
+Simulação determinística com `__bus.seed/newGame/skipCount/toTarget/step`.
+
+| # | Cenário | Resultado |
+|---|---|---|
+| 42 | Parcial | 3 lendas e sair pela pausa: 8, 16, 24 → **24** pontos ✔ |
+| 43 | Todas sem entrega | 10 lendas e sair pela pausa: **80** (HUD "80"), título "Lenda da Estrada" ✔ |
+| 44 | Entrega | 10 lendas + loja: 80 + 20 = **100** exatos (bônus de tempo desligado), letreiro "ENTREGA NA MÁQUINA DO MAL +20 PTS", tela de fim "100 · O Show Vai Começar!" e "Entrega na loja: +20." sem linha de bônus ✔ |
+| 45 | Desempate | Duas vitórias com 100: no ranking a mais rápida fica na frente ✔ |
+| 46 | Dados | Marcos de pontos 24, 48 e 80 durante a coleta; o de **100 só chega na entrega**; nenhum marco acima de 100; `end` com 100 ✔ |
+| 47 | Layout | Sem rolagem horizontal nos 3 tamanhos; console sem erros ✔ |
+
+Não testado: celular físico.
 
 ## 8. Pendências antes de divulgar
 

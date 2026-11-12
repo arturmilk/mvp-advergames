@@ -630,7 +630,7 @@ const store = {
 };
 const LB = {
   all() { const a = store.get(K.leaderboard, []); return Array.isArray(a) ? a.filter(e => e && typeof e.score === 'number') : []; },
-  sort(a) { return a.sort((x, y) => y.score - x.score || String(x.date).localeCompare(String(y.date))); },
+  sort(a) { return a.sort((x, y) => y.score - x.score || (x.duration ?? 1e9) - (y.duration ?? 1e9) || String(x.date).localeCompare(String(y.date))); },  // empate: quem fez mais rápido
   add(entry) {
     const a = this.sort(this.all().concat(entry));
     while (a.length > C.leaderboardMax) a.pop();
@@ -1220,7 +1220,7 @@ function freshState(state = 'menu') {
   return {
     state, t: 0, elapsed: 0, timerT: 0, timeLeft: C.time.start, countT: 0, score: 0, rescued: 0, idx: 0, route: null,
     bus: { x: W.store ? W.store.x - 24 : 0, z: s + RW / 4, h: Math.PI / 2, vh: Math.PI / 2, v: 0, steer: 0, roll: 0, pitch: 0, slip: 0, y: 0 },
-    crashes: 0, dist: 0, maxV: 0, clockMin: C.time.clockStart, warnSec: 99, taunted: {}, tauntPool: [], hornT: 0, overT: 0, endReason: '', win: false, bonus: 0, crashT: 0, shake: 0,
+    crashes: 0, dist: 0, maxV: 0, clockMin: C.time.clockStart, warnSec: 99, taunted: {}, tauntPool: [], hornT: 0, overT: 0, endReason: '', win: false, bonus: 0, delivery: 0, crashT: 0, shake: 0,
     cam: null, lastCount: -1
   };
 }
@@ -1390,7 +1390,9 @@ function board() {
 function victory() {
   if (G.state !== 'play') return;
   G.win = true; G.idx = NLEG + 1; placeZone();
+  G.delivery = C.points.delivery || 0; G.score += G.delivery;   // entrega na loja: fecha os 100
   G.bonus = Math.round(Math.max(0, G.timeLeft) * C.points.winPerSecond); G.score += G.bonus;
+  if (G.delivery) plus(C.texts.deliveryTag || 'ENTREGA NA MÁQUINA DO MAL', G.delivery);
   Sound.music(false); Sound.sfx('win');
   // o show: as 10 lendas no palco em frente à loja
   W.crowd = CHARS.map((ch, i) => {
@@ -1621,9 +1623,9 @@ function taunt(ch) {
 function hideTalk() { clearTimeout(talkT); $('#talk').classList.remove('on'); }
 function plus(name, pts, secs) {
   const p = $('#plus'); p.querySelector('.pn').textContent = name;
-  p.querySelector('.pv').innerHTML = `<span>+${pts} <small>PTS</small></span><span>+${secs} <small>S</small></span>`;
+  p.querySelector('.pv').innerHTML = `<span>+${pts} <small>PTS</small></span>` + (secs ? `<span>+${secs} <small>S</small></span>` : '');
   p.classList.remove('on'); void p.offsetWidth; p.classList.add('on');
-  for (const id of ['#hScore', '#hTime']) { const el = $(id); el.classList.remove(id === '#hTime' ? 'gain' : 'bump'); void el.offsetWidth; el.classList.add(id === '#hTime' ? 'gain' : 'bump'); }
+  for (const id of secs ? ['#hScore', '#hTime'] : ['#hScore']) { const el = $(id); el.classList.remove(id === '#hTime' ? 'gain' : 'bump'); void el.offsetWidth; el.classList.add(id === '#hTime' ? 'gain' : 'bump'); }
 }
 function showCount(txt) { const c = $('#count'); c.textContent = txt; c.classList.toggle('go', txt === 'VAI!'); c.classList.remove('on'); void c.offsetWidth; c.classList.add('on'); if (txt === 'VAI!') setTimeout(() => c.classList.remove('on'), 800); }
 function toggleMute() { const m = Sound.toggle(); $('#hMute').innerHTML = m ? ICON.mute : ICON.sound; $('#bPMute').textContent = m ? 'Ligar som' : 'Desligar som'; }
@@ -1678,7 +1680,7 @@ function showGameOver() {
   setHud(false); hideTalk(); showScreen('gameover');
   const win = G.endReason === 'vitoria';
   $('#goTitle').textContent = win ? T.winTitle : G.endReason === 'tempo' ? T.loseTitle : T.quitTitle;
-  $('#goLine').textContent = win ? T.winLine + (G.bonus ? ` Bônus de tempo: +${fmt(G.bonus)}.` : '') : '';
+  $('#goLine').textContent = win ? T.winLine + (G.delivery ? ` Entrega na loja: +${fmt(G.delivery)}.` : '') + (G.bonus ? ` Bônus de tempo: +${fmt(G.bonus)}.` : '') : '';
   // quem não zerou vê as lendas que ficaram para trás, e a primeira delas reclama
   const miss = win ? [] : CHARS.slice(G.rescued);
   $('#gameover .go-card').classList.toggle('has-miss', miss.length > 0);
