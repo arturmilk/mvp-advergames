@@ -75,8 +75,10 @@ iPhone respeitada. Só toque e segurar, sem swipe. A partida pausa sozinha quand
 
 ### Regras
 * **Tempo:** começa com **30 s** (`time.start`). Cada resgate soma **+10 s** (`time.bonus`) e **+10 pontos** (`points.rescue`).
-  Com 30 s o primeiro resgate precisa sair rápido: a rota sorteia a próxima lenda a 110–240 m (`pickup.minDist/maxDist`). Se ficar
-  difícil demais, o ajuste mais suave é subir `time.start` para 40 ou baixar `pickup.maxDist`.
+  **O cronômetro só começa a contar depois que a 1ª lenda embarca** (`time.startOnFirstPickup: true`): até lá ele fica parado em 0:30 na
+  HUD e o relógio do jogo parado em 18:00. A **1ª lenda** aparece mais perto da largada, a **60–120 m** (`pickup.firstMinDist/firstMaxDist`);
+  as outras seguem a 110–240 m uma da outra (`pickup.minDist/maxDist`). Se ficar difícil demais, o ajuste mais suave é subir
+  `time.start` para 40 ou baixar `pickup.maxDist`.
 * **Calçada e batidas:** o ônibus pode subir na calçada (sobe 25 cm). O que bloqueia é o prédio (miolo do quarteirão), os **postes** e as
   **árvores**: bater de frente em qualquer um deles **para o ônibus** (`bus.hitStop`); raspar de lado só freia um pouco. Praças e o
   estacionamento da loja são livres (só as árvores e o prédio da loja bloqueiam).
@@ -98,7 +100,9 @@ iPhone respeitada. Só toque e segurar, sem swipe. A partida pausa sozinha quand
 * **Vitória:** chegar à zona em frente à loja antes do tempo zerar. A câmera gira em volta da loja com as 10 lendas pulando na
   calçada (o show) e o solo de guitarra. Bônus: **1 ponto por segundo que sobrou** (`points.winPerSecond`).
 * **Derrota:** o tempo zera ("Deu 19:00..."). A tela de fim tem **TENTAR NOVAMENTE**.
-* A rota (onde cada lenda está) é sorteada a cada partida, com 110 a 240 m entre um resgate e o próximo (`pickup.minDist/maxDist`).
+* A rota (onde cada lenda está) é sorteada a cada partida: a 1ª a 60–120 m da largada e as outras com 110 a 240 m entre um resgate e
+  o próximo (`pickup.minDist/maxDist`). A **ordem** das lendas é a da lista `characters` do `config.js`: Raul Seixas primeiro e
+  **Ozzy Osbourne por último**.
   A cidade é sempre a mesma (`city.seed`), para o jogador aprender o caminho.
 * Bater de frente num prédio faz o ônibus quicar para trás e tremer a tela; raspar de lado só freia um pouco.
 
@@ -155,12 +159,12 @@ partida por aparelho.
 
 | O quê | Onde |
 |---|---|
-| Tempo inicial, bônus, aviso final, contagem, relógio | `time.*` |
+| Tempo inicial, bônus, aviso final, contagem, relógio, cronômetro só depois da 1ª lenda | `time.*` (`startOnFirstPickup`) |
 | Pontos por resgate, bônus da vitória, títulos | `points.*`, `goals`, `winTitle` |
 | Física do ônibus (velocidade, aceleração, freio, ré, esterço, inclinação, quique) | `bus.*` |
 | Câmera (distância, altura, suavidade, campo de visão; mais alta e afastada desde 09/11, e **dinâmica**: com velocidade se afasta, sobe, olha mais à frente e abre o campo de visão — `speedDistance`, `speedHeight`, `speedLookAhead`, `speedFov`) | `camera.*` |
 | Cidade (quarteirões, ruas, alturas, praças, postes, árvores, posição da loja, semente) | `city.*` |
-| Zona de resgate e distância entre resgates | `pickup.*` |
+| Zona de resgate, distância entre resgates e da 1ª lenda até a largada | `pickup.*` (`firstMinDist/firstMaxDist`) |
 | Desempenho (resolução máxima, neblina, antialias) | `render.*` |
 | Personagens, ordem, cores, falas e imagens | `characters[]` |
 | Altura das lendas em pé na calçada | `charHeight` (m, padrão 4,2; o ônibus tem ~3,4) |
@@ -380,6 +384,25 @@ Selo presente em todas as telas listadas, sem rolagem horizontal, sem sobrepor n
 Durante a partida nenhum selo fica visível. Tocar no convite abre nova aba em
 `https://wa.me/556993630689?text=Ol%C3%A1%2C%20quero%20um%20jogo%20para%20o%20meu%20neg%C3%B3cio!` e a tela do jogo não muda.
 Não testado: celular físico (inclusive o app do WhatsApp abrindo de verdade) e iPhone com notch.
+
+
+### Testes da ordem e do cronômetro (12/11/2026)
+
+Chromium (Playwright) com WebGL por software, deitado, Three.js r128 servido localmente, coleta de dados interceptada no teste (nada foi
+para a planilha). Simulação determinística com `__bus.seed/newGame/skipCount/step/nearTarget`.
+
+| # | Cenário | Resultado |
+|---|---|---|
+| 35 | Ordem | Rota completa (seed 11): Raul, Kurt, Chorão, Rita, SOAD, Slipknot, Sepultura, Angus, Axl e **Ozzy em 10/10**, depois "VOLTA PRA LOJA" e vitória ✔ |
+| 36 | 1ª lenda mais perto | 40 partidas (seeds 1–40): 1ª lenda entre 60 e 119 m da largada (antes, 30 seeds: 114 a 236 m) ✔ |
+| 37 | Cronômetro parado | Depois do VAI!, 20 s sem pegar ninguém: `timeLeft` 30, HUD "0:30", relógio 18:00, sem sirene nem provocação ✔ |
+| 38 | Cronômetro andando | Embarcou a 1ª: 30 + 10 = 40 s; 5 s depois, 35 s e relógio andando ✔ |
+| 39 | Derrota | 15 s parado + 1ª lenda + 45 s: "tempo", relógio em 19:00, `elapsed` 56 s (duração real) e cronômetro 40 s ✔ |
+| 40 | Dados | `start`, marcos `nivel` 1–10 com o Ozzy no 10, marcos de pontos e `end` (`vitoria`). O `sec` dos marcos e do `end` é a duração **real** da partida, contando o tempo antes da 1ª lenda ✔ |
+| 41 | Layout | 740×360, 932×430 e 1000×480: HUD com 0:30 parado e "1/10 · RAUL SEIXAS", sem rolagem horizontal; console sem erros do jogo ✔ |
+
+Não testado: celular físico. Observação: como o cronômetro só começa na 1ª lenda, quem nunca pega a primeira fica na partida sem
+limite de tempo (dá para sair pela pausa).
 
 ## 8. Pendências antes de divulgar
 

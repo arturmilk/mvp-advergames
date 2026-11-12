@@ -1216,7 +1216,7 @@ const inp = { left: false, right: false, gas: false, brake: false };
 function freshState(state = 'menu') {
   const s = roadC(CT.storeBlock[1] + 1);
   return {
-    state, t: 0, elapsed: 0, timeLeft: C.time.start, countT: 0, score: 0, rescued: 0, idx: 0, route: null,
+    state, t: 0, elapsed: 0, timerT: 0, timeLeft: C.time.start, countT: 0, score: 0, rescued: 0, idx: 0, route: null,
     bus: { x: W.store ? W.store.x - 24 : 0, z: s + RW / 4, h: Math.PI / 2, vh: Math.PI / 2, v: 0, steer: 0, roll: 0, pitch: 0, slip: 0, y: 0 },
     crashes: 0, dist: 0, maxV: 0, clockMin: C.time.clockStart, warnSec: 99, taunted: {}, tauntPool: [], hornT: 0, overT: 0, endReason: '', win: false, bonus: 0, crashT: 0, shake: 0,
     cam: null, lastCount: -1
@@ -1226,11 +1226,13 @@ function makeRoute() {
   const st = W.store, used = [], route = [];
   let px = G.bus.x, pz = G.bus.z;
   const cand = W.spots.filter(s => Math.hypot(s.x - st.x, s.z - st.z) > 30);
-  const P = C.pickup, mid = (P.minDist + P.maxDist) / 2;
+  const P = C.pickup;
   for (let k = 0; k < NLEG; k++) {
+    // a 1ª lenda pode ter uma faixa própria, mais perto da largada (pickup.firstMinDist/firstMaxDist)
+    const lo = k === 0 && P.firstMinDist != null ? P.firstMinDist : P.minDist, hi = k === 0 && P.firstMaxDist != null ? P.firstMaxDist : P.maxDist, md = (lo + hi) / 2;
     const free = cand.filter(s => !used.includes(s) && used.every(u => Math.hypot(u.x - s.x, u.z - s.z) > 35));
-    let ok = free.filter(s => { const d = Math.hypot(s.x - px, s.z - pz); return d >= P.minDist && d <= P.maxDist; });
-    if (!ok.length) ok = free.slice().sort((a, b) => Math.abs(Math.hypot(a.x - px, a.z - pz) - mid) - Math.abs(Math.hypot(b.x - px, b.z - pz) - mid)).slice(0, 3);
+    let ok = free.filter(s => { const d = Math.hypot(s.x - px, s.z - pz); return d >= lo && d <= hi; });
+    if (!ok.length) ok = free.slice().sort((a, b) => Math.abs(Math.hypot(a.x - px, a.z - pz) - md) - Math.abs(Math.hypot(b.x - px, b.z - pz) - md)).slice(0, 3);
     const s = ok[Math.floor(R() * ok.length)];
     used.push(s); route.push(s); px = s.x; pz = s.z;
   }
@@ -1268,10 +1270,13 @@ function update(dt) {
     updateCamera(dt); return;
   }
   if (G.state === 'play') {
-    G.elapsed += dt; G.timeLeft -= dt;
+    // elapsed = duração real da partida (dados, ranking); o cronômetro só anda depois da 1ª lenda (time.startOnFirstPickup)
+    G.elapsed += dt;
+    const timerOn = !C.time.startOnFirstPickup || G.rescued > 0;
+    if (timerOn) { G.timerT += dt; G.timeLeft -= dt; }
     drive(dt);
     // relógio do jogo: 18:00 → 19:00 (nunca volta; chega a 19:00 quando o tempo zera)
-    const frac = G.elapsed / (G.elapsed + Math.max(0, G.timeLeft));
+    const frac = G.timerT / (G.timerT + Math.max(0, G.timeLeft));
     G.clockMin = Math.max(G.clockMin, C.time.clockStart + (C.time.clockEnd - C.time.clockStart) * frac);
     const sec = Math.ceil(G.timeLeft);
     if (sec <= C.time.warnAt && sec > 0 && sec < G.warnSec) { G.warnSec = sec; Sound.sfx('siren'); }

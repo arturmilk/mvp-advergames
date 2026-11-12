@@ -15,6 +15,7 @@ const CONFIG = {
   /* ---------- Tempo e relógio ---------- */
   time: {
     start: 30,           // segundos no começo da partida
+    startOnFirstPickup: true, // true = o cronômetro fica parado no valor cheio até buscar a 1ª lenda (o relógio 18:00 também)
     bonus: 10,           // segundos ganhos a cada resgate
     meterMax: 60,        // tempo que enche a barra de tempo da HUD
     warnAt: 10,          // a partir daqui o cronômetro pisca e a sirene toca a cada segundo
@@ -110,6 +111,8 @@ const CONFIG = {
     maxSpeed: 0,         // 0 = embarca em qualquer velocidade; ex.: 8 = precisa passar devagar (até 8 m/s)
     minDist: 110,        // distância mínima (m, em linha reta) entre um resgate e o próximo
     maxDist: 240,        // distância máxima
+    firstMinDist: 60,    // só a 1ª lenda: distância mínima (m, em linha reta) da largada do ônibus
+    firstMaxDist: 120,   // só a 1ª lenda: distância máxima (antes era a mesma dos outros, 110–240 m)
     lineTime: 3.4        // segundos que o balão de fala fica na tela
   },
 
@@ -124,10 +127,9 @@ const CONFIG = {
      image: caminho da imagem final (PNG/webp com fundo transparente, em pé, de frente), ex.: 'assets/chars/ozzy.webp'.
      Vazio = boneco provisório simples na cor `color` com o nome escrito.
      Todas as imagens têm o MESMO canvas (1024×512, pés na borda de baixo; tools/process_sprites.py), então saem na mesma escala.
-     line = fala cômica no balão quando embarca. A ordem da lista é a ordem dos resgates. */
+     line = fala cômica no balão quando embarca. A ordem da lista é a ordem dos resgates (o Ozzy fica por último). */
   charHeight: 4.2,   // altura (m) do sprite em pé na calçada; o ônibus tem ~3,4 m. Maior = reconhece de mais longe
   characters: [
-    { id: 'ozzy',     name: 'Ozzy Osbourne', color: '#5B3A8C', image: 'assets/chars/ozzy.webp', line: 'Eu tava procurando um morcego... tava com fome, entende?... SHAROOOON!' },
     { id: 'raul',     name: 'Raul Seixas',   color: '#8C5A2B', image: 'assets/chars/raul.webp', line: 'Tentei outra vez e você finalmente chegou!' },
     { id: 'kurt',     name: 'Kurt Cobain',   color: '#C23A2B', image: 'assets/chars/kurt.webp', line: 'Que cheiro é esse? Ah, é espírito de busão!' },
     { id: 'chorao',   name: 'Chorão',        color: '#2B7AC2', image: 'assets/chars/chorao.webp', line: 'O skate me ensinou a chegar até atrasado, truta!' },
@@ -136,7 +138,8 @@ const CONFIG = {
     { id: 'slipknot', name: 'Slipknot',      color: '#C2702B', image: 'assets/chars/slipknot.webp', line: 'Tô de máscara pra ninguém ver que eu esperei uma hora no ponto.' },
     { id: 'sepultura',name: 'Sepultura',     color: '#3A7A2B', image: 'assets/chars/sepultura.webp', line: 'Roots, bloody roots! Raiz mesmo é esperar ônibus no sol!' },
     { id: 'angus',    name: 'Angus Young',   color: '#1F3F8C', image: 'assets/chars/angus.webp', line: 'Cuidado, motorista, essa avenida é uma Highway to Hell!' },
-    { id: 'axl',      name: 'Axl Rose',      color: '#B0151B', image: 'assets/chars/axl.webp', line: 'Welcome to the jungle, baby! Selva mesmo é esse trânsito!' }
+    { id: 'axl',      name: 'Axl Rose',      color: '#B0151B', image: 'assets/chars/axl.webp', line: 'Welcome to the jungle, baby! Selva mesmo é esse trânsito!' },
+    { id: 'ozzy',     name: 'Ozzy Osbourne', color: '#5B3A8C', image: 'assets/chars/ozzy.webp', line: 'Eu tava procurando um morcego... tava com fome, entende?... SHAROOOON!' }
   ],
 
   /* ---------- Felipe (protagonista, aparece só na HQ) — PLACEHOLDER ---------- */
@@ -171,7 +174,7 @@ const CONFIG = {
     howTitle: 'Como jogar',
     howTips: [
       'Siga a SETA verde e amarela no topo da tela: ela aponta para a próxima lenda e mostra a distância.',
-      'Você começa com só 30 segundos. Passe o ônibus pela zona neon no chão para embarcar a lenda: +10 segundos e +10 pontos.',
+      'Você tem só 30 segundos, mas o tempo só começa a contar depois que a 1ª lenda embarca. Passe o ônibus pela zona neon no chão para embarcar a lenda: +10 segundos e +10 pontos.',
       'Depois da 10ª lenda, a seta aponta de volta para a loja Máquina do Mal. Chegue lá antes do tempo zerar!',
       'Celular: setas à esquerda para virar; à direita, o pedal com seta para cima acelera e o com seta para baixo freia e dá ré. Rápido, virando e freando, o busão faz drift! Pode subir na calçada, mas poste, árvore e prédio param o ônibus. Teclado: W A S D ou setas; H buzina.'
     ],
