@@ -8,6 +8,8 @@
  *  2. iPhone no Safari: NÃO existe tela cheia para páginas (só para <video>). O que dá para fazer é
  *     "pseudo tela cheia": o jogo ocupa 100% da área visível, por baixo do entalhe (viewport-fit=cover + safe-area),
  *     sem rolagem e sem zoom de pinça. Isso o CSS de cada jogo já faz; aqui travamos o zoom de pinça.
+ *     Nos jogos deitados, o soft-fullscreen.js (se carregado) faz a "tela cheia suave" no iPhone e este arquivo
+ *     não pede tela cheia enquanto ele estiver ligado.
  *
  * Opções (CONFIG.fullscreen):
  *   enabled        false desliga tudo
@@ -47,6 +49,7 @@
   var pending = false; // um toque dispara pointerup + touchend + click: pede uma vez só
   function request() {
     if (pending || !opt.enabled || isFull() || standalone() || !apiOk() || !deviceOk()) return;
+    if (window.SoftFullscreen && SoftFullscreen.isEnabled()) return; // iPhone: quem cuida é o soft-fullscreen.js
     try {
       var req = de.requestFullscreen || de.webkitRequestFullscreen;
       var p = req.call(de, { navigationUI: 'hide' });

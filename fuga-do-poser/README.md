@@ -150,9 +150,19 @@ controles de toque, e respeita a safe-area (fica dentro do padding das telas). Q
 
 Padrão de todos os jogos, explicado em [`TELA-CHEIA.md`](../TELA-CHEIA.md) (`fullscreen.js` idêntico em todas as pastas).
 Android e iPad: tela cheia de verdade no 1º toque e no botão de começar, travando na horizontal (no computador não muda nada: `devices: 'touch'`).
-iPhone/Safari: não existe tela cheia para páginas; o jogo já ocupa a tela toda (pseudo tela cheia), sem zoom de pinça.
+iPhone/Safari: não existe tela cheia para páginas; lá entra a tela cheia suave (abaixo).
 Nenhum aviso de "Adicionar à Tela de Início" aparece, em momento algum.
 Opções em `CONFIG.fullscreen` (`enabled`, `onFirstTouch`, `devices`, `orientation`, `blockZoom`).
+
+### Tela cheia suave no iPhone (`softFullscreen`)
+
+`soft-fullscreen.js` (idêntico nos jogos deitados; padrão em [`TELA-CHEIA.md`](../TELA-CHEIA.md#tela-cheia-suave-no-iphone-jogos-deitados)).
+Só no iPhone (Safari e outros navegadores do iOS sem Fullscreen API), fora da Tela de Início e fora de Instagram/Facebook/TikTok:
+com a barra do Safari à mostra, o jogo fica parado com a dica "Deslize para cima para jogar em tela cheia"; o jogador desliza, a
+barra recolhe e o jogo liga. Se a barra voltar, a partida pausa (e retoma sozinha quando ela recolhe de novo); em pé, aparece o aviso
+de girar do próprio jogo. Se o som ainda estiver travado, aparece "Toque para começar". Android, iPad e computador: nada muda.
+Não é tela cheia de verdade: pode sobrar uma faixa com o domínio e a barra pode voltar com um gesto do sistema.
+Opções em `CONFIG.softFullscreen` (`enabled`, textos, `container`, `rotateSelector`, `threshold`, `screenTolerance`, `extraScroll`, `rotateDelay`).
 
 ## 3. `localStorage` (prefixo `fp_`)
 
@@ -261,6 +271,26 @@ Chromium (Playwright), deitado 740×360, 844×390 e 932×430, QR e coleta de dad
 User-agent de Android: um toque pede tela cheia **uma vez**, com `navigationUI: 'hide'`. User-agent de iPhone sem Fullscreen API:
 nenhum pedido, nenhum erro e nenhum aviso na tela (inclusive como Instagram e como app instalado). Sem rolagem horizontal, console limpo, partida simulada sem erro.
 Não testado: Safari de verdade num iPhone e Android físico.
+
+### Testes da tela cheia suave no iPhone (12/11/2026)
+
+Chromium (Playwright), deitado 740×360, 844×390 e 932×430, envios para o Apps Script
+interceptados no teste (nada foi para a planilha), simulação por hooks (`__fp`). A barra do Safari foi simulada mudando a altura
+da janela (por exemplo 340 → 390 px), com `screen` de iPhone (390×844).
+
+| Cenário | Resultado |
+|---|---|
+| Computador, Android, iPhone com Fullscreen API, iPad com Fullscreen API, iPhone pela Tela de Início, iPhone no Instagram | módulo desligado, nada na tela, CSS do jogo intacto; no Android o 1º toque continua pedindo tela cheia (`navigationUI: 'hide'`) ✔ |
+| iPhone (iOS 18 e 26), Chrome do iPhone, iPad sem Fullscreen API | liga e mostra a dica ✔ |
+| Barra à mostra | dica "Deslize para cima...", página rolável (+200 px), toque atravessa o jogo, loop congelado (o tempo do jogo não anda) ✔ |
+| Barra recolhe (+50 px) | `softfs:live`, dica some, `resize` disparado, canvas no tamanho novo, toques voltam ao jogo, `touchmove` bloqueado ✔ |
+| Áudio travado | "Toque para começar" aparece; o toque chama `Sound.unlock()` e some ✔ |
+| Barra volta no meio da partida | `softfs:idle`, partida pausada, dica de volta, página volta ao topo; recolheu de novo = partida retoma ✔ |
+| Celular em pé | aviso de girar do próprio jogo, partida pausada; deitou de novo = `baseH` recalibrado e dica de volta ✔ |
+| Abriu já sem barra | liga direto ✔ |
+| 740×360 e 932×430 | jogo e canvas na tela toda, sem rolagem horizontal; console sem erros do jogo ✔ |
+
+Não testado: Safari de verdade num iPhone (a checklist manual está no `TELA-CHEIA.md`) e Android físico.
 
 ## 7. Pendências antes de divulgar
 

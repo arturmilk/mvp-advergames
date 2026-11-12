@@ -594,6 +594,7 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="config.js"></script>
 <script src="fullscreen.js"></script>
+<script src="soft-fullscreen.js"></script>
 <script src="analytics.js"></script>
 <script src="ticket.js"></script>
 <script src="montaggio-selo.js"></script>
@@ -1835,6 +1836,11 @@ $('#bReset').onclick = async () => {
 };
 document.addEventListener('visibilitychange', () => { if (document.hidden) { pauseGame(); Sound.suspend(true); } else Sound.suspend(false); });
 addEventListener('blur', () => pauseGame());
+// tela cheia suave (soft-fullscreen.js, só iPhone): a barra do Safari voltou = pausa; recolheu de novo = retoma
+let sfPaused = false;
+addEventListener('softfs:idle', () => { if (G && G.state === 'play') { pauseGame(); sfPaused = true; } Sound.suspend(true); });
+addEventListener('softfs:live', () => { Sound.suspend(false); if (sfPaused && G && G.state === 'paused') resumeGame(); sfPaused = false; });
+if (window.SoftFullscreen) SoftFullscreen.audio({ locked: () => !Sound.ctx || Sound.ctx.state !== 'running', unlock: () => Sound.unlock() });
 addEventListener('resize', resize);
 if (window.visualViewport) visualViewport.addEventListener('resize', resize);
 
@@ -1842,6 +1848,7 @@ if (window.visualViewport) visualViewport.addEventListener('resize', resize);
 let last = performance.now(), acc = 0;
 function frame(now) {
   acc += Math.min(.25, (now - last) / 1000); last = now;
+  if (window.SoftFullscreen && !SoftFullscreen.canPlay()) acc = 0; // iPhone com a barra à mostra: o jogo não anda
   while (acc >= DT) { update(DT); acc -= DT; }
   render(); if (G.state !== 'menu') updateHud();
   requestAnimationFrame(frame);

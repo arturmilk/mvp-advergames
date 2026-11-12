@@ -252,6 +252,23 @@ const CONFIG = {
     blockZoom: true            // sem zoom de pinça (o iPhone ignora user-scalable=no)
   },
 
+  /* ---------- Tela cheia suave no iPhone (soft-fullscreen.js; igual nos jogos deitados) ----------
+     Só no iPhone (Safari e outros navegadores do iOS sem Fullscreen API), fora da Tela de Início e fora de
+     Instagram/Facebook/TikTok. O jogador desliza o dedo para cima, o Safari recolhe a barra e o jogo liga;
+     se a barra voltar, o jogo pausa. Android, computador e iPad seguem com o fullscreen.js de sempre. */
+  softFullscreen: {
+    enabled: true,
+    hintText: 'Deslize para cima para jogar em tela cheia',
+    rotateText: 'Gire o celular para jogar',   // só se o jogo não tiver o próprio aviso (rotateSelector)
+    tapText: 'Toque para começar',             // aparece se o som do iPhone ainda estiver travado
+    container: '#app',          // contêiner do jogo (fica fixo por cima da página)
+    rotateSelector: '#rotate',  // aviso de girar do próprio jogo; '' = usa o do módulo
+    threshold: 30,              // px a mais que a menor altura vista = barra recolhida
+    screenTolerance: 24,        // altura a até 24 px da tela inteira = já está sem barra; 0 desliga
+    extraScroll: 200,           // px de rolagem extra da página (o Safari precisa rolar para recolher a barra)
+    rotateDelay: 350            // ms para medir de novo depois de girar
+  },
+
   /* ---------- Selo "Produzido por Montaggio" (montaggio-selo.js) ----------
      Aparece só nas telas fora da partida, no fim de cada tela (não cobre o jogo nem os controles).
      cta = convite "Quero um jogo para o meu negócio", que abre o WhatsApp da Montaggio com a mensagem pronta. */
