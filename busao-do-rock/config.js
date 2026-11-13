@@ -142,8 +142,13 @@ const CONFIG = {
     { id: 'ozzy',     name: 'Ozzy Osbourne', color: '#5B3A8C', image: 'assets/chars/ozzy.webp', line: 'Eu tava procurando um morcego... tava com fome, entende?... SHAROOOON!' }
   ],
 
-  /* ---------- Felipe (protagonista, aparece só na HQ) — PLACEHOLDER ---------- */
-  felipe: { name: 'Felipe', color: '#2B2B2B', image: '' },
+  /* ---------- Felipe (protagonista, aparece na HQ, na tela de girar e no fim com vitória total) ---------- */
+  // winImage = Felipe comemorando, sem fundo, no mesmo canvas das lendas (1024x512). Só na vitória total (10 lendas + entrega
+  //            na loja): ele pula junto com as lendas no palco 3D e no cartão de fim ('' = sem Felipe, como antes).
+  //            Derrota/parcial continua mostrando as lendas que faltaram.
+  // winScale = tamanho do Felipe em relação às lendas (1 = mesma altura). winLine = o que ele diz no cartão.
+  felipe: { name: 'Felipe', color: '#2B2B2B', image: '',
+    winImage: 'assets/chars/felipe_win.webp', winScale: 1.3, winLine: 'Busão lotado e show garantido! Valeu, roqueiro!' },
 
   /* ---------- HQ de abertura (3 quadros) ----------
      image = arte do quadro (Higgsfield, estilo Marvel com retícula; Felipe já desenhado). Vazio = quadro montado com a fachada/ônibus + Felipe. */
@@ -259,13 +264,13 @@ const CONFIG = {
   },
 
   /* ---------- Áudio (efeitos e motor sintetizados no Web Audio; a trilha é um arquivo em loop) ---------- */
-  musicVolume: 0.5,    // volume da trilha (0 a 1); o botão de som do jogo (mudo) continua valendo
+  musicVolume: 0.3,    // volume da trilha (0 a 1); baixo o bastante para ouvir o motor acelerando; o botão de som (mudo) continua valendo
   // trilha: começa com a contagem 3-2-1, pausa na pausa e para no fim da partida. Loop pelo Web Audio (sem buraco).
   // file = .ogg (Chrome, Android, Firefox, Safari novo); fallback = .m4a para iPhone que não toca Vorbis.
   // loopSec = duração exata do loop (0 = o arquivo inteiro); fadeSec = entrada/saída suave; seamFixMs = alisa a emenda do loop.
   music: { file: 'assets/audio/trilha_loop.ogg', fallback: 'assets/audio/trilha_loop.m4a', loopSec: 42, fadeSec: 0.1, seamFixMs: 4 },
   sfxVolume: 0.6,
-  engineVolume: 0.16,
+  engineVolume: 0.2,   // ronco do motor (era 0.16; subiu junto com a trilha mais baixa para a aceleração aparecer)
   // motor: segurando o acelerador o som sobe marcha a marcha até o pico em rampSec; gears = fatia de tempo de cada marcha (soma 1)
   engineSound: { rampSec: 10, gears: [0.18, 0.22, 0.27, 0.33], dropRate: 2.5 },
 

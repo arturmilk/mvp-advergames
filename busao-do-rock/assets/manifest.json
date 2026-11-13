@@ -268,5 +268,17 @@
     "text": "DEITA ESSE CELULAR AÍ, ROQUEIRO! BUSÃO NÃO ANDA EM PÉ.",
     "previousJob": "4c516b03-1d4c-46e9-917b-d5dd43758ac3",
     "note": "Felipe forte; é a referência oficial do personagem. Versão anterior em _raw/rotate_v1.webp."
+  },
+  "felipeWin": {
+    "file": "chars/felipe_win.webp",
+    "source": "_raw/felipe_win_full.png",
+    "higgsfieldJob": "bf227300-a50f-4167-89f5-40a94b309c77",
+    "backgroundRemovalJob": "5af04c61-c915-4a46-8190-2c4d7a12efd1",
+    "reference": "rotate (job 36beeec3-7271-43dc-86fe-c6cd82e85221), referência oficial do Felipe",
+    "generator": "gpt_image_2_5 (Higgsfield), aspect 2:3, 688x1024; fundo removido pelo image_background_remover do Higgsfield",
+    "size": [1024, 512],
+    "prompt": "Same character as the reference image (same face, glasses, beard, muscular build, black t-shirt, smartwatch, dark jeans, boots). FULL BODY, standing, celebrating a total victory: both fists raised, one hand doing the rock horns gesture, joyful shout. Plain flat light grey background, no scenery. Classic 1970s-80s Marvel comic style, bold ink, Ben-Day dots. No text, no logos.",
+    "usage": "Felipe comemorando, sem fundo, no mesmo canvas das lendas: no teto do busão no palco 3D da vitória e no meio das lendas no cartão de fim; só na vitória total (config.js > felipe.winImage)",
+    "note": "Processar com python tools/process_felipe_win.py. Só o recorte usado (_raw/felipe_win_full.png) está no git; as outras ficaram só na pasta local. Variante não usada: _raw/felipe_win_full_v2.png (job b67f7ea2-0b09-4a5f-9556-9f1122928213). Versão anterior em quadro (com fundo, trocada a pedido do Arthur): _raw/felipe_win_quadro.png (job b4273cb2-6181-4221-a702-578b26f59569)."
   }
 }

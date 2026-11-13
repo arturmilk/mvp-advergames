@@ -408,6 +408,18 @@ tr.me td:first-child { box-shadow: inset 4px 0 0 var(--blood); }
 .miss-talk img { width: 44px; height: 56px; object-fit: cover; object-position: 50% 100%; border: 2px solid var(--ink); background: #CFC3A8; flex: none; }
 .miss-talk p { margin: 0; font-family: var(--type); font-size: 12.5px; line-height: 1.25; }
 .miss-talk b { display: block; font-family: var(--num); font-weight: 400; color: var(--blood); font-size: 15px; letter-spacing: .5px; }
+/* fim com vitória total: o Felipe (sem fundo) no meio das lendas, todo mundo pulando. Sprites 2:1 com a figura no meio, por isso
+   as margens negativas: cada lenda ocupa ~26 px na fila e o Felipe fica na frente, maior */
+.win-crew { margin: 2px 0 0; }
+.crew { display: flex; justify-content: center; align-items: flex-end; height: 100px; overflow: hidden; padding-top: 4px; }
+.crew img { flex: none; width: 96px; height: 48px; margin: 0 -38px; object-fit: contain; object-position: 50% 100%; position: relative;
+  filter: drop-shadow(1px 1px 0 var(--ink)); animation: crewHop .55s ease-in-out var(--d, 0s) infinite alternate; }
+.crew img.fel { width: 192px; height: 96px; margin: 0 -58px; z-index: 2; animation-duration: .45s; filter: drop-shadow(2px 2px 0 var(--ink)); }
+@keyframes crewHop { to { transform: translateY(-5px); } }
+.win-say { margin: 2px 0 0 !important; font-family: var(--type); font-size: 13px !important; line-height: 1.25; }
+.win-say b { font-family: var(--num); font-weight: 400; color: var(--blood); font-size: 15px; letter-spacing: .5px; }
+@media (max-height: 400px) { .crew { height: 66px; } .crew img { width: 76px; height: 38px; margin: 0 -30px; } .crew img.fel { width: 128px; height: 64px; margin: 0 -38px; } }
+@media (prefers-reduced-motion: reduce) { .crew img { animation: none; } }
 @media (max-height: 430px) { .go-card.has-miss .stats { display: none; } .go-card.has-miss #goRec { margin-top: 2px !important; } }
 .go-win { font-family: var(--num); font-style: italic; font-size: 30px; color: var(--tacky); background: var(--ink); display: inline-block; padding: 2px 12px; transform: rotate(-2deg); box-shadow: 4px 4px 0 var(--blood); }
 </style>
@@ -959,7 +971,9 @@ const PORTRAIT = {}; // id -> url (imagem final ou boneco provisório)
 const CHARTEX = {};
 function loadCharacters() {
   const loader = new THREE.TextureLoader();
-  return Promise.all(CHARS.concat([Object.assign({ id: 'felipe' }, C.felipe)]).map(ch => new Promise(res => {
+  // felipeWin = Felipe comemorando (vitória total); se não carregar, fica com o boneco provisório e a vitória o deixa de fora
+  const extra = [Object.assign({ id: 'felipe' }, C.felipe)].concat(C.felipe.winImage ? [{ id: 'felipeWin', name: C.felipe.name, image: C.felipe.winImage }] : []);
+  return Promise.all(CHARS.concat(extra).map(ch => new Promise(res => {
     const ph = () => { const c = placeholderCanvas(ch.name, ch.color || '#555'); PORTRAIT[ch.id] = c.toDataURL(); CHARTEX[ch.id] = canvasTex(c); CHARTEX[ch.id].userData = { aspect: .5, placeholder: true }; res(); };
     if (!ch.image) return ph();
     loader.load(ch.image, t => { t.encoding = THREE.sRGBEncoding; t.userData = { aspect: t.image.width / t.image.height }; CHARTEX[ch.id] = t; PORTRAIT[ch.id] = ch.image; res(); }, undefined, ph);
@@ -1426,6 +1440,11 @@ function board() {
   if (G.idx === NLEG) setTimeout(() => { if (G.state === 'play') toast(T.goStore, 2200); }, 900);
   placeZone();
 }
+function crowdSprite(id, k, x, y, z, ph) {
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: CHARTEX[id], transparent: true, alphaTest: .05 }));
+  const h = (C.charHeight || 3.6) * .85 * k, a = CHARTEX[id].userData.aspect || .5; sp.center.set(.5, 0); sp.scale.set(h * a, h, 1);
+  sp.position.set(x, y, z); sp.userData.ph = ph; sp.userData.y0 = y; scene.add(sp); return sp;
+}
 function victory() {
   if (G.state !== 'play') return;
   G.win = true; G.idx = NLEG + 1; placeZone();
@@ -1433,12 +1452,11 @@ function victory() {
   G.bonus = Math.round(Math.max(0, G.timeLeft) * C.points.winPerSecond); G.score += G.bonus;
   if (G.delivery) plus(C.texts.deliveryTag || 'ENTREGA NA MÁQUINA DO MAL', G.delivery);
   Sound.music(false); Sound.sfx('win');
-  // o show: as 10 lendas no palco em frente à loja
-  W.crowd = CHARS.map((ch, i) => {
-    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: CHARTEX[ch.id], transparent: true, alphaTest: .05 }));
-    const h = (C.charHeight || 3.6) * .85, a = CHARTEX[ch.id].userData.aspect || .5; sp.center.set(.5, 0); sp.scale.set(h * a, h, 1);
-    sp.position.set(W.store.x - 13 + i * 2.9, .25, W.store.doorZ + 3 + (i % 2) * 2.2); sp.userData.ph = i * .7; scene.add(sp); return sp;
-  });
+  // o show: as 10 lendas no palco em frente à loja, e o Felipe comemorando em cima do teto do busão (o ônibus para bem na frente
+  // da loja, então no chão ele ficaria escondido atrás dele; no teto a câmera sempre o vê, junto da galera)
+  W.crowd = CHARS.map((ch, i) => crowdSprite(ch.id, 1, W.store.x - 13 + i * 2.9, .25, W.store.doorZ + 3 + (i % 2) * 2.2, i * .7));
+  if (CHARTEX.felipeWin && !CHARTEX.felipeWin.userData.placeholder)
+    W.crowd.push(crowdSprite('felipeWin', C.felipe.winScale || 1, G.bus.x, (B.height || 3.3) + .05, G.bus.z, 0));
   endGame('vitoria');
 }
 function endGame(reason) {
@@ -1528,7 +1546,7 @@ function render() {
     W.ring.scale.setScalar(1 + .05 * p);
     if (W.char.visible) W.char.position.y = .25 + Math.abs(Math.sin(G.t * 4)) * .25;
   }
-  if (W.crowd) W.crowd.forEach(s => { s.position.y = .25 + Math.abs(Math.sin(G.t * 7 + s.userData.ph)) * .7; });
+  if (W.crowd) W.crowd.forEach(s => { s.position.y = s.userData.y0 + Math.abs(Math.sin(G.t * 7 + s.userData.ph)) * .7; });
   // seta: aponta para o alvo, no referencial da câmera
   const t = curTarget(), showArrow = !!t && (G.state === 'play' || G.state === 'count');
   W.arrow.tilt.visible = showArrow;
@@ -1722,8 +1740,15 @@ function showGameOver() {
   $('#goLine').textContent = win ? T.winLine + (G.delivery ? ` Entrega na loja: +${fmt(G.delivery)}.` : '') + (G.bonus ? ` Bônus de tempo: +${fmt(G.bonus)}.` : '') : '';
   // quem não zerou vê as lendas que ficaram para trás, e a primeira delas reclama
   const miss = win ? [] : CHARS.slice(G.rescued);
-  $('#gameover .go-card').classList.toggle('has-miss', miss.length > 0);
-  $('#goMiss').innerHTML = !miss.length ? '' :
+  // vitória total: o Felipe comemorando (sem fundo) no meio das 10 lendas, todos pulando; se a imagem dele falhar, ficam só as lendas
+  const fw = win && C.felipe.winImage;
+  $('#gameover .go-card').classList.toggle('has-miss', miss.length > 0 || !!fw);
+  const hop = (ch, i) => `<img src="${PORTRAIT[ch.id]}" alt="${esc(ch.name)}" style="--d:${(i * .13).toFixed(2)}s">`, half = Math.ceil(NLEG / 2);
+  $('#goMiss').innerHTML = fw ? `<div class="win-crew"><div class="crew">${CHARS.slice(0, half).map(hop).join('')}` +
+    `<img class="fel" src="${esc(C.felipe.winImage)}" alt="${esc(C.felipe.name)} comemorando" onerror="this.remove()">` +
+    `${CHARS.slice(half).map((ch, i) => hop(ch, i + half)).join('')}</div>` +
+    `<p class="win-say"><b>${esc(C.felipe.name)}:</b> “${esc(C.felipe.winLine || '')}”</p></div>` :
+    !miss.length ? '' :
     `<div class="miss-row">${miss.map(ch => `<img src="${PORTRAIT[ch.id]}" alt="${esc(ch.name)}">`).join('')}</div>` +
     `<div class="miss-talk"><img src="${PORTRAIT[miss[0].id]}" alt=""><p><b>${esc(miss[0].name)}</b>“${esc(T.missedLine)}”</p></div>`;
   $('#goScore').textContent = fmt(G.score);

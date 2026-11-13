@@ -11,7 +11,8 @@ aparece o aviso para girar e a partida pausa.
 * Texturas, fachada da loja e HQ de abertura geradas no **Higgsfield** e otimizadas em webp. Se alguma não carregar, o jogo desenha
   uma reserva procedural em Canvas com o mesmo id e não quebra.
 * **Lendas:** 9 sprites recortados (pasta `sprites` do Felipe), padronizados no mesmo canvas em `assets/chars/*.webp` (veja § 3).
-  A Rita Lee ainda não tem imagem e segue com o boneco provisório. O Felipe aparece só na HQ, já desenhado nos quadros.
+  A Rita Lee ainda não tem imagem e segue com o boneco provisório. O Felipe aparece na HQ (já desenhado nos quadros), na tela de
+  girar o celular e, comemorando, no cartão de fim de jogo quando o jogador zera (veja abaixo).
 * **Peso dos assets do jogo:** ~1,2 MB em webp (texturas ~420 KB, fachada nova 123 KB, sprites 330 KB, HQ 337 KB).
 * **Som do motor:** segurando o acelerador o ronco sobe marcha a marcha (4 marchas, com a queda de giro e um estalo em cada troca) e
   só chega no pico depois de **10 s** (`engineSound.rampSec`, fatias de cada marcha em `engineSound.gears`). Soltando, o giro cai.
@@ -21,7 +22,7 @@ aparece o aviso para girar e a partida pausa.
   **Começa com a contagem 3-2-1**, pausa na pausa (botão, tecla P, celular em pé, troca de aba) e retoma do mesmo ponto, e **para no
   fim da partida** (vitória, tempo esgotado ou encerrar). Na HQ e no menu fica sem música. Entra e sai com fade de 0,1 s; a emenda do
   loop ganha uma rampa de 4 ms porque o fim do arquivo não bate com o começo (salto de 0,18 na amplitude, viraria um clique).
-  Configuração em `musicVolume` (0,5) e `music` (`file`, `fallback`, `loopSec`, `fadeSec`, `seamFixMs`); o botão de som da HUD
+  Configuração em `musicVolume` (0,3; era 0,5 e cobria o motor) e `music` (`file`, `fallback`, `loopSec`, `fadeSec`, `seamFixMs`); o botão de som da HUD
   tira tudo. O arquivo é baixado já na abertura e decodificado no 1º toque, antes de a contagem começar.
   **Origem e direitos da música: perguntar ao usuário e registrar aqui antes de divulgar** (conferir com o jurídico se não for própria).
   A trilha sintetizada anterior (riff original em Mi, 176 bpm) foi removida.
@@ -61,6 +62,20 @@ tarde."; 2) "Já são 18h45!"; 3) "Garagem da loja." com "VRUUUM!". Para mudar u
 
 **Celular em pé:** no lugar do aviso de texto, aparece o Felipe desenhado virando o celular: "Deita esse celular aí, roqueiro! Busão não
 anda em pé." (`assets/rotate.webp`, texto na arte).
+
+**Felipe comemorando na vitória total (13/11):** quando o jogador busca as 10 lendas e entrega na Máquina do Mal, o Felipe aparece
+comemorando, sem fundo, de corpo inteiro, de punhos para cima (um deles fazendo o chifrinho do rock), junto com as lendas:
+* **Palco 3D (os ~4 s antes do cartão):** ele pula no teto do busão, ao lado das 10 lendas que pulam em frente à loja. Fica no teto
+  porque o ônibus para bem na frente da loja e, no chão, o escondia.
+* **Cartão de fim:** ele fica no meio da fila das 10 lendas, maior e na frente, todos pulando (sem animação se o celular pedir menos
+  movimento), com a fala "Busão lotado e show garantido! Valeu, roqueiro!".
+
+Derrota e partida parcial continuam como antes: as lendas que ficaram para trás e a primeira delas reclamando. A imagem
+(`assets/chars/felipe_win.webp`, 1024×512, 28 KB, mesmo canvas das lendas) foi gerada no Higgsfield com a tela de girar como
+referência e recortada no próprio Higgsfield; carrega na abertura junto com as lendas. Se não carregar, as lendas comemoram sem ele.
+No deitado com até 430 px de altura, os 4 números (lendas, tempo, km, km/h) saem do cartão da vitória para caber, como já acontecia
+na derrota. Configuração: `felipe.winImage` ('' desliga), `felipe.winScale` (tamanho em relação às lendas, 1,3) e `felipe.winLine`.
+Para regenerar: salvar o PNG recortado em `assets/_raw/felipe_win_full.png` e rodar `python tools/process_felipe_win.py`.
 
 **Abertura (versão anterior, ainda no código como reserva):** HQ em 3 quadros no estilo Marvel anos 70/80 (traço preto grosso, cores chapadas, retícula Ben-Day e papel de
 jornal impresso por cima), arte do Higgsfield em `assets/comic/`. 1) Felipe abrindo a Máquina do Mal ao pôr do sol, olhando o
@@ -189,7 +204,7 @@ partida por aparelho.
 | Desempenho (resolução máxima, neblina, antialias) | `render.*` |
 | Personagens, ordem, cores, falas e imagens | `characters[]` |
 | Altura das lendas em pé na calçada | `charHeight` (m, padrão 4,2; o ônibus tem ~3,4) |
-| Felipe e a HQ | `felipe`, `comic.panels[]` (legenda, `image`, balão, cartaz), `comic.button` |
+| Felipe e a HQ | `felipe` (`winImage`, `winScale` e `winLine` = Felipe comemorando no fim com vitória total), `comic.panels[]` (legenda, `image`, balão, cartaz), `comic.button` |
 | Textos das telas | `texts.*` |
 | Limite de partidas | `onePlayPer` |
 | Admin | `ADMIN_USER`, `ADMIN_PASS` (ou `ADMIN_PASS_SHA256`), `ADMIN_DELETE_PASSWORD`. **Troque antes de divulgar** (o arquivo é público) |
@@ -487,6 +502,46 @@ Chromium (Playwright), coleta de dados bloqueada no teste. `__bus.Sound.musicInf
 
 Não testado: ouvir de verdade (o navegador de teste não tem saída de som), o Safari do iPhone (Vorbis ou `.m4a`), celular físico.
 O `sw.js` agora guarda também o áudio (cache `busao-do-rock-v5`).
+
+### Música mais baixa para ouvir o motor (13/11/2026)
+
+Pedido: a trilha encobria o ônibus acelerando. `musicVolume` 0,5 → **0,3** e `engineVolume` 0,16 → **0,2** (só o motor; buzina,
+riff e demais efeitos seguem em `sfxVolume` 0,6). A trilha é um arquivo bem alto (RMS −9,7 dBFS, picos acima de 0 dB), então
+só baixar para 0,3 ainda deixava a arrancada 6 dB abaixo da música. Balanço medido simulando o motor (serra + quadrada sub no
+passa-baixa, como no jogo) contra o RMS do `.ogg`; a coluna "alto-falante" corta abaixo de 200 Hz, como um celular:
+
+| Motor | Antes (motor − trilha) | Agora | Agora, alto-falante de celular |
+|---|---|---|---|
+| Arrancada (1ª marcha) | −10,6 dB | −4,3 dB | −12 dB |
+| Meio da aceleração (3ª) | −4,2 dB | +2,1 dB | −2,7 dB |
+| Pico (4ª, 10 s segurando) | −2,4 dB | +4,0 dB | +0,4 dB |
+
+| # | Cenário | Resultado |
+|---|---|---|
+| 56 | Ganho | Chromium do app, endpoint de dados zerado no servidor de teste. Após o toque e `newGame()`: AudioContext `running`, trilha tocando com `musicInfo.volume` = 0,3, efeitos em 0,6 ✔ |
+| 57 | Motor | Acelerador segurado 12 s em tempo real: ganho do motor 0,087 → 0,10 → 0,12 → 0,15 → 0,17 → **0,20** no 10º s, passando pelas 4 marchas ✔ |
+| 58 | Mudo | Botão de som: ganho mestre 0 (a trilha segue em 0,3 por baixo); ligar de novo volta a 1 ✔ |
+| 59 | Layout e console | 740×360 sem rolagem horizontal; console sem erros do jogo (o único erro é o `sw.js`, desligado de propósito no servidor de teste) ✔ |
+
+Não testado: **ninguém ouviu** (o navegador de teste não tem saída de som); o motor é grave (30 a 100 Hz) e alto-falante de
+celular quase não reproduz isso, então no aparelho a arrancada ainda pode sumir. Se for o caso, subir `engineVolume` (até ~0,3)
+ou baixar `musicVolume` para 0,25.
+
+### Testes do Felipe comemorando (13/11/2026)
+
+Chromium (Playwright) com WebGL por software, servidor local, envios para o Apps Script bloqueados no teste (nada foi para a
+planilha). Vitória simulada com `__bus.seed(3)`, `newGame()`, `skipCount()` e `toTarget()` 11 vezes (10 lendas + loja).
+
+| # | Cenário | Resultado |
+|---|---|---|
+| 60 | Vitória total | Estado `over`, motivo `vitoria`, 10/10 lendas, **100** pontos; no palco 3D 11 figuras (10 lendas + Felipe no teto do busão); no cartão 11 imagens carregadas (Felipe no meio, 192×96) e a fala do `config.js` ✔ |
+| 61 | Derrota | 3 lendas e tempo esgotado: sem Felipe, com as 7 lendas que faltaram e a reclamação da primeira, como antes ✔ |
+| 62 | Deitado | 740×360, 932×430 e 1000×480: cartão inteiro na tela, sem rolagem horizontal ✔ |
+| 63 | Larguras | 360, 430 e 480 px (cartão em pé, ponteiro de mouse para não cair no aviso de girar): sem rolagem horizontal ✔ |
+| 64 | Imagem quebrada | `felipe_win.webp` bloqueado (service worker desligado): sem Felipe no palco e no cartão, as 10 lendas comemoram normalmente ✔ |
+| 65 | Console | Sem erros do jogo nos 6 tamanhos (o único erro é o envio ao Apps Script, bloqueado de propósito no teste) ✔ |
+
+Não testado: celular físico.
 
 ## 8. Pendências antes de divulgar
 
