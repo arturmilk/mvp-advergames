@@ -713,20 +713,14 @@ function sha256(str) {
   return hash.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
 }
 
-/* ======================= ÁUDIO (Web Audio: motor, buzina, riff, sirene, trilha) ======================= */
+/* ======================= ÁUDIO (Web Audio: motor, buzina, riff, sirene; trilha = arquivo em loop) ======================= */
 const Sound = (() => {
-  let ac = null, master, musBus, sfxBus, engBus, gtrIn, noise, timer = null, step = 0, nextT = 0, playing = false;
+  let ac = null, master, musBus, sfxBus, engBus, gtrIn, noise;
+  // trilha: arquivo de áudio (C.music.file) tocado em loop pelo Web Audio (AudioBufferSourceNode.loop, sem buraco na emenda)
+  let musRaw = null, musBuf = null, musSrc = null, musGain = null, musWant = false, musOffset = 0, musT0 = 0, musLoading = null, musStarts = 0;
   let eng = null, revT = 0, gear = 0, engLastT = 0, skidG = null;
   let muted = !!store.get(K.settings, {}).muted;
   const midi = n => 440 * Math.pow(2, (n - 69) / 12);
-  // trilha original: riff de hard rock em Mi, power chords em colcheias com palhetada abafada (m) e acentos abertos.
-  // Clima de banda pesada dos anos 70, sem copiar nenhuma música. 4 compassos de 8 colcheias; null = pausa.
-  const RIFF = [
-    [40, 'm'], [40, 'm'], [40, 'm'], [40, 'm'], [40, 'm'], [40, 'm'], [43, 'a'], [45, 'a'],
-    [40, 'm'], [40, 'm'], [40, 'm'], [40, 'm'], [38, 'a'], [38, 'm'], [45, 'a'], null,
-    [40, 'm'], [40, 'm'], [40, 'm'], [40, 'm'], [40, 'm'], [40, 'm'], [43, 'a'], [45, 'a'],
-    [47, 'a'], [47, 'm'], [45, 'a'], [45, 'm'], [43, 'a'], [43, 'm'], [40, 'l'], null
-  ];
   function init() {
     if (ac) return;
     const A = window.AudioContext || window.webkitAudioContext; if (!A) return;
@@ -775,37 +769,81 @@ const Sound = (() => {
       o.connect(g); g.connect(bus || gtrIn); o.start(t); o.stop(t + dur + .02);
     }
   }
-  function scheduleStep(i, t) { // colcheias
-    const k = i % RIFF.length, s = k % 8, bar = Math.floor(k / 8), n = RIFF[k];
-    if (n) {
-      const [root, kind] = n, dur = kind === 'm' ? .09 : kind === 'l' ? .7 : .24, vol = kind === 'm' ? .09 : .13;
-      gtr(t, root, dur, vol, null, 7);
-      tone(t, midi(root - 12), kind === 'l' ? .6 : .16, { type: 'triangle', vol: .15, bus: musBus });
+  // ---------- trilha (arquivo) ----------
+  const MC = () => C.music || {};
+  const musFiles = () => {
+    const m = MC(), list = [];
+    let ogg = '';
+    try { ogg = new Audio().canPlayType('audio/ogg; codecs="vorbis"'); } catch (e) {}
+    if (m.file && ogg) list.push(m.file);          // Chrome/Android/Firefox/Safari novo: .ogg
+    if (m.fallback) list.push(m.fallback);          // iPhone sem Vorbis: .m4a (AAC)
+    if (m.file && !ogg) list.push(m.file);
+    return list;
+  };
+  // baixa o arquivo já na abertura (fetch não precisa de toque); a decodificação espera o AudioContext do 1º toque
+  function musFetch(url) { return fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }); }
+  function decode(ab) { return new Promise((ok, no) => { try { const p = ac.decodeAudioData(ab, ok, no); if (p && p.catch) p.catch(no); } catch (e) { no(e); } }); }
+  // emenda do loop: o fim do arquivo não bate exatamente com o começo (salto de amplitude = clique). Puxa os últimos
+  // seamFixMs ms em rampa até o valor da 1ª amostra, e o loop fica contínuo.
+  function fixSeam(buf) {
+    const n = Math.round((MC().seamFixMs == null ? 4 : MC().seamFixMs) / 1000 * buf.sampleRate);
+    if (n < 2) return;
+    for (let c = 0; c < buf.numberOfChannels; c++) {
+      const d = buf.getChannelData(c), L = d.length, jump = d[0] - d[L - 1];
+      for (let i = 0; i < n; i++) { const k = (i + 1) / n; d[L - n + i] += jump * k * k; }
     }
-    const half = 30 / C.musicTempo; // meia colcheia (semicolcheia)
-    // galope: nas palhetadas abafadas, uma segunda batida na semicolcheia
-    if (n && n[1] === 'm' && s % 2 === 1) gtr(t + half, n[0], .06, .07, null, 7);
-    // bateria: bumbo em todo tempo + dobra no fim do compasso, caixa forte no 2 e no 4, chimbal em semicolcheias, prato na virada
-    if (s % 2 === 0) tone(t, 130, .15, { vol: .55, bus: musBus, to: 42 });
-    if (s === 7 || (bar === 3 && s === 5)) tone(t + half, 130, .12, { vol: .45, bus: musBus, to: 42 });
-    if (s === 2 || s === 6) { hiss(t, .16, { vol: .32, freq: 1900, type: 'bandpass', q: .7, bus: musBus }); tone(t, 210, .08, { type: 'triangle', vol: .16, bus: musBus }); }
-    if (bar === 3 && s >= 6) { hiss(t, .1, { vol: .22, freq: 1600, type: 'bandpass', q: .8, bus: musBus }); hiss(t + half, .1, { vol: .22, freq: 1600, type: 'bandpass', q: .8, bus: musBus }); }
-    hiss(t, .03, { vol: .05, freq: 8000, bus: musBus }); hiss(t + half, .025, { vol: .03, freq: 9000, bus: musBus });
-    if (k === 0 || k === 16) hiss(t, .8, { vol: .07, freq: 4500, bus: musBus });
-    // guitarra solo: frase curta de pentatônica no fim do 2º e do 4º compasso
-    if ((bar === 1 || bar === 3) && s === 6) [[64, 0], [67, 1], [69, 2], [71, 3]].forEach(([m, d]) => tone(t + d * half, midi(m + 12), .14, { type: 'sawtooth', vol: .035, bus: musBus }));
   }
-  function pump() { const spb = 60 / C.musicTempo / 2; while (nextT < ac.currentTime + .15) { scheduleStep(step++, nextT); nextT += spb; } }
+  function musLoad() {
+    if (musBuf || musLoading || !ac) return musLoading;
+    const files = musFiles(); let i = 0;
+    const next = () => {
+      if (i >= files.length) return Promise.reject(new Error('trilha não carregou'));
+      const url = files[i++];
+      const raw = (i === 1 && musRaw) ? musRaw.then(x => x.url === url ? x.ab : musFetch(url)) : musFetch(url);
+      return raw.then(ab => decode(ab)).catch(next);
+    };
+    musLoading = next().then(buf => { fixSeam(buf); musBuf = buf; musLoading = null; if (musWant) musPlay(musOffset); return buf; })
+      .catch(e => { musLoading = null; console.warn('[música]', e && e.message || e); });
+    return musLoading;
+  }
+  function musLoopLen() { const L = +MC().loopSec; return musBuf ? (L > 0 ? Math.min(L, musBuf.duration) : musBuf.duration) : 0; }
+  function musStop(fade) {
+    if (!musSrc) return;
+    const s = musSrc, g = musGain, t = ac.currentTime, f = fade == null ? (MC().fadeSec || .1) : fade;
+    musSrc = musGain = null;
+    try { g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.linearRampToValueAtTime(0, t + f); s.stop(t + f + .02); } catch (e) {}
+    s.onended = () => { try { s.disconnect(); g.disconnect(); } catch (e) {} };
+  }
+  function musPlay(offset = 0) {
+    if (!ac || !musBuf) return;
+    musStop(.03); // nunca duas trilhas ao mesmo tempo (reinício de partida)
+    const s = ac.createBufferSource(), g = ac.createGain(), t = ac.currentTime + .01, f = MC().fadeSec || .1, len = musLoopLen();
+    s.buffer = musBuf; s.loop = true; s.loopStart = 0; s.loopEnd = len;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1, t + f); // fade 0,1 s: sem clique ao entrar
+    s.connect(g); g.connect(musBus); s.start(t, (offset % len) || 0);
+    musSrc = s; musGain = g; musT0 = t - (offset % len || 0); musStarts++;
+  }
+  function musPos() { const len = musLoopLen(); return musSrc && len ? Math.max(0, ac.currentTime - musT0) % len : musOffset; }
   let sirenOn = false;
   return {
-    unlock() { init(); if (ac && ac.state === 'suspended') ac.resume(); },
+    unlock() { init(); if (ac && ac.state === 'suspended') ac.resume(); musLoad(); },
     get ctx() { return ac; },
+    // pré-carrega o arquivo da trilha (chamado no boot, antes de qualquer toque)
+    preload() { const f = musFiles()[0]; if (f && !musRaw) { const p = musFetch(f).then(ab => ({ url: f, ab })); p.catch(() => {}); musRaw = p; } },
+    // on: começa do início (contagem 3-2-1). off: para com fade (fim de partida). Reinício nunca duplica.
     music(on) {
+      musWant = !!on; musOffset = 0;
       if (!ac) return;
-      if (on && !playing) { playing = true; step = 0; nextT = ac.currentTime + .08; timer = setInterval(pump, 30); }
-      if (!on && playing) { playing = false; clearInterval(timer); }
+      if (on) { if (ac.state === 'suspended') ac.resume(); if (musBuf) musPlay(0); else musLoad(); }
+      else musStop();
     },
-    musicLevel(v) { if (ac) musBus.gain.setTargetAtTime(C.musicVolume * v, ac.currentTime, .15); },
+    // pausa: guarda onde parou e retoma dali
+    musicPause(p) {
+      if (!ac) return;
+      if (p) { if (musSrc) { musOffset = musPos(); musStop(); } musWant = false; }
+      else { musWant = true; if (musBuf) musPlay(musOffset); else musLoad(); }
+    },
+    get musicInfo() { return { loaded: !!musBuf, playing: !!musSrc, loop: musSrc ? musSrc.loop : null, loopEnd: musSrc ? musSrc.loopEnd : null, duration: musBuf ? musBuf.duration : 0, sampleRate: musBuf ? musBuf.sampleRate : 0, starts: musStarts, pos: musBuf ? musPos() : 0, volume: musBus ? musBus.gain.value : null, ctx: ac ? ac.state : 'none' }; },
     // motor: segurando o acelerador o giro sobe marcha a marcha e só chega no pico depois de engineSound.rampSec (10 s)
     engine(on, speedFrac = 0, throttle = 0) {
       if (!ac || !eng) return;
@@ -1257,7 +1295,7 @@ function newGame() {
   if (W.crowd) { W.crowd.forEach(s => scene.remove(s)); W.crowd = null; }
   placeZone(); syncBus(); snapCamera();
   releaseAll(); hideTalk(); showScreen(null); setHud(true); updateHud(true);
-  Sound.unlock(); Sound.music(true); Sound.musicLevel(.6);
+  Sound.unlock(); Sound.music(true); // a trilha entra junto com a contagem 3-2-1
   RA.start({ nick: player().nick || '' });
 }
 const DT = 1 / 60;
@@ -1406,8 +1444,8 @@ function victory() {
 function endGame(reason) {
   if (G.state !== 'play' && G.state !== 'count') return;
   G.state = 'over'; G.endReason = reason; G.overT = 0; releaseAll();
-  if (reason === 'tempo') { Sound.music(false); Sound.sfx('lose'); }
-  if (reason === 'encerrou') Sound.musicLevel(.3);
+  Sound.music(false);
+  if (reason === 'tempo') Sound.sfx('lose');
   const title = reason === 'vitoria' ? C.winTitle : goalFor(G.score);
   const r = { score: G.score, level: title, legends: G.rescued, duration: Math.round(G.elapsed), win: reason === 'vitoria' };
   LB.record(r);
@@ -1638,7 +1676,7 @@ function playedMsg() { return C.onePlayPer === 'device' ? T.playedMsgDevice : T.
 function goTitle() {
   G = freshState('menu'); setHud(false); hideTalk(); $('#count').classList.remove('on'); showScreen('comic');
   W.zone.visible = false; W.char.visible = false; if (W.crowd) { W.crowd.forEach(s => scene.remove(s)); W.crowd = null; }
-  Sound.musicLevel(.45);
+  Sound.music(false);
   const done = hasPlayed(), bg = $('#bGo');
   bg.disabled = done; bg.textContent = done ? 'PARTIDA JÁ JOGADA' : '[ ' + C.comic.button + ' ]';
   $('#cPlayed').style.display = done ? '' : 'none'; $('#cPlayed').textContent = done ? playedMsg() : '';
@@ -1729,8 +1767,8 @@ function showRankings(back) {
   showScreen('rankings');
   const me = $('#rkList tr.me'); if (me) me.scrollIntoView({ block: 'center' });
 }
-function pauseGame() { if (!G || G.state !== 'play') return; G.state = 'paused'; releaseAll(); showScreen('pause'); Sound.musicLevel(.2); }
-function resumeGame() { if (!G || G.state !== 'paused') return; G.state = 'play'; showScreen(null); Sound.musicLevel(.6); last = performance.now(); acc = 0; }
+function pauseGame() { if (!G || G.state !== 'play') return; G.state = 'paused'; releaseAll(); showScreen('pause'); Sound.musicPause(true); }
+function resumeGame() { if (!G || G.state !== 'paused') return; G.state = 'play'; showScreen(null); Sound.musicPause(false); last = performance.now(); acc = 0; }
 function ask({ title, text, ok = 'Confirmar', input = null, validate = null }) {
   return new Promise(res => {
     const prev = current, m = $('#modal'), inp2 = $('#mInput');
@@ -1855,7 +1893,7 @@ function frame(now) {
 }
 function fatal(msg) { $('#loadTxt').textContent = msg; $('#loadBar').style.width = '0'; }
 (async function boot() {
-  RA.init(C); TK.init(C);
+  RA.init(C); TK.init(C); Sound.preload();
   if (!window.THREE) return fatal('Não foi possível carregar o motor 3D. Verifique a internet e recarregue a página.');
   try { initRenderer(); } catch (e) { return fatal('Este aparelho não conseguiu abrir os gráficos 3D (WebGL). Tente outro navegador.'); }
   const t0 = performance.now();
@@ -1868,7 +1906,7 @@ function fatal(msg) { $('#loadTxt').textContent = msg; $('#loadBar').style.width
   requestAnimationFrame(t => { last = t; frame(t); });
   await new Promise(r => setTimeout(r, Math.max(0, 700 - (performance.now() - t0))));
   goTitle();
-  const first = () => { Sound.unlock(); Sound.music(true); Sound.musicLevel(G.state === 'menu' ? .45 : .6); removeEventListener('pointerdown', first, true); removeEventListener('keydown', first, true); };
+  const first = () => { Sound.unlock(); removeEventListener('pointerdown', first, true); removeEventListener('keydown', first, true); };
   addEventListener('pointerdown', first, true); addEventListener('keydown', first, true);
   if (new URLSearchParams(location.search).get('admin') === 'true') openAdmin();
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});

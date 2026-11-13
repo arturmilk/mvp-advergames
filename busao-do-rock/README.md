@@ -15,12 +15,18 @@ aparece o aviso para girar e a partida pausa.
 * **Peso dos assets do jogo:** ~1,2 MB em webp (texturas ~420 KB, fachada nova 123 KB, sprites 330 KB, HQ 337 KB).
 * **Som do motor:** segurando o acelerador o ronco sobe marcha a marcha (4 marchas, com a queda de giro e um estalo em cada troca) e
   só chega no pico depois de **10 s** (`engineSound.rampSec`, fatias de cada marcha em `engineSound.gears`). Soltando, o giro cai.
-* **Trilha:** riff **original** de hard rock em Mi (power chords com palhetada abafada e galope, bateria cheia com bumbo em todo tempo,
-  chimbal em semicolcheias, prato na virada e uma frase curta de guitarra solo, 176 bpm), no clima de
-  banda pesada dos anos 70 pedido como referência, **sem copiar nenhuma música** (direito autoral). Volume em `musicVolume`, andamento
-  em `musicTempo`; o botão de som da HUD tira tudo.
-* Áudio todo sintetizado com Web Audio: ronco do motor (acompanha a velocidade), buzina, riff de guitarra ao resgatar, sirene nos
-  últimos segundos, contagem 3-2-1, trilha de rock e solo da vitória.
+* **Trilha (13/11/2026):** a música é um **arquivo** escolhido pelo usuário, `assets/audio/trilha_loop.ogg` (Vorbis mono 48 kHz,
+  **42,000 s**, 325 KB), com cópia `trilha_loop.m4a` (AAC 96 kbps, 501 KB) para iPhone que não toca Vorbis. Toca pelo Web Audio
+  (`fetch` + `decodeAudioData` + `AudioBufferSourceNode` com `loop = true`), o que dá loop sem buraco (a tag `<audio loop>` engasga).
+  **Começa com a contagem 3-2-1**, pausa na pausa (botão, tecla P, celular em pé, troca de aba) e retoma do mesmo ponto, e **para no
+  fim da partida** (vitória, tempo esgotado ou encerrar). Na HQ e no menu fica sem música. Entra e sai com fade de 0,1 s; a emenda do
+  loop ganha uma rampa de 4 ms porque o fim do arquivo não bate com o começo (salto de 0,18 na amplitude, viraria um clique).
+  Configuração em `musicVolume` (0,5) e `music` (`file`, `fallback`, `loopSec`, `fadeSec`, `seamFixMs`); o botão de som da HUD
+  tira tudo. O arquivo é baixado já na abertura e decodificado no 1º toque, antes de a contagem começar.
+  **Origem e direitos da música: perguntar ao usuário e registrar aqui antes de divulgar** (conferir com o jurídico se não for própria).
+  A trilha sintetizada anterior (riff original em Mi, 176 bpm) foi removida.
+* Efeitos sintetizados com Web Audio: ronco do motor (acompanha a velocidade), buzina, riff de guitarra ao resgatar, sirene nos
+  últimos segundos, contagem 3-2-1 e solo da vitória.
 * Mesmo modo de operar dos outros jogos: apelido com o mesmo filtro de palavrões, placar local + planilha Google + dashboard, QR code
   de uso único (desligado por padrão), admin.
 
@@ -30,6 +36,7 @@ config.js               TODA a configuração (tempo, pontos, física, cidade, p
 assets/*.webp           texturas (asfalto, calçada, 3 fachadas, loja, céu, ônibus lateral/frente, árvore) + manifest.json
 assets/chars/*.webp     sprites das lendas (canvas 1024×512 igual para todos, fundo transparente)
 assets/comic/p1..p3.webp  quadros da HQ de abertura (600×600)
+assets/audio/            trilha_loop.ogg (trilha em loop) + trilha_loop.m4a (cópia AAC para iPhone sem Vorbis)
 assets/_raw/            originais (Higgsfield em webp q92, sprites em PNG com os nomes da pasta sprites), fonte para reprocessar
 assets/_raw/refs/       fotos de referência do Felipe e da fachada (FORA do git, .gitignore: pessoa real)
 tools/process_textures.py   converte assets/_raw -> assets/*.webp (potência de 2) + quadros da HQ + ícones
@@ -188,7 +195,7 @@ partida por aparelho.
 | Admin | `ADMIN_USER`, `ADMIN_PASS` (ou `ADMIN_PASS_SHA256`), `ADMIN_DELETE_PASSWORD`. **Troque antes de divulgar** (o arquivo é público) |
 | Apelidos | `nickPattern`, `nickFilter` (mesma lista dos outros jogos) |
 | QR code de uso único | `ticket` |
-| Áudio | `musicVolume`, `sfxVolume`, `engineVolume`, `musicTempo` |
+| Áudio | `musicVolume`, `music` (arquivo, reserva .m4a, `loopSec`, `fadeSec`, `seamFixMs`), `sfxVolume`, `engineVolume`, `engineSound` |
 
 Admin: `/?admin=true` ou segurar o título da HQ ("Busão do Rock") por 3 s. Mesmo painel dos outros jogos.
 
@@ -461,6 +468,25 @@ da janela (por exemplo 340 → 390 px), com `screen` de iPhone (390×844).
 | 740×360 e 932×430 | jogo e canvas na tela toda, sem rolagem horizontal; console sem erros do jogo ✔ |
 
 Não testado: Safari de verdade num iPhone (a checklist manual está no `TELA-CHEIA.md`) e Android físico.
+
+### Testes da trilha em arquivo (13/11/2026)
+
+Chromium (Playwright), coleta de dados bloqueada no teste. `__bus.Sound.musicInfo` mostra o estado da trilha
+(`loaded`, `playing`, `loop`, `loopEnd`, `duration`, `starts`, `pos`, `volume`).
+
+| # | Cenário | Resultado |
+|---|---|---|
+| 48 | Pré-carga | O `.ogg` é baixado na abertura, antes de qualquer toque; nenhum AudioContext é criado antes do toque ✔ |
+| 49 | Contagem | `newGame()`: estado `count`, trilha tocando com `loop = true`, `loopEnd = 42`, buffer de 42,000 s a 48 kHz, volume 0,5 ✔ |
+| 50 | Reinício | Duas partidas seguidas: 2 inícios, só **1** trilha viva (a anterior sai com fade) ✔ |
+| 51 | Pausa | Tecla P: trilha para em ~2,1 s, e ao retomar continua dali; a barra do Safari voltando (tela cheia suave) passa pela mesma pausa ✔ |
+| 52 | Fim | Tempo esgotado (`step(200)`): estado `over`, trilha parada, nenhuma fonte de áudio viva ✔ |
+| 53 | Loop | Duas voltas renderizadas no OfflineAudioContext com o mesmo buffer: nenhum trecho de 20 ms em silêncio (mínimo RMS 0,11, perto do fim do arquivo); salto na emenda 0,095, contra 0,042 de média entre amostras, então não há clique ✔ |
+| 54 | iPhone sem Vorbis | Com `canPlayType` vazio o jogo baixa o `.m4a`, decodifica (42,003 s, `loopEnd` limitado a 42) e toca ✔ |
+| 55 | Layout e console | 740×360, 932×430, 1000×480 deitado e 360/430/480 px em pé (aviso de girar): sem rolagem horizontal, console sem erros ✔ |
+
+Não testado: ouvir de verdade (o navegador de teste não tem saída de som), o Safari do iPhone (Vorbis ou `.m4a`), celular físico.
+O `sw.js` agora guarda também o áudio (cache `busao-do-rock-v5`).
 
 ## 8. Pendências antes de divulgar
 

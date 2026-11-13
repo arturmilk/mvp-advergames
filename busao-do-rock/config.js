@@ -258,13 +258,16 @@ const CONFIG = {
     ]
   },
 
-  /* ---------- Áudio (tudo sintetizado no navegador com Web Audio) ---------- */
-  musicVolume: 0.2,
+  /* ---------- Áudio (efeitos e motor sintetizados no Web Audio; a trilha é um arquivo em loop) ---------- */
+  musicVolume: 0.5,    // volume da trilha (0 a 1); o botão de som do jogo (mudo) continua valendo
+  // trilha: começa com a contagem 3-2-1, pausa na pausa e para no fim da partida. Loop pelo Web Audio (sem buraco).
+  // file = .ogg (Chrome, Android, Firefox, Safari novo); fallback = .m4a para iPhone que não toca Vorbis.
+  // loopSec = duração exata do loop (0 = o arquivo inteiro); fadeSec = entrada/saída suave; seamFixMs = alisa a emenda do loop.
+  music: { file: 'assets/audio/trilha_loop.ogg', fallback: 'assets/audio/trilha_loop.m4a', loopSec: 42, fadeSec: 0.1, seamFixMs: 4 },
   sfxVolume: 0.6,
   engineVolume: 0.16,
   // motor: segurando o acelerador o som sobe marcha a marcha até o pico em rampSec; gears = fatia de tempo de cada marcha (soma 1)
   engineSound: { rampSec: 10, gears: [0.18, 0.22, 0.27, 0.33], dropRate: 2.5 },
-  musicTempo: 176,     // trilha original de hard rock (riff em Mi com galope, bateria cheia); volume em musicVolume
 
   /* ---------- Tela cheia (fullscreen.js; igual em todos os jogos) ----------
      Android/iPad/computador: tela cheia de verdade no 1º toque. iPhone/Safari não tem tela cheia para páginas:
