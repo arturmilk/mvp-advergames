@@ -10,10 +10,10 @@ aparece o aviso para girar e a partida pausa.
   "Não foi possível carregar o motor 3D".
 * Texturas, fachada da loja e HQ de abertura geradas no **Higgsfield** e otimizadas em webp. Se alguma não carregar, o jogo desenha
   uma reserva procedural em Canvas com o mesmo id e não quebra.
-* **Lendas:** 9 sprites recortados (pasta `sprites` do Felipe), padronizados no mesmo canvas em `assets/chars/*.webp` (veja § 3).
-  A Rita Lee ainda não tem imagem e segue com o boneco provisório. O Felipe aparece na HQ (já desenhado nos quadros), na tela de
+* **Lendas:** 10 sprites recortados (pasta `sprites` do Felipe), padronizados no mesmo canvas em `assets/chars/*.webp` (veja § 3).
+  O Felipe aparece na HQ (já desenhado nos quadros), na tela de
   girar o celular e, comemorando, no cartão de fim de jogo quando o jogador zera (veja abaixo).
-* **Peso dos assets do jogo:** ~1,2 MB em webp (texturas ~420 KB, fachada nova 123 KB, sprites 330 KB, HQ 337 KB).
+* **Peso dos assets do jogo:** ~1,2 MB em webp (texturas ~420 KB, fachada nova 123 KB, sprites 352 KB, HQ 337 KB).
 * **Som do motor:** segurando o acelerador o ronco sobe marcha a marcha (4 marchas, com a queda de giro e um estalo em cada troca) e
   só chega no pico depois de **10 s** (`engineSound.rampSec`, fatias de cada marcha em `engineSound.gears`). Soltando, o giro cai.
 * **Trilha (13/11/2026):** a música é um **arquivo** escolhido pelo usuário, `assets/audio/trilha_loop.ogg` (Vorbis mono 48 kHz,
@@ -236,7 +236,7 @@ controles de toque, e respeita a safe-area (fica dentro do padding das telas). Q
 
 ## 3. Sprites das lendas
 
-Cada lenda tem um campo `image` no `config.js`. Vazio = boneco provisório (hoje só a **Rita Lee**).
+Cada lenda tem um campo `image` no `config.js`. Vazio = boneco provisório (hoje todas têm imagem; o boneco só aparece se a imagem não carregar).
 
 | id | Nome | Arquivo original (pasta `sprites`) | Sprite |
 |---|---|---|---|
@@ -249,7 +249,7 @@ Cada lenda tem um campo `image` no `config.js`. Vazio = boneco provisório (hoje
 | `sepultura` | Sepultura | `SEPULTURA.png` | 39 KB |
 | `angus` | Angus Young | `angus young.png` | 33 KB |
 | `axl` | Axl Rose | `axlr.png` | 20 KB |
-| `rita` | Rita Lee | (falta) | boneco |
+| `rita` | Rita Lee | `ritalee.png` (entrou em 14/11; o boneco provisório saiu) | 22 KB |
 
 * **Deep Purple saiu** da lista (não havia sprite) e entrou o **System of a Down** no mesmo lugar da ordem, com a fala
   "Wake up! Esse busão demorou mais que fila de show!".
@@ -257,7 +257,8 @@ Cada lenda tem um campo `image` no `config.js`. Vazio = boneco provisório (hoje
   todos (potência de 2), centraliza, encosta os pés na borda de baixo e salva webp com alpha (q72). Como o canvas é o mesmo, todas
   as lendas saem na mesma escala no jogo (altura `charHeight`); bandas largas (Slipknot, SOAD) também ocupam a altura toda.
 * **Para trocar ou acrescentar:** salve o PNG com fundo transparente em `assets/_raw/chars/`, ponha o par `id: 'arquivo.png'` em
-  `SPRITES` no script, rode o script e preencha `image: 'assets/chars/<id>.webp'` no `config.js`.
+  `SPRITES` no script, rode o script e preencha `image: 'assets/chars/<id>.webp'` no `config.js`. Para gerar só uma lenda sem
+  recomprimir as outras: `python tools/process_sprites.py rita` (o manifest mantém os itens das demais).
 * A mesma imagem aparece em pé na calçada (sprite que sempre encara a câmera), no retrato do balão de fala (recorte do meio, onde
   fica a pessoa) e no show final em frente à loja (em duas fileiras).
 * Ozzy e Sepultura vieram recortados da cintura/joelho para cima: na calçada eles "brotam" do chão. Para ficar perfeito, use
@@ -540,6 +541,20 @@ planilha). Vitória simulada com `__bus.seed(3)`, `newGame()`, `skipCount()` e `
 | 63 | Larguras | 360, 430 e 480 px (cartão em pé, ponteiro de mouse para não cair no aviso de girar): sem rolagem horizontal ✔ |
 | 64 | Imagem quebrada | `felipe_win.webp` bloqueado (service worker desligado): sem Felipe no palco e no cartão, as 10 lendas comemoram normalmente ✔ |
 | 65 | Console | Sem erros do jogo nos 6 tamanhos (o único erro é o envio ao Apps Script, bloqueado de propósito no teste) ✔ |
+
+Não testado: celular físico.
+
+### Testes do sprite da Rita Lee (14/11/2026)
+
+Chromium (Playwright) com WebGL por software, deitado, three.js r128 servido localmente, envios ao Apps Script bloqueados (nada foi
+para a planilha). Rota com `__bus.seed(11)` (a Rita é a 4ª).
+
+| # | Cenário | Resultado |
+|---|---|---|
+| 66 | Sprite | `ritalee.png` (438×570, muita sobra transparente) recortado e encaixado no canvas 1024×512: figura com 506 px de altura, como Raul, Kurt, Chorão e Axl; `rita.webp` 22 KB ✔ |
+| 67 | Calçada | 844×390 e 740×360: a Rita aparece no ponto com o mesmo tamanho que o Kurt na mesma distância (22 m) ✔ |
+| 68 | Balão | Ao embarcar: retrato da Rita (não mais o boneco), nome e fala ✔ |
+| 69 | Fim | Vitória total: palco e cartão com as 10 lendas e o Felipe, Rita com imagem; sem rolagem horizontal; console sem erros do jogo ✔ |
 
 Não testado: celular físico.
 

@@ -193,6 +193,15 @@
         "h": 512,
         "scale": 1.417,
         "kb": 64.3
+      },
+      {
+        "id": "rita",
+        "file": "chars/rita.webp",
+        "source": "_raw/chars/ritalee.png",
+        "w": 1024,
+        "h": 512,
+        "scale": 1.177,
+        "kb": 21.9
       }
     ]
   },

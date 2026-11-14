@@ -1,6 +1,7 @@
 """Padroniza os sprites dos personagens (assets/_raw/chars/*.png) em assets/chars/<id>.webp.
 
-Uso (na pasta busao-do-rock):  python tools/process_sprites.py
+Uso (na pasta busao-do-rock):  python tools/process_sprites.py          (todos)
+                               python tools/process_sprites.py rita     (só os ids passados; os outros ficam como estão)
 Requer: pip install pillow
 
 Todos saem no MESMO canvas (CANVAS, potência de 2 para o WebGL não redimensionar), fundo transparente,
@@ -32,6 +33,7 @@ SPRITES = {
     'angus':     'angus young.png',
     'axl':       'axlr.png',
     'soad':      'soad.png',
+    'rita':      'ritalee.png',
 }
 
 
@@ -48,9 +50,13 @@ def fit(im):
 
 
 def main():
+    import sys
+    only = [a for a in sys.argv[1:] if a in SPRITES]
     os.makedirs(OUT, exist_ok=True)
     report = []
     for cid, src in SPRITES.items():
+        if only and cid not in only:
+            continue
         out, s = fit(Image.open(os.path.join(RAW, src)))
         dst = os.path.join(OUT, cid + '.webp')
         out.save(dst, 'WEBP', quality=QUALITY, method=6, alpha_quality=90)
@@ -61,6 +67,9 @@ def main():
     man_path = os.path.join(ASSETS, 'manifest.json')
     with open(man_path, encoding='utf-8') as f:
         man = json.load(f)
+    if only:  # mantém os itens já gerados e troca/acrescenta só os ids processados agora
+        old = [it for it in man.get('characters', {}).get('items', []) if it['id'] not in only]
+        report = old + report
     man['characters'] = {
         'note': 'Sprites dos personagens: canvas igual para todos, fundo transparente, pés na borda de baixo. '
                 'Originais em _raw/chars (nomes da pasta sprites). Gere de novo com python tools/process_sprites.py.',

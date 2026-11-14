@@ -133,7 +133,7 @@ const CONFIG = {
     { id: 'raul',     name: 'Raul Seixas',   color: '#8C5A2B', image: 'assets/chars/raul.webp', line: 'Tentei outra vez e você finalmente chegou!' },
     { id: 'kurt',     name: 'Kurt Cobain',   color: '#C23A2B', image: 'assets/chars/kurt.webp', line: 'Que cheiro é esse? Ah, é espírito de busão!' },
     { id: 'chorao',   name: 'Chorão',        color: '#2B7AC2', image: 'assets/chars/chorao.webp', line: 'O skate me ensinou a chegar até atrasado, truta!' },
-    { id: 'rita',     name: 'Rita Lee',      color: '#E0572B', image: '', line: 'Ovelha negra da família, mas passageira VIP desse busão!' },
+    { id: 'rita',     name: 'Rita Lee',      color: '#E0572B', image: 'assets/chars/rita.webp', line: 'Ovelha negra da família, mas passageira VIP desse busão!' },
     { id: 'soad',     name: 'System of a Down', color: '#7A2BC2', image: 'assets/chars/soad.webp', line: 'Wake up! Esse busão demorou mais que fila de show!' },
     { id: 'slipknot', name: 'Slipknot',      color: '#C2702B', image: 'assets/chars/slipknot.webp', line: 'Tô de máscara pra ninguém ver que eu esperei uma hora no ponto.' },
     { id: 'sepultura',name: 'Sepultura',     color: '#3A7A2B', image: 'assets/chars/sepultura.webp', line: 'Roots, bloody roots! Raiz mesmo é esperar ônibus no sol!' },
