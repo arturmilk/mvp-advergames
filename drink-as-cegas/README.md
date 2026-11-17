@@ -1,0 +1,90 @@
+# Drink às Cegas
+
+Jogo cooperativo para **dois celulares** (retrato, 360–480 px). Um jogador é o **GUIA** e vê a receita. O outro é o **MISTURADOR** e vê ícones misteriosos, sem saber qual ingrediente é cada um. Os dois veem a mesma taça e conversam em voz alta, fora do app. A partida dura **30 segundos**. No fim, os dois veem o drink esperado, o que foi para a taça (cada ícone e o ingrediente de verdade) e uma **nota de 0 a 10**.
+
+- URL futura: `https://arturmilk.github.io/mvp-advergames/drink-as-cegas/`
+- QR code: `qr/qr-drink-as-cegas.png` e `.svg` (gerar de novo com `python drink-as-cegas/tools/make_qr.py [url]`)
+- Tudo o que é ajustável fica no `config.js`: tempo, receitas, ingredientes, nota, avatar, conexão e textos.
+- Sem planilha, Apps Script nem dashboard por enquanto (não carrega `analytics.js` e não tem id em `GAMES`).
+- `localStorage` com prefixo próprio `dc_` (`dc_player`, `dc_code`).
+
+## Fluxo
+
+1. **Apelido**: 1 a 6 caracteres `A–Z 0–9 -`, com o mesmo `nickFilter` dos outros jogos.
+2. **Avatar**: 6 avatares prontos, ou monte com cor, rosto e acessório (adesivos SVG desenhados no código).
+3. **Códigos**: "Seu código" (4 caracteres, sem 0/O e 1/I/L) e "Colocar código". Quem digita o código do outro chama para a partida. "Convidar" compartilha o link `…/drink-as-cegas/?c=CÓDIGO`, que já chama ao abrir.
+4. **Partida encontrada**: o jogo sorteia quem é o GUIA (`roles`) e explica o papel. Os dois apertam "Estou pronto", aí vem a contagem 3, 2, 1.
+5. **Partida (30 s)**:
+   - GUIA: card da receita (rosa) e a taça.
+   - MISTURADOR: a taça, 12 ícones misteriosos (glifo e cor sorteados a cada partida), "Tirar o último" e "Servir!".
+   - A taça é a mesma para os dois e mostra o que caiu nela (`mixerSeesRealInGlass`).
+6. **Resultado**: nota e estrelas, a tabela "receita × feito", "o que foi para a taça" (ícone = ingrediente) e Revanche (os papéis trocam) ou Sair.
+
+## Nota do drink (`CONFIG.scoring`)
+
+`acerto = (unidades certas − 0,75 × unidades erradas ou a mais) ÷ unidades da receita`, e `nota = acerto × 10`, arredondada em 0,5. Só o drink idêntico à receita tira 10. Pontos = nota × 100, mais até +300 pelo tempo que sobrou, só no drink perfeito. Os pontos já estão prontos para um ranking futuro, mas ainda não são enviados para lugar nenhum. As frases de cada faixa ficam em `scoring.labels`.
+
+## Conexão entre os dois celulares
+
+**Escolha: WebRTC com PeerJS** (`vendor/peerjs.min.js` 1.5.4, licença MIT, copiado para o repositório, sem npm e sem build).
+
+- O código do jogador é o id dele no **servidor público e gratuito do PeerJS** (`0.peerjs.com`), com o prefixo `mtg-drinkcegas-`. Não usa chave nem segredo.
+- O servidor só apresenta os dois celulares. Depois, os dados (toques, taça, relógio) vão direto de um celular para o outro.
+- Quem **foi chamado** hospeda a partida: sorteia a receita e os ícones, controla o relógio e calcula a nota. Quem chamou só envia os toques e mostra o que recebe, então os dois sempre veem a mesma taça e o mesmo resultado.
+
+**Limitações:**
+
+- O servidor público e os servidores TURN do PeerJS não têm garantia (SLA). Se caírem, ninguém consegue criar código. Para evento grande, suba um `peerjs-server` próprio (é grátis, mas precisa de hospedagem) e preencha `net.peerServer`.
+- Algumas redes bloqueiam conexão direta (4G com CGNAT, Wi-Fi de empresa). Nesses casos o PeerJS passa pelo TURN público dele, que pode ser lento ou falhar. A mensagem do jogo sugere "os dois no 4G ou no mesmo Wi-Fi".
+- Se um celular bloquear a tela ou trocar de app, a conexão pode cair. Depois de 10 s sem sinal, o outro volta para a tela de códigos.
+- Não existe ranking nem servidor próprio. A pontuação fica só na tela.
+
+**Modos de teste:**
+
+- `?local=1`: duas **abas do mesmo navegador** conversam por `BroadcastChannel`, sem internet. Cada aba é um "celular" (usa `sessionStorage`).
+- `?bot=1`: libera o código `BOT`, um parceiro simulado. Quando o BOT é o guia, ele "fala" em balões. Quando é o misturador, acerta cerca de 75% das vezes. Serve para demonstração com uma pessoa só. Dá para combinar os dois: `?local=1&bot=1`.
+
+## Ganchos de teste (`window.__dc`)
+
+`__dc.step(s)` avança o relógio manualmente (o modo determinístico; os temporizadores reais param de contar). Também há `__dc.seed(n)` (fixa o sorteio de receita e ícones no lado que hospeda), `__dc.tap(id)` (toca no ícone misterioso desse ingrediente), `__dc.recipe()`, `__dc.role()`, `__dc.state()`, `__dc.score(recipe, glass, leftMs)` e `__dc.setPlayer(nick)`.
+
+## Testes feitos (17/11/2026)
+
+`tools/teste-playwright.js` (Chromium headless, duas abas `?local=1`, viewport de celular, 37 verificações, rodado 3 vezes seguidas sem falha):
+
+- O apelido `B0STA` é barrado. `ANA` passa para o avatar.
+- Código curto é recusado e código inexistente avisa "não encontrado".
+- B digita o código de A: os dois entram na partida com papéis diferentes. O guia não vê os ícones e o misturador não vê a receita nem o nome dos ingredientes.
+- Receita completa com 1 erro, "Tirar o último" e acerto: o relógio fica igual nos dois, "Servir!" dá **nota 10** e o resultado é idêntico nos dois.
+- Na revanche os papéis trocam. Com o tempo esgotado e a taça incompleta, a nota é 1,5.
+- Quando um sai, o outro volta para a tela de códigos.
+- 360, 430 e 480 px sem rolagem horizontal nas 6 telas.
+- Partida contra o BOT termina. Console limpo.
+
+Para rodar: `python -m http.server 8811` na raiz do repositório e `node drink-as-cegas/tools/teste-playwright.js <pasta-das-fotos>`.
+
+**Não testado:**
+
+- **celular físico**
+- **conexão real entre dois celulares pelo PeerJS** (o ambiente de teste não acessa o `0.peerjs.com`)
+- iPhone/Safari
+- vibração
+- fontes e performance em aparelho fraco
+
+## Arquivos
+
+- `index.html`: telas, desenhos SVG (adesivos), rede e lógica
+- `config.js`: tudo o que é ajustável
+- `vendor/peerjs.min.js`: PeerJS (MIT)
+- `assets/fonts/`: Space Grotesk e Plus Jakarta Sans (OFL), servidas pelo próprio site
+- `assets/icon-*.png`: gerados por `tools/make_icons.py`
+- `qr/`: QR code (`tools/make_qr.py`, requer `pip install segno`)
+- `montaggio-selo.js`: cópia idêntica à dos outros jogos
+
+## Pendências
+
+- Decidir sobre bebida alcoólica (CONAR, possível público menor de idade). `alcoholFree: true` deixa só receitas sem álcool.
+- LGPD: não há tela de privacidade. Hoje nada sai do celular além do apelido e do avatar, que vão só para o parceiro.
+- Testar em dois celulares de verdade, em 4G e em Wi-Fi.
+- Se for usado em evento grande, ter um servidor PeerJS próprio.
+- Depois: analytics (id novo em `GAMES` no `Code.gs`, nova versão do Apps Script, filtro no dashboard) e ranking.

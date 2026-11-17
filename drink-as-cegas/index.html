@@ -1,0 +1,1097 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0C0C0D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Jogo cooperativo para dois celulares: um lê a receita, o outro monta o drink sem saber qual ingrediente é qual.">
+<title>Drink às Cegas</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<style>
+@font-face{font-family:'Space Grotesk';font-weight:500;font-display:swap;src:url(assets/fonts/space-grotesk-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Space Grotesk';font-weight:700;font-display:swap;src:url(assets/fonts/space-grotesk-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Plus Jakarta Sans';font-weight:500;font-display:swap;src:url(assets/fonts/plus-jakarta-sans-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Plus Jakarta Sans';font-weight:600;font-display:swap;src:url(assets/fonts/plus-jakarta-sans-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Plus Jakarta Sans';font-weight:700;font-display:swap;src:url(assets/fonts/plus-jakarta-sans-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Plus Jakarta Sans';font-weight:800;font-display:swap;src:url(assets/fonts/plus-jakarta-sans-latin-800-normal.woff2) format('woff2')}
+:root{
+  --bg-canvas:#0C0C0D; --bg-surface:#16151D; --bg-surface-elevated:#211F2B;
+  --color-purple:#5D2A8E; --color-pink:#E8336D; --color-pink-deep:#C81E56; --color-teal:#009F93;
+  --text-primary:#F2E9FC; --text-secondary:#B8ABC9; --text-muted:#7A6E8A;
+  --border-subtle:rgba(242,233,252,.12);
+  --glow-pink:0 0 18px rgba(232,51,109,.5); --glow-teal:0 0 16px rgba(0,159,147,.45); --glow-purple:0 0 22px rgba(93,42,142,.55);
+  --radius-card:20px; --radius-pill:9999px; --radius-input:12px;
+  --f-display:'Space Grotesk','Outfit',system-ui,sans-serif;
+  --f-ui:'Plus Jakarta Sans','Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg-canvas);color:var(--text-primary);font:500 16px/1.5 var(--f-ui);overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overscroll-behavior:none}
+body{min-height:100vh;min-height:100dvh}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+svg{display:block}
+[hidden]{display:none!important}
+#app{max-width:480px;margin:0 auto;position:relative}
+.screen{display:none;flex-direction:column;gap:16px;min-height:100vh;min-height:100dvh;
+  padding:calc(var(--sat) + 16px) 20px calc(var(--sab) + 24px)}
+.screen.on{display:flex}
+
+/* tipografia */
+.dxl{font:700 32px/1.15 var(--f-display);letter-spacing:-.01em}
+.h1{font:700 24px/1.2 var(--f-display)}
+.h2{font:700 18px/1.3 var(--f-display)}
+.body{font:500 16px/1.5 var(--f-ui);color:var(--text-secondary)}
+.small{font:500 13px/1.4 var(--f-ui);color:var(--text-muted)}
+.label{font:700 12px/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary)}
+.center{text-align:center}
+.grow{flex:1}
+
+/* topo */
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px}
+.brand{display:flex;align-items:center;gap:8px;font:700 16px/1 var(--f-display)}
+.brand svg{width:32px;height:32px}
+.client{font:600 12px/1 var(--f-ui);color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase}
+
+/* botões */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:56px;min-height:52px;padding:0 24px;
+  border-radius:var(--radius-pill);font:700 15px/1 var(--f-ui);letter-spacing:.05em;text-transform:uppercase;
+  transition:transform .08s ease,box-shadow .2s ease,background .2s ease;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.btn:active{transform:scale(.96)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btn.cta{background:linear-gradient(135deg,var(--color-pink),var(--color-pink-deep));color:var(--text-primary);box-shadow:0 4px 20px rgba(232,51,109,.45)}
+.btn.cta:active{box-shadow:var(--glow-pink)}
+.btn.teal{background:var(--bg-surface-elevated);border:1.5px solid var(--color-teal);color:var(--text-primary);box-shadow:var(--glow-teal)}
+.btn.ghost{background:var(--bg-surface);border:1px solid var(--border-subtle);color:var(--text-secondary)}
+.btn.ghost:active{background:var(--bg-surface-elevated)}
+.btn.sm{height:52px;padding:0 16px;font-size:13px}
+.row{display:flex;gap:8px}
+.row>.btn{flex:1}
+.link{font:700 13px/1 var(--f-ui);color:var(--text-secondary);text-decoration:underline;text-underline-offset:3px;min-height:52px;padding:0 8px}
+
+/* cards */
+.card{background:radial-gradient(120% 90% at 50% 0%,rgba(93,42,142,.28),transparent 62%),var(--bg-surface);
+  border:1.5px solid var(--color-purple);border-radius:var(--radius-card);padding:20px;display:flex;flex-direction:column;gap:16px}
+.card.pink{border:2px solid var(--color-pink);box-shadow:var(--glow-pink)}
+.card.teal{border:2px solid var(--color-teal);box-shadow:var(--glow-teal)}
+.card.flat{background:var(--bg-surface);border:1px solid var(--border-subtle)}
+.badge{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:var(--radius-pill);
+  font:700 11px/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;background:var(--color-purple);color:var(--text-primary)}
+.badge.teal{background:rgba(0,159,147,.18);color:#5BE3D6;border:1px solid var(--color-teal)}
+.badge.pink{background:rgba(232,51,109,.16);color:#FF8FB1;border:1px solid var(--color-pink)}
+
+/* inputs */
+.field{display:flex;flex-direction:column;gap:8px}
+.input{height:56px;width:100%;border-radius:var(--radius-input);border:1.5px solid var(--border-subtle);background:var(--bg-canvas);
+  padding:0 16px;font:700 22px/1 var(--f-display);letter-spacing:.18em;text-transform:uppercase;color:var(--text-primary);outline:none}
+.input::placeholder{color:var(--text-muted);letter-spacing:.06em;font-weight:500;font-size:16px}
+.input:focus{border-color:var(--color-teal);box-shadow:var(--glow-teal)}
+.err{min-height:20px;font:600 13px/1.4 var(--f-ui);color:#FF8FB1}
+
+/* chips de jogador */
+.chip{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 14px 0 4px;border-radius:var(--radius-pill);
+  background:var(--bg-surface-elevated);border:1px solid var(--color-teal);font:700 14px/1 var(--f-display);letter-spacing:.04em;max-width:100%}
+.chip svg{width:36px;height:36px;flex:none}
+.chip .x{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;margin-right:-8px;color:var(--text-muted);font-size:16px}
+
+/* adesivos (card sticker) */
+.stk{filter:drop-shadow(0 3px 0 rgba(0,0,0,.45)) drop-shadow(0 6px 10px rgba(0,0,0,.35))}
+
+/* tela inicial */
+.hero{position:relative;height:220px;margin:0 -8px}
+.hero .glass{position:absolute;left:50%;top:6px;width:170px;height:204px;transform:translateX(-50%)}
+.hero .s{position:absolute;width:64px;height:64px}
+.title-wrap{display:flex;flex-direction:column;gap:8px;text-align:center}
+.foot{margin-top:auto}
+
+/* avatar */
+.av-prev{display:flex;flex-direction:column;align-items:center;gap:8px}
+#av-big svg{width:120px;height:120px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:4px;border-radius:var(--radius-pill);background:var(--bg-surface);border:1px solid var(--border-subtle)}
+.tab{height:44px;border-radius:var(--radius-pill);font:700 12px/1 var(--f-ui);letter-spacing:.04em;text-transform:uppercase;color:var(--text-secondary)}
+.tab.on{background:var(--bg-surface-elevated);color:var(--text-primary);box-shadow:inset 0 0 0 1px var(--color-teal)}
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.opt{height:72px;border-radius:16px;background:var(--bg-surface);border:1.5px solid var(--border-subtle);display:flex;align-items:center;justify-content:center;transition:transform .08s}
+.opt:active{transform:scale(.96)}
+.opt.on{border-color:var(--color-teal);box-shadow:var(--glow-teal);background:var(--bg-surface-elevated)}
+.opt svg{width:56px;height:56px}
+.swatch{width:40px;height:40px;border-radius:50%;border:4px solid #fff;box-shadow:0 3px 0 rgba(0,0,0,.45)}
+
+/* lobby */
+.me-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.code-big{display:flex;justify-content:center;gap:8px}
+.code-big span{width:56px;height:64px;border-radius:var(--radius-input);background:var(--bg-canvas);border:1.5px solid var(--color-teal);
+  display:flex;align-items:center;justify-content:center;font:700 32px/1 var(--f-display);color:var(--text-primary);box-shadow:var(--glow-teal)}
+.code-big.wait span{border-color:var(--border-subtle);box-shadow:none;color:var(--text-muted)}
+.net{display:flex;align-items:center;justify-content:center;gap:8px;font:600 13px/1.3 var(--f-ui);color:var(--text-secondary);text-align:center}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--text-muted);flex:none}
+.dot.ok{background:var(--color-teal);box-shadow:var(--glow-teal)}
+.dot.bad{background:var(--color-pink);box-shadow:var(--glow-pink)}
+.dot.wait{animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+.steps{display:flex;flex-direction:column;gap:12px;list-style:none;counter-reset:s}
+.steps li{display:flex;gap:12px;align-items:flex-start;font:500 15px/1.45 var(--f-ui);color:var(--text-secondary)}
+.steps li::before{counter-increment:s;content:counter(s);flex:none;width:28px;height:28px;border-radius:50%;background:var(--color-purple);
+  color:var(--text-primary);font:700 14px/28px var(--f-display);text-align:center}
+.steps b{color:var(--text-primary)}
+
+/* partida encontrada */
+.vs{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.vs .plus{font:700 20px/1 var(--f-display);color:var(--color-pink)}
+.role-ico{width:72px;height:72px;margin:0 auto}
+.ready-row{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+
+/* contagem */
+.count{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(12,12,13,.86)}
+.count.on{display:flex}
+.count b{font:700 120px/1 var(--f-display);color:var(--text-primary);text-shadow:0 0 32px rgba(232,51,109,.8)}
+
+/* partida */
+#s-play{gap:12px;height:100vh;height:100dvh;min-height:0;overflow:hidden}
+.hud{display:flex;align-items:center;gap:8px}
+.timer{display:flex;align-items:center;justify-content:center;min-width:76px;height:40px;padding:0 12px;border-radius:var(--radius-pill);
+  background:var(--bg-surface-elevated);border:1.5px solid var(--color-teal);font:700 20px/1 var(--f-display);box-shadow:var(--glow-teal)}
+.timer.hot{border-color:var(--color-pink);box-shadow:var(--glow-pink);color:#FFB3C9}
+.timer.pulse{animation:pulse .5s infinite alternate}
+@keyframes pulse{to{transform:scale(1.08)}}
+.bar{flex:1;height:8px;border-radius:var(--radius-pill);background:var(--bg-surface-elevated);overflow:hidden}
+.bar i{display:block;height:100%;width:100%;border-radius:inherit;background:var(--color-teal);box-shadow:var(--glow-teal);transform-origin:left;transition:transform .12s linear}
+.bar.hot i{background:var(--color-pink)}
+.role-line{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.play-glass{flex:1;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative}
+.play-glass svg{height:100%;max-height:260px;width:auto;max-width:100%}
+.glass-count{position:absolute;right:0;bottom:0;font:700 12px/1 var(--f-ui);color:var(--text-muted)}
+.recipe{gap:12px;padding:16px 20px}
+.recipe-head{display:flex;align-items:center;gap:12px}
+.recipe-head .ico{width:52px;height:52px;flex:none}
+.ing-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ing{display:flex;align-items:center;gap:8px;min-height:48px;padding:4px 8px 4px 4px;border-radius:var(--radius-input);background:var(--bg-surface-elevated);
+  font:600 13px/1.2 var(--f-ui);color:var(--text-primary)}
+.ing svg{width:40px;height:40px;flex:none}
+.ing .q{margin-left:auto;font:700 16px/1 var(--f-display);color:#FF8FB1}
+.ing.done{box-shadow:inset 0 0 0 1.5px var(--color-teal)}
+.ing.done .q{color:#5BE3D6}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tile{aspect-ratio:1/1;min-height:52px;border-radius:16px;background:var(--bg-surface);border:1.5px solid var(--border-subtle);
+  display:flex;align-items:center;justify-content:center;transition:transform .08s,background .15s;touch-action:manipulation}
+.tile:active{transform:scale(.92);background:var(--bg-surface-elevated)}
+.tile svg{width:68%;height:68%}
+.tile.hit{animation:hit .25s}
+@keyframes hit{50%{transform:scale(.9);box-shadow:var(--glow-teal)}}
+.say{position:absolute;left:50%;top:0;transform:translateX(-50%);max-width:92%;padding:10px 16px;border-radius:16px;background:var(--color-purple);
+  box-shadow:var(--glow-purple);font:700 15px/1.3 var(--f-ui);text-align:center;opacity:0;transition:opacity .2s;pointer-events:none;z-index:2}
+.say.on{opacity:1}
+.pop{animation:pop .3s ease-out;transform-box:fill-box;transform-origin:center}
+@keyframes pop{from{transform:scale(.2) translateY(-40px);opacity:0}to{transform:none;opacity:1}}
+
+/* resultado */
+.grade{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.grade .n{font:700 72px/1 var(--f-display);text-shadow:0 0 24px rgba(232,51,109,.6)}
+.grade .n small{font-size:28px;color:var(--text-muted)}
+.stars{display:flex;gap:4px}
+.stars svg{width:28px;height:28px}
+.cmp{width:100%;border-collapse:collapse;font:600 14px/1.2 var(--f-ui)}
+.cmp th{font:700 11px/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);text-align:right;padding:0 0 8px}
+.cmp th:first-child{text-align:left}
+.cmp td{padding:6px 0;border-top:1px solid var(--border-subtle);text-align:right}
+.cmp td:first-child{text-align:left}
+.cmp .nm{display:flex;align-items:center;gap:8px}
+.cmp .nm svg{width:32px;height:32px;flex:none}
+.cmp .ok{color:#5BE3D6}.cmp .no{color:#FF8FB1}
+.used{display:flex;flex-wrap:wrap;gap:8px}
+.used .u{display:flex;align-items:center;gap:2px;padding:4px 8px 4px 4px;border-radius:var(--radius-input);background:var(--bg-surface-elevated)}
+.used .u svg{width:30px;height:30px}
+.used .u .arr{font:700 12px/1 var(--f-ui);color:var(--text-muted);margin:0 2px}
+.wait-msg{text-align:center;font:600 13px/1.4 var(--f-ui);color:var(--text-secondary);min-height:18px}
+
+.toast{position:fixed;left:50%;bottom:calc(var(--sab) + 24px);transform:translateX(-50%) translateY(20px);max-width:calc(100% - 40px);width:max-content;
+  padding:12px 20px;border-radius:var(--radius-pill);background:var(--bg-surface-elevated);border:1px solid var(--color-pink);box-shadow:var(--glow-pink);
+  font:700 14px/1.3 var(--f-ui);text-align:center;opacity:0;pointer-events:none;transition:.2s;z-index:30}
+.toast.on{opacity:1;transform:translateX(-50%)}
+@media (max-height:640px){
+  .hero{height:170px}.hero .glass{width:130px;height:156px}
+  #s-play{gap:8px}.tiles{gap:6px}.recipe{padding:12px 16px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- 1. APELIDO -->
+<section id="s-nick" class="screen">
+  <div class="top"><div class="brand" data-brand></div><span class="client" data-client></span></div>
+  <div class="hero" id="hero"></div>
+  <div class="title-wrap">
+    <h1 class="dxl" data-gname></h1>
+    <p class="body" data-tagline></p>
+  </div>
+  <div class="card">
+    <div class="field">
+      <label class="label" for="nick">Seu apelido</label>
+      <input id="nick" class="input" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Até 6 letras" enterkeyhint="go">
+      <p class="err" id="nick-err" role="alert"></p>
+    </div>
+    <button class="btn cta" id="nick-ok">Continuar</button>
+  </div>
+  <div class="foot"></div>
+</section>
+
+<!-- 2. AVATAR -->
+<section id="s-avatar" class="screen">
+  <div class="top"><button class="link" id="av-back">‹ Voltar</button><span class="label">Passo 2 de 2</span></div>
+  <h2 class="h1">Monte seu avatar</h2>
+  <div class="av-prev"><div id="av-big"></div><span class="chip" id="av-chip"></span></div>
+  <div class="tabs" role="tablist">
+    <button class="tab on" data-tab="presets">Prontos</button>
+    <button class="tab" data-tab="c">Cor</button>
+    <button class="tab" data-tab="f">Rosto</button>
+    <button class="tab" data-tab="h">Extra</button>
+  </div>
+  <div class="opts" id="av-opts"></div>
+  <div class="grow"></div>
+  <button class="btn cta" id="av-ok">Pronto</button>
+</section>
+
+<!-- 3. CÓDIGOS -->
+<section id="s-lobby" class="screen">
+  <div class="top"><div class="brand" data-brand></div><span class="client" data-client></span></div>
+  <div class="me-row"><span class="chip" id="me-chip"></span><button class="link" id="me-edit">Editar</button></div>
+  <div class="card teal">
+    <div class="row" style="justify-content:space-between;align-items:center"><span class="label">Seu código</span><span class="badge teal">Mostre ao parceiro</span></div>
+    <div class="code-big wait" id="my-code"></div>
+    <p class="net" id="net"><i class="dot wait"></i><span>Conectando...</span></p>
+    <div class="row">
+      <button class="btn ghost sm" id="copy">Copiar</button>
+      <button class="btn ghost sm" id="invite">Convidar</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="field">
+      <label class="label" for="code-in">Colocar código</label>
+      <input id="code-in" class="input" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Código do parceiro" enterkeyhint="go">
+      <p class="err" id="code-err" role="alert"></p>
+    </div>
+    <button class="btn cta" id="call">Chamar para a partida</button>
+  </div>
+  <div class="card flat">
+    <h3 class="h2">Como funciona</h3>
+    <ol class="steps">
+      <li><span>Um de vocês digita o <b>código do outro</b>.</span></li>
+      <li><span>O <b>guia</b> vê a receita. O <b>misturador</b> vê ícones misteriosos e não sabe o que é cada um.</span></li>
+      <li><span>Conversem em voz alta: o guia orienta, o misturador toca. Vocês têm <b data-secs>30</b> segundos.</span></li>
+    </ol>
+  </div>
+  <div class="foot"></div>
+</section>
+
+<!-- 4. PARTIDA ENCONTRADA -->
+<section id="s-match" class="screen">
+  <div class="top"><div class="brand" data-brand></div><button class="link" id="match-leave">Sair</button></div>
+  <div class="vs" id="vs"></div>
+  <div class="card" id="role-card">
+    <div id="role-ico" class="role-ico"></div>
+    <span class="badge center" id="role-badge" style="align-self:center"></span>
+    <h2 class="dxl center" id="role-title"></h2>
+    <p class="body center" id="role-text"></p>
+  </div>
+  <div class="grow"></div>
+  <p class="wait-msg" id="ready-msg"></p>
+  <button class="btn cta" id="ready">Estou pronto</button>
+</section>
+
+<!-- 5. PARTIDA -->
+<section id="s-play" class="screen">
+  <div class="hud"><div class="timer" id="timer">0:30</div><div class="bar" id="bar"><i></i></div></div>
+  <div class="role-line"><span class="badge" id="play-role"></span><span class="chip" id="play-partner"></span></div>
+  <div id="guide-view" class="card pink recipe" hidden></div>
+  <div class="play-glass" id="play-glass"><div class="say" id="say"></div></div>
+  <div id="mixer-view" hidden>
+    <div class="tiles" id="tiles"></div>
+  </div>
+  <div class="row" id="play-btns">
+    <button class="btn ghost sm" id="undo">Tirar o último</button>
+    <button class="btn cta sm" id="serve">Servir!</button>
+  </div>
+</section>
+
+<!-- 6. RESULTADO -->
+<section id="s-result" class="screen">
+  <div class="top"><div class="brand" data-brand></div><span class="client" data-client></span></div>
+  <div class="grade" id="grade"></div>
+  <div class="card pink" id="res-recipe"></div>
+  <div class="card teal" id="res-used"></div>
+  <p class="wait-msg" id="again-msg"></p>
+  <div class="row">
+    <button class="btn ghost" id="res-leave">Sair</button>
+    <button class="btn cta" id="again">Revanche</button>
+  </div>
+  <div class="foot"></div>
+</section>
+
+<div class="count" id="count"><b>3</b></div>
+<div class="toast" id="toast"></div>
+</div>
+
+<script src="config.js"></script>
+<script src="vendor/peerjs.min.js"></script>
+<script src="montaggio-selo.js"></script>
+<script>
+'use strict';
+const C = window.CONFIG;
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const QS = new URLSearchParams(location.search);
+const LOCAL = QS.has('local') || C.net.mode === 'local';
+const BOT_OK = QS.has('bot');
+const ROUND_MS = C.roundSeconds * 1000;
+
+/* ======================= armazenamento (prefixo próprio; no modo local cada aba é um "celular") ======================= */
+const store = {
+  s() { try { return LOCAL ? window.sessionStorage : window.localStorage; } catch (e) { return null; } },
+  get(k, d) { try { const v = this.s().getItem(C.storagePrefix + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { this.s().setItem(C.storagePrefix + k, JSON.stringify(v)); } catch (e) {} }
+};
+
+/* ======================= relógio (real ou manual para teste: __dc.step) ======================= */
+const clock = { manual: false, t: 0, now() { return this.manual ? this.t : performance.now(); } };
+
+/* ======================= sorteio com semente ======================= */
+function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function shuffle(arr, r) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+const ING = Object.fromEntries(C.ingredients.map(i => [i.id, i]));
+const RECIPES = C.recipes.filter(r => !C.alcoholFree || !r.alcohol).filter(r => Object.keys(r.items).every(id => ING[id] && (!C.alcoholFree || !ING[id].alcohol)));
+const POOL = C.ingredients.filter(i => !C.alcoholFree || !i.alcohol);
+
+/* ======================= desenhos (adesivos com contorno branco) ======================= */
+const circ = (x, y, r) => `M${x - r},${y}a${r},${r} 0 1,0 ${2 * r},0a${r},${r} 0 1,0 ${-2 * r},0z`;
+const rr = (x, y, w, h, r) => `M${x + r},${y}h${w - 2 * r}a${r},${r} 0 0 1 ${r},${r}v${h - 2 * r}a${r},${r} 0 0 1 ${-r},${r}h${-(w - 2 * r)}a${r},${r} 0 0 1 ${-r},${-r}v${-(h - 2 * r)}a${r},${r} 0 0 1 ${r},${-r}z`;
+/* shapes: [[d, fill]]; primeiro desenha o contorno branco de todas (adesivo), depois as cores e os detalhes */
+function stk(shapes, details = '', outline = 9) {
+  const d = shapes.map(s => s[0]).join(' ');
+  return `<path d="${d}" fill="#fff" stroke="#fff" stroke-width="${outline}" stroke-linejoin="round"/>` +
+    shapes.map(([p, f]) => `<path d="${p}" fill="${f}" stroke="rgba(12,12,13,.3)" stroke-width="1.6"/>`).join('') + details;
+}
+const DROP = 'M0,-44C18,-20 34,-2 34,14A34,34 0 0,1 -34,14C-34,-2 -18,-20 0,-44Z';
+const ART = {
+  bottle: c => stk([[rr(-10, -46, 20, 10, 3), '#2B2733'], [rr(-8, -38, 16, 28, 3), c], ['M-8,-14C-8,-8 -22,-6 -22,8V36C-22,42 -18,45 -12,45H12C18,45 22,42 22,36V8C22,-6 8,-8 8,-14Z', c]],
+    `<path d="${rr(-15, 6, 30, 22, 5)}" fill="#F2E9FC" opacity=".92"/><rect x="-9" y="12" width="18" height="3.5" rx="1.75" fill="#5D2A8E"/><rect x="-6" y="19" width="12" height="3" rx="1.5" fill="#B8ABC9"/>` +
+    `<path d="M-15,0V34" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".55"/>`),
+  wedge: c => `<g transform="rotate(-18)">` + stk([['M-42,-14A42,42 0 0,0 42,-14Z', c]],
+    `<path d="M-34,-14A34,34 0 0,0 34,-14Z" fill="#D9F7A6"/><path d="M0,-14L-26,6M0,-14L-10,18M0,-14L10,18M0,-14L26,6" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".9"/>`) + `</g>`,
+  cubes: () => stk([[rr(-38, -8, 38, 38, 7), '#FFFFFF'], [rr(-2, -34, 36, 36, 7), '#F1ECF8']],
+    `<circle cx="-26" cy="4" r="2.4" fill="#D6CCE4"/><circle cx="-14" cy="16" r="2.4" fill="#D6CCE4"/><circle cx="-24" cy="20" r="2" fill="#D6CCE4"/><circle cx="12" cy="-22" r="2.4" fill="#D6CCE4"/><circle cx="22" cy="-10" r="2" fill="#D6CCE4"/>`),
+  ice: c => `<g transform="rotate(10)">` + stk([[rr(-32, -32, 64, 64, 16), c]],
+    `<path d="${rr(-20, -20, 40, 40, 10)}" fill="#fff" opacity=".35"/><path d="M-20,-10Q-18,-22 -6,-22" stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none"/>`) + `</g>`,
+  leaf: c => `<g transform="rotate(25)">` + stk([['M0,44C-38,14 -32,-28 0,-46C32,-28 38,14 0,44Z', c]],
+    `<path d="M0,40V-38M0,14L-16,0M0,14L16,0M0,-8L-13,-20M0,-8L13,-20" stroke="#1B7A46" stroke-width="3" stroke-linecap="round" fill="none"/>`) + `</g>`,
+  bubbles: c => stk([[DROP, c]], `<circle cx="-10" cy="12" r="8" fill="none" stroke="#fff" stroke-width="3"/><circle cx="12" cy="0" r="5" fill="none" stroke="#fff" stroke-width="3"/><circle cx="8" cy="24" r="4" fill="none" stroke="#fff" stroke-width="3"/><circle cx="-6" cy="-12" r="3.5" fill="none" stroke="#fff" stroke-width="2.5"/>`),
+  slice: c => stk([[circ(0, 0, 42), c]], `<path d="${circ(0, 0, 34)}" fill="#FFD08A"/>` +
+    [0, 45, 90, 135].map(a => `<path d="M0,0L0,-34M0,0L0,34" transform="rotate(${a})" stroke="#fff" stroke-width="3"/>`).join('') + `<circle r="4" fill="#fff"/>`),
+  drop: c => stk([[DROP, c]], `<path d="M-18,8Q-18,-6 -8,-18" stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none" opacity=".75"/>`),
+  can: c => stk([[rr(-24, -40, 48, 82, 12), c]],
+    `<path d="${rr(-24, -40, 48, 12, 6)}" fill="#C9C2D3"/><rect x="-6" y="-38" width="12" height="4" rx="2" fill="#7A6E8A"/>` +
+    `<path d="M-24,4C-12,-8 12,16 24,2V16C12,30 -12,6 -24,18Z" fill="#fff" opacity=".9"/><path d="M-16,-22V28" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".4"/>`),
+  berry: c => stk([['M0,44C-30,32 -40,2 -34,-12C-28,-26 -10,-24 0,-18C10,-24 28,-26 34,-12C40,2 30,32 0,44Z', c], ['M-20,-20L-4,-26L0,-42L4,-26L20,-20L4,-16L0,-12L-4,-16Z', '#2FB36B']],
+    [[-16, -2], [0, 4], [16, -2], [-10, 16], [10, 16], [0, 28], [-20, 10], [20, 10]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="2" ry="3" fill="#FFE08A"/>`).join('')),
+  fruit: c => stk([[circ(0, 0, 42), '#7A3E8E']], `<path d="${circ(0, 0, 33)}" fill="${c}"/>` +
+    [[-12, -10], [8, -16], [16, 4], [-2, 4], [-16, 12], [6, 20], [-4, -22], [22, -10]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.6" fill="#2B1B10"/>`).join(''))
+};
+function ingG(id) { const i = ING[id]; return (ART[i.icon] || ART.drop)(i.color); }
+function ingSVG(id) { return `<svg class="stk" viewBox="-54 -54 108 108" aria-label="${ING[id].name}" role="img">${ingG(id)}</svg>`; }
+
+/* glifos dos ícones misteriosos (não dizem nada sobre o ingrediente) */
+const GLYPHS = {
+  star: 'M0,-42L12,-14L42,-12L18,8L26,38L0,22L-26,38L-18,8L-42,-12L-12,-14Z',
+  diamond: 'M0,-42L34,0L0,42L-34,0Z',
+  triangle: 'M0,-38L40,32H-40Z',
+  ring: circ(0, 0, 38) + ' ' + 'M-20,0a20,20 0 1,0 40,0a20,20 0 1,0 -40,0z',
+  plus: 'M-12,-40H12V-12H40V12H12V40H-12V12H-40V-12H-12Z',
+  moon: 'M14,-38A40,40 0 1,0 14,38A30,30 0 1,1 14,-38Z',
+  heart: 'M0,38C-30,18 -42,0 -42,-14C-42,-30 -28,-38 -16,-38C-8,-38 -2,-32 0,-26C2,-32 8,-38 16,-38C28,-38 42,-30 42,-14C42,0 30,18 0,38Z',
+  hex: 'M-20,-36H20L40,0L20,36H-20L-40,0Z',
+  flower: [[0, -22], [21, -7], [13, 18], [-13, 18], [-21, -7]].map(([x, y]) => circ(x, y, 16)).join(' ') + ' ' + circ(0, 0, 12),
+  bolt: 'M8,-44L-28,6H-4L-12,44L28,-8H4Z',
+  arrow: 'M0,-42L38,0H14V40H-14V0H-38Z',
+  dots: circ(-24, 14, 13) + ' ' + circ(24, 14, 13) + ' ' + circ(0, -22, 13),
+  cross: 'M-30,-40L0,-10L30,-40L40,-30L10,0L40,30L30,40L0,10L-30,40L-40,30L-10,0L-40,-30Z'
+};
+const GLYPH_KEYS = Object.keys(GLYPHS);
+const GLYPH_COLORS = ['#E8336D', '#009F93', '#A77BDB', '#F2E9FC'];
+function glyphSVG(g, c) { return `<svg class="stk" viewBox="-54 -54 108 108" aria-label="ingrediente misterioso">${glyphG(g, c)}</svg>`; }
+function glyphG(g, c) { return `<path d="${GLYPHS[g]}" fill="#fff" stroke="#fff" stroke-width="9" stroke-linejoin="round" fill-rule="evenodd"/><path d="${GLYPHS[g]}" fill="${c}" fill-rule="evenodd" stroke="rgba(12,12,13,.3)" stroke-width="1.6"/>`; }
+
+/* avatar */
+function avatarSVG(av, cls = '') {
+  const A = C.avatar, col = A.colors[av.c % A.colors.length], face = A.faces[av.f % A.faces.length], hat = A.hats[av.h % A.hats.length];
+  const ink = '#1A1622';
+  const eyes = (l, r) => l + r;
+  const dot = (x, y, r = 5) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${ink}"/>`;
+  const F = {
+    sorriso: dot(-13, -4) + dot(13, -4) + `<path d="M-14,10Q0,24 14,10" stroke="${ink}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`,
+    piscada: dot(-13, -4) + `<path d="M7,-4Q13,-10 19,-4" stroke="${ink}" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M-14,10Q0,24 14,10" stroke="${ink}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`,
+    oculos: `<path d="${rr(-30, -12, 26, 16, 6)} ${rr(4, -12, 26, 16, 6)}" fill="${ink}"/><path d="M-4,-6H4" stroke="${ink}" stroke-width="4"/><path d="M-24,-8L-16,-8" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/><path d="M-10,14Q0,20 10,14" stroke="${ink}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`,
+    surpreso: dot(-13, -6, 6) + dot(13, -6, 6) + `<ellipse cx="0" cy="16" rx="7" ry="9" fill="${ink}"/>`,
+    tranquilo: `<path d="M-19,-4Q-13,2 -7,-4M7,-4Q13,2 19,-4" stroke="${ink}" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M-8,12Q0,18 8,12" stroke="${ink}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`,
+    lingua: dot(-13, -6) + dot(13, -6) + `<path d="M-14,8H14Q14,22 0,22Q-14,22 -14,8Z" fill="${ink}"/><path d="M-6,16Q0,30 6,16Z" fill="#FF6F91"/>`
+  };
+  const H = {
+    nenhum: '',
+    festa: stk([['M-16,-30L4,-74L18,-28Z', '#FFD21F']], `<path d="M-8,-46L10,-44M-2,-60L8,-58" stroke="#E8336D" stroke-width="5" stroke-linecap="round"/><circle cx="4" cy="-76" r="6" fill="#E8336D" stroke="#fff" stroke-width="3"/>`, 7),
+    bone: stk([['M-36,-26C-36,-60 36,-60 36,-26Z', '#211F2B'], [rr(14, -32, 36, 10, 5), '#211F2B']], `<circle cx="0" cy="-54" r="3.5" fill="#E8336D"/><path d="M-12,-44Q0,-50 12,-44" stroke="#009F93" stroke-width="4" fill="none" stroke-linecap="round"/>`, 7),
+    coroa: stk([['M-26,-30L-30,-62L-14,-46L0,-68L14,-46L30,-62L26,-30Z', '#FFD21F']], `<circle cx="0" cy="-42" r="4" fill="#E8336D"/><circle cx="-16" cy="-38" r="3" fill="#009F93"/><circle cx="16" cy="-38" r="3" fill="#009F93"/>`, 7),
+    laco: stk([['M2,-44L-26,-60V-28Z', '#E8336D'], ['M2,-44L30,-60V-28Z', '#E8336D'], [circ(2, -44, 8), '#FF6F91']], '', 7),
+    fone: `<path d="M-38,-2A38,38 0 0,1 38,-2" stroke="#fff" stroke-width="15" fill="none"/><path d="M-38,-2A38,38 0 0,1 38,-2" stroke="#211F2B" stroke-width="8" fill="none"/>` +
+      stk([[rr(-50, -12, 16, 30, 7), '#009F93'], [rr(34, -12, 16, 30, 7), '#009F93']], '', 7)
+  };
+  const hatAfter = hat !== 'fone' ? H[hat] : '';
+  const body = stk([[circ(0, 2, 38), col]], `<ellipse cx="-22" cy="12" rx="6" ry="4" fill="#fff" opacity=".28"/><ellipse cx="22" cy="12" rx="6" ry="4" fill="#fff" opacity=".28"/><path d="M-24,-22Q-16,-32 -4,-34" stroke="#fff" stroke-width="5" stroke-linecap="round" fill="none" opacity=".45"/>`);
+  return `<svg class="stk ${cls}" viewBox="-56 -84 112 132" role="img" aria-label="avatar">${body}${hat === 'fone' ? H.fone : ''}${F[face] || F.sorriso}${hatAfter}</svg>`;
+}
+function chipHTML(p, x = false) { return `${avatarSVG(p.av)}<span>${esc(p.nick)}</span>${x ? '<span class="x" aria-hidden="true">×</span>' : ''}`; }
+function esc(s) { return String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }
+
+/* taça */
+const GLASSES = {
+  rocks:    { vb: '0 0 200 220', out: 'M34,70L48,206Q50,214 58,214H142Q150,214 152,206L166,70Z', top: 78, bot: 206, x0: 44, x1: 156 },
+  highball: { vb: '0 0 200 240', out: 'M52,20L58,224Q58,232 66,232H134Q142,232 142,224L148,20Z', top: 30, bot: 224, x0: 62, x1: 138 },
+  coupe:    { vb: '0 0 200 240', out: 'M22,40Q24,140 100,146Q176,140 178,40Z', stem: 'M96,146V214H62Q58,226 70,226H130Q142,226 138,214H104V146Z', top: 48, bot: 140, x0: 36, x1: 164 }
+};
+function glassSVG(type, glass, opts = {}) {
+  const G = GLASSES[type] || GLASSES.rocks, uid = 'g' + Math.random().toString(36).slice(2, 8);
+  const H = G.bot - G.top, liquids = [], solids = [];
+  glass.forEach((id, i) => { const ing = ING[id]; if (!ing) return; (ing.liquid ? liquids : solids).push({ id, i }); });
+  const bandH = H / 9;
+  let y = G.bot, bands = '';
+  liquids.forEach(({ id, i }) => {
+    const h = Math.min(bandH, Math.max(0, y - G.top - 6)); if (h <= 0) return;
+    y -= h;
+    const col = opts.mystery ? ['#5D2A8E', '#7A3FB0', '#4A2272'][i % 3] : ING[id].liquid;
+    bands += `<rect x="0" y="${y.toFixed(1)}" width="200" height="${(h + 0.6).toFixed(1)}" fill="${col}" opacity=".88" class="${opts.popIndex === i ? 'pop' : ''}"/>`;
+  });
+  if (liquids.length) bands += `<rect x="0" y="${y.toFixed(1)}" width="200" height="3" fill="#fff" opacity=".35"/>`;
+  const sz = Math.min(44, (G.x1 - G.x0) / 2.6), cols = Math.max(2, Math.floor((G.x1 - G.x0) / (sz * 0.82)));
+  let solidsSvg = '';
+  solids.forEach(({ id, i }, k) => {
+    const col = k % cols, row = Math.floor(k / cols);
+    const x = G.x0 + sz / 2 + col * ((G.x1 - G.x0 - sz) / Math.max(1, cols - 1)) + ((row % 2) ? sz * 0.18 : 0);
+    const yy = Math.max(G.top + sz / 2, G.bot - sz / 2 - 2 - row * sz * 0.72);
+    const rot = ((i * 47) % 50) - 25, s = sz / 108;
+    const inner = opts.mystery ? glyphG(opts.mystery[id].g, opts.mystery[id].c) : ingG(id);
+    solidsSvg += `<g transform="translate(${x.toFixed(1)},${yy.toFixed(1)}) rotate(${rot}) scale(${s.toFixed(3)})"><g class="${opts.popIndex === i ? 'pop' : ''}">${inner}</g></g>`;
+  });
+  return `<svg class="glass" viewBox="${G.vb}" role="img" aria-label="taça com ${glass.length} ingredientes">
+    <defs><clipPath id="${uid}"><path d="${G.out}"/></clipPath></defs>
+    ${G.stem ? `<path d="${G.stem}" fill="rgba(242,233,252,.16)" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>` : ''}
+    <path d="${G.out}" fill="rgba(242,233,252,.07)"/>
+    <g clip-path="url(#${uid})">${bands}</g>
+    ${solidsSvg}
+    <path d="${G.out}" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M${G.x0 + 4},${G.top + 14}L${G.x0 + 8},${G.bot - 30}" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".35"/>
+  </svg>`;
+}
+
+/* ======================= apelido (filtro igual ao dos outros jogos) ======================= */
+const NICK_RE = new RegExp(C.nickPattern);
+const LEET = { '0': 'o', '1': 'i', '2': 'z', '3': 'e', '4': 'a', '5': 's', '6': 'g', '7': 't', '8': 'b', '9': 'g' };
+const squeeze = t => t.replace(/(.)\1+/g, '$1');
+function nickForms(str) {
+  const low = String(str).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const leet = low.replace(/[0-9]/g, ch => LEET[ch]).replace(/[^a-z]/g, '');
+  const strip = low.replace(/[^a-z]/g, '');
+  return [...new Set([leet, strip, squeeze(leet), squeeze(strip)])].filter(Boolean);
+}
+function isOffensive(nick) {
+  const F = C.nickFilter || { contains: [], exact: [] }, forms = nickForms(nick);
+  for (const w of F.contains) {
+    const wf = nickForms(w)[0]; if (!wf) continue;
+    const ws = squeeze(wf);
+    if (forms.some(f => f.includes(wf) || (ws.length >= 4 && f.includes(ws)))) return true;
+  }
+  for (const w of F.exact) { const wfs = nickForms(w); if (forms.some(f => wfs.includes(f))) return true; }
+  return false;
+}
+function nickError(raw) {
+  const nick = String(raw).trim().toUpperCase();
+  if (!nick) return 'Digite seu apelido (até 6 letras).';
+  if (!NICK_RE.test(nick)) return 'Use de 1 a 6 letras sem acento, números ou hífen.';
+  if (isOffensive(nick)) return 'Esse apelido não é permitido. Escolha outro, sem palavrões.';
+  return '';
+}
+
+/* ======================= estado ======================= */
+const S = {
+  screen: '', player: store.get('player', null), code: null, net: 'off', sess: null, seed: null,
+  avTab: 'presets', avDraft: null
+};
+const vibrate = () => { try { if (C.vibrateMs && navigator.vibrate) navigator.vibrate(C.vibrateMs); } catch (e) {} };
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2800); }
+function show(id) {
+  S.screen = id;
+  $$('.screen').forEach(s => s.classList.toggle('on', s.id === 's-' + id));
+  window.scrollTo(0, 0);
+}
+
+/* ======================= conexão ======================= */
+function randomCode() { const A = C.net.codeAlphabet; let s = ''; for (let i = 0; i < C.net.codeLength; i++) s += A[Math.floor(Math.random() * A.length)]; return s; }
+const codeOk = c => c.length === C.net.codeLength && [...c].every(ch => C.net.codeAlphabet.includes(ch));
+
+/* conexão "de mentira" entre dois lados na mesma página (BOT) */
+function pipePair() {
+  const mk = () => ({ h: [], c: [], open: true, other: null,
+    send(d) { if (!this.open) return; const o = this.other, msg = JSON.parse(JSON.stringify(d)); Promise.resolve().then(() => o.open && o.h.forEach(f => f(msg))); },
+    onData(f) { this.h.push(f); }, onClose(f) { this.c.push(f); },
+    close() { if (!this.open) return; this.open = false; const o = this.other; Promise.resolve().then(() => { if (o.open) { o.open = false; o.c.forEach(f => f()); } }); } });
+  const a = mk(), b = mk(); a.other = b; b.other = a; a.bot = b.bot = true; return [a, b];
+}
+
+/* PeerJS (WebRTC): o servidor público só apresenta os dois celulares; os dados vão direto entre eles */
+const PeerNet = {
+  peer: null, onIncoming: null, onStatus: null, pending: null,
+  start(code) {
+    return new Promise((res, rej) => {
+      if (typeof Peer === 'undefined') return rej({ type: 'browser-incompatible' });
+      const opts = { debug: 0 };
+      if (C.net.peerServer) Object.assign(opts, C.net.peerServer);
+      if (C.net.iceServers) opts.config = { iceServers: C.net.iceServers };
+      let opened = false;
+      const p = this.peer = new Peer(C.net.idPrefix + code, opts);
+      p.on('open', () => { opened = true; res(code); });
+      p.on('connection', dc => {
+        dc.on('open', () => this.onIncoming && this.onIncoming(this.wrap(dc)));
+      });
+      p.on('disconnected', () => { this.onStatus && this.onStatus('reconnecting'); setTimeout(() => { try { if (!p.destroyed && p.disconnected) p.reconnect(); } catch (e) {} }, 1200); });
+      p.on('error', e => {
+        if (e.type === 'peer-unavailable' && this.pending) { this.pending.rej({ type: 'not-found' }); this.pending = null; return; }
+        if (!opened) { try { p.destroy(); } catch (x) {} return rej(e); }
+        if (this.pending) { this.pending.rej(e); this.pending = null; }
+        if (['network', 'server-error', 'socket-error', 'socket-closed'].includes(e.type)) this.onStatus && this.onStatus('reconnecting');
+      });
+    });
+  },
+  wrap(dc) {
+    return { send(d) { try { if (dc.open) dc.send(d); } catch (e) {} }, onData(f) { dc.on('data', f); },
+      onClose(f) { let done = false; const g = () => { if (!done) { done = true; f(); } }; dc.on('close', g); dc.on('error', g); },
+      close() { try { dc.close(); } catch (e) {} } };
+  },
+  connect(code) {
+    return new Promise((res, rej) => {
+      const t = setTimeout(() => { if (this.pending) { this.pending = null; rej({ type: 'timeout' }); } }, C.net.connectTimeoutMs);
+      this.pending = { rej: e => { clearTimeout(t); rej(e); } };
+      const dc = this.peer.connect(C.net.idPrefix + code, { reliable: true, serialization: 'json' });
+      dc.on('open', () => { clearTimeout(t); this.pending = null; res(this.wrap(dc)); });
+    });
+  },
+  wake() { try { if (this.peer && !this.peer.destroyed && this.peer.disconnected) this.peer.reconnect(); } catch (e) {} }
+};
+
+/* modo local: duas abas do mesmo navegador (BroadcastChannel), para teste */
+const LocalNet = {
+  bc: null, me: null, onIncoming: null, onStatus: null, conns: {}, pending: null,
+  start(code) {
+    this.me = code;
+    this.bc = new BroadcastChannel('dc-local-v1');
+    this.bc.onmessage = ({ data: m }) => {
+      if (m.to !== this.me) return;
+      if (m.k === 'connect') { const c = this.mk(m.from); this.bc.postMessage({ k: 'accept', to: m.from, from: this.me }); this.onIncoming && this.onIncoming(c); }
+      else if (m.k === 'accept' && this.pending && this.pending.code === m.from) { const p = this.pending; this.pending = null; clearTimeout(p.t); p.res(this.mk(m.from)); }
+      else if (m.k === 'data') { const c = this.conns[m.from]; if (c) c.h.forEach(f => f(m.d)); }
+      else if (m.k === 'close') { const c = this.conns[m.from]; if (c) { delete this.conns[m.from]; c.c.forEach(f => f()); } }
+    };
+    return Promise.resolve(code);
+  },
+  mk(code) {
+    const self = this, c = { h: [], c: [],
+      send(d) { self.bc.postMessage({ k: 'data', to: code, from: self.me, d }); },
+      onData(f) { this.h.push(f); }, onClose(f) { this.c.push(f); },
+      close() { delete self.conns[code]; self.bc.postMessage({ k: 'close', to: code, from: self.me }); } };
+    return (this.conns[code] = c);
+  },
+  connect(code) {
+    return new Promise((res, rej) => {
+      const t = setTimeout(() => { this.pending = null; rej({ type: 'not-found' }); }, 1500);
+      this.pending = { code, res, t };
+      this.bc.postMessage({ k: 'connect', to: code, from: this.me });
+    });
+  },
+  wake() {}
+};
+const NET = LOCAL ? LocalNet : PeerNet;
+
+function setNet(state, text) {
+  S.net = state;
+  const el = $('#net'); if (!el) return;
+  const cls = { ok: 'ok', bad: 'bad', wait: 'wait' }[state] || 'wait';
+  el.innerHTML = `<i class="dot ${cls}"></i><span>${text}</span>`;
+  if (state === 'bad') { el.insertAdjacentHTML('beforeend', ' <button class="link" id="net-retry" style="min-height:32px">Tentar de novo</button>'); $('#net-retry').onclick = () => startNet(true); }
+  renderCode();
+}
+function renderCode() {
+  const el = $('#my-code'), c = S.code && S.net === 'ok' ? S.code : '•'.repeat(C.net.codeLength);
+  el.classList.toggle('wait', !(S.code && S.net === 'ok'));
+  el.innerHTML = [...c].map(ch => `<span>${ch}</span>`).join('');
+}
+let netStarting = false;
+async function startNet(force) {
+  if (netStarting || (S.net === 'ok' && !force)) return;
+  netStarting = true;
+  setNet('wait', 'Conectando...');
+  let code = (!force && store.get('code', null)) || randomCode();
+  NET.onIncoming = onIncoming;
+  NET.onStatus = st => { if (st === 'reconnecting') setNet('wait', 'Reconectando...'); };
+  for (let tries = 0; tries < 4; tries++) {
+    try {
+      if (PeerNet.peer && !LOCAL) { try { PeerNet.peer.destroy(); } catch (e) {} }
+      await NET.start(code);
+      S.code = code; store.set('code', code); netStarting = false;
+      setNet('ok', LOCAL ? 'Modo de teste local (mesmo navegador)' : 'Pronto para jogar');
+      if (!LOCAL) PeerNet.peer.on('open', () => setNet('ok', 'Pronto para jogar'));
+      autoCall();
+      return;
+    } catch (e) {
+      if (e && e.type === 'unavailable-id') { code = tries === 0 ? code : randomCode(); await new Promise(r => setTimeout(r, tries === 0 ? 1500 : 200)); continue; }
+      netStarting = false;
+      setNet('bad', e && e.type === 'browser-incompatible' ? 'Este navegador não permite jogar com outro celular.' : 'Sem conexão com a internet.');
+      return;
+    }
+  }
+  netStarting = false;
+  setNet('bad', 'Não deu para criar seu código.');
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) NET.wake(); });
+
+/* ======================= sessão (quem foi chamado hospeda e manda no relógio) ======================= */
+function newSess(conn, host) {
+  const s = { conn, host, partner: null, setup: null, phase: 'hello', glass: [], left: ROUND_MS, stateAt: 0, ready: {}, again: {}, result: null, n: 0, lastSeen: Date.now(), lastSent: 0 };
+  conn.onData(m => { if (S.sess === s) { s.lastSeen = Date.now(); onMsg(m); } });
+  conn.onClose(() => { if (S.sess === s) partnerGone(); });
+  return s;
+}
+const send = m => S.sess && S.sess.conn.send(m);
+const me = () => ({ nick: S.player.nick, av: S.player.av });
+const myRole = () => (S.sess.setup.guideHost === S.sess.host ? 'guide' : 'mixer');
+const recipeOf = setup => RECIPES.find(r => r.id === setup.recipeId) || RECIPES[0];
+
+function onIncoming(conn) {
+  if (S.sess || !S.player || !['lobby'].includes(S.screen)) { conn.send({ t: 'busy' }); setTimeout(() => conn.close(), 400); return; }
+  S.sess = newSess(conn, true);
+}
+function partnerGone(msg) {
+  const s = S.sess; if (!s) return;
+  S.sess = null;
+  try { s.conn.close(); } catch (e) {}
+  $('#count').classList.remove('on');
+  toast(msg || 'Seu parceiro saiu da partida.');
+  show('lobby'); renderLobby();
+}
+function leave() { if (S.sess) { send({ t: 'bye' }); const s = S.sess; S.sess = null; setTimeout(() => { try { s.conn.close(); } catch (e) {} }, 200); } $('#count').classList.remove('on'); show('lobby'); renderLobby(); }
+
+function onMsg(m) {
+  const s = S.sess; if (!m || !m.t) return;
+  switch (m.t) {
+    case 'hello':
+      if (!s.host) return;
+      s.partner = { nick: String(m.nick || '???').slice(0, 6), av: m.av || { c: 0, f: 0, h: 0 } };
+      send({ t: 'welcome', ...me() });
+      hostNewSetup();
+      break;
+    case 'welcome': s.partner = { nick: String(m.nick || '???').slice(0, 6), av: m.av || { c: 0, f: 0, h: 0 } }; callDone(); break;
+    case 'busy': callFail('Essa pessoa já está numa partida. Tente daqui a pouco.'); S.sess = null; break;
+    case 'setup': if (!s.host) { s.setup = m.setup; enterMatch(); } break;
+    case 'ready': s.ready.them = true; renderReady(); if (s.host) hostMaybeGo(); break;
+    case 'go': if (!s.host) beginCountdown(); break;
+    case 'state':
+      if (s.host) return;
+      s.glass = m.glass; s.left = m.left; s.stateAt = clock.now();
+      if (m.phase === 'play' && s.phase !== 'play' && s.phase !== 'end') enterPlay();
+      if (s.phase === 'play') renderPlayState();
+      break;
+    case 'act': if (s.host && myRole() === 'guide') hostAct(m); break;
+    case 'serve': if (s.host) hostAct({ a: 'serve' }); break;
+    case 'end': if (!s.host) { s.glass = m.glass; s.result = m.result; s.left = m.result.leftMs; showResult(); } break;
+    case 'again': s.again.them = true; renderAgain(); if (s.host) hostMaybeRematch(); break;
+    case 'say': showSay(m.text); break;
+    case 'bye': partnerGone('Seu parceiro saiu da partida.'); break;
+  }
+}
+
+/* hospedeiro */
+function hostNewSetup() {
+  const s = S.sess, prev = s.setup; s.n++;
+  let guideHost;
+  if (!prev) guideHost = C.roles === 'host' ? true : C.roles === 'guest' ? false : Math.random() < 0.5;
+  else guideHost = C.swapRolesOnRematch ? !prev.guideHost : prev.guideHost;
+  const seed = S.seed != null ? S.seed + s.n : (Math.random() * 4294967296) >>> 0;
+  const r = rng(seed);
+  const recipe = RECIPES[Math.floor(r() * RECIPES.length)];
+  const want = Object.keys(recipe.items);
+  const n = Math.min(C.mysteryTiles, POOL.length, GLYPH_KEYS.length);
+  const others = shuffle(POOL.map(i => i.id).filter(id => !want.includes(id)), r).slice(0, Math.max(0, n - want.length));
+  const ids = shuffle(want.concat(others), r), glyphs = shuffle(GLYPH_KEYS, r);
+  s.setup = { n: s.n, seed, recipeId: recipe.id, guideHost, tiles: ids.map((id, i) => ({ id, g: glyphs[i], c: GLYPH_COLORS[Math.floor(r() * GLYPH_COLORS.length)] })) };
+  send({ t: 'setup', setup: s.setup });
+  enterMatch();
+}
+function hostMaybeGo() { const s = S.sess; if (s.ready.me && s.ready.them && s.phase === 'match') { send({ t: 'go' }); beginCountdown(); } }
+function hostMaybeRematch() { const s = S.sess; if (s.again.me && s.again.them && s.phase === 'end') hostNewSetup(); }
+function hostStartPlay() { const s = S.sess; s.phase = 'play'; s.glass = []; s.endAt = clock.now() + ROUND_MS; s.left = ROUND_MS; enterPlay(); hostBroadcast(true); }
+function hostBroadcast(force) {
+  const s = S.sess; const t = clock.now();
+  if (!force && t - s.lastSent < C.net.stateEveryMs) return;
+  s.lastSent = t;
+  send({ t: 'state', phase: s.phase, glass: s.glass, left: Math.round(s.left) });
+}
+function hostAct(m) {
+  const s = S.sess; if (!s || !s.host || s.phase !== 'play') return;
+  if (m.a === 'add' && ING[m.id]) { if (s.glass.length >= C.maxItemsInGlass) { if (myRole() === 'mixer') toast('A taça está cheia!'); return; } s.glass.push(m.id); s.pop = s.glass.length - 1; }
+  else if (m.a === 'undo' && C.allowUndo) { s.glass.pop(); s.pop = -1; }
+  else if (m.a === 'serve') { hostEnd(); return; }
+  else return;
+  renderPlayState(); hostBroadcast(true);
+}
+function hostEnd() {
+  const s = S.sess; if (s.phase !== 'play') return;
+  s.phase = 'end';
+  s.result = scoreDrink(recipeOf(s.setup), s.glass, s.left);
+  send({ t: 'end', glass: s.glass, result: s.result });
+  showResult();
+}
+function hostTick() {
+  const s = S.sess; if (!s || !s.host) return;
+  const t = clock.now();
+  if (s.phase === 'count' && t >= s.goAt) hostStartPlay();
+  else if (s.phase === 'play') { s.left = Math.max(0, s.endAt - t); if (s.left <= 0) hostEnd(); else { hostBroadcast(false); renderTimer(); } }
+}
+function uiTick() {
+  const s = S.sess; if (!s) return;
+  if (s.phase === 'count') {
+    const left = Math.ceil((s.goAt - clock.now()) / 1000);
+    $('#count b').textContent = Math.max(1, left);
+  } else if (s.phase === 'play' && !s.host) renderTimer();
+  if (!s.conn.bot && Date.now() - s.lastSeen > 10000 && s.phase !== 'hello') partnerGone('A conexão com seu parceiro caiu.');
+}
+setInterval(() => { hostTick(); uiTick(); }, 100);
+setInterval(() => { if (S.sess && !S.sess.conn.bot) send({ t: 'ping' }); }, 2000);
+
+/* nota */
+function scoreDrink(recipe, glass, leftMs) {
+  const need = recipe.items, have = {};
+  glass.forEach(id => { have[id] = (have[id] || 0) + 1; });
+  let total = 0, correct = 0, extra = 0; const rows = [];
+  for (const id of Object.keys(need)) { const h = have[id] || 0; total += need[id]; correct += Math.min(h, need[id]); extra += Math.max(0, h - need[id]); rows.push({ id, need: need[id], have: h }); }
+  for (const id of Object.keys(have)) if (!(id in need)) { extra += have[id]; rows.push({ id, need: 0, have: have[id] }); }
+  const SC = C.scoring, acc = Math.max(0, (correct - SC.extraWeight * extra) / total);
+  const perfect = correct === total && extra === 0;
+  let grade = Math.round((acc * 10) / SC.roundTo) * SC.roundTo;
+  if (!perfect) grade = Math.min(grade, 10 - SC.roundTo);
+  const bonus = perfect ? Math.round(SC.perfectTimeBonus * Math.max(0, leftMs) / ROUND_MS) : 0;
+  const lab = SC.labels.find(l => grade >= l.min) || SC.labels[SC.labels.length - 1];
+  return { recipeId: recipe.id, grade, perfect, correct, total, extra, rows, points: Math.round(grade * 100) + bonus, bonus, leftMs: Math.round(leftMs), label: lab.text, sub: lab.sub };
+}
+
+/* ======================= telas ======================= */
+function brand() {
+  const logo = `<svg viewBox="0 0 200 220" class="stk"><path d="${GLASSES.rocks.out}" fill="#E8336D" stroke="#fff" stroke-width="12" stroke-linejoin="round"/><path d="M34,70H166" stroke="#fff" stroke-width="10"/><circle cx="140" cy="60" r="26" fill="#009F93" stroke="#fff" stroke-width="10"/></svg>`;
+  $$('[data-brand]').forEach(e => { e.innerHTML = logo + `<span>${esc(C.gameName)}</span>`; });
+  $$('[data-client]').forEach(e => { e.textContent = C.clientName || ''; });
+  $$('[data-gname]').forEach(e => { e.textContent = C.gameName; });
+  $$('[data-tagline]').forEach(e => { e.textContent = C.tagline; });
+  $$('[data-secs]').forEach(e => { e.textContent = C.roundSeconds; });
+  const r = RECIPES[0];
+  $('#hero').innerHTML = glassSVG(r.glass, Object.entries(r.items).flatMap(([id, q]) => Array(q).fill(id))) +
+    [['limao', 6, 30, -14], ['morango', 74, 8, 12], ['gelo', 2, 140, 10], ['hortela', 76, 150, -20]].map(([id, x, y, rot]) =>
+      `<div class="s" style="${x < 50 ? 'left' : 'right'}:${x < 50 ? x : 100 - x}%;top:${y}px;transform:rotate(${rot}deg)">${ingSVG(id)}</div>`).join('');
+}
+
+/* 1. apelido */
+function initNick() {
+  const inp = $('#nick');
+  inp.value = S.player ? S.player.nick : '';
+  inp.addEventListener('input', () => { const v = inp.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 6); if (v !== inp.value) inp.value = v; $('#nick-err').textContent = ''; });
+  const go = () => {
+    const err = nickError(inp.value); if (err) { $('#nick-err').textContent = err; inp.focus(); return; }
+    const nick = inp.value.trim().toUpperCase();
+    S.avDraft = (S.player && S.player.av) ? { ...S.player.av } : { ...C.avatar.presets[Math.floor(Math.random() * C.avatar.presets.length)] };
+    S.pendingNick = nick;
+    inp.blur(); show('avatar'); renderAvatar();
+  };
+  $('#nick-ok').onclick = go;
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+}
+
+/* 2. avatar */
+function renderAvatar() {
+  const d = S.avDraft, A = C.avatar;
+  $('#av-big').innerHTML = avatarSVG(d);
+  $('#av-chip').innerHTML = chipHTML({ nick: S.pendingNick, av: d });
+  $$('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === S.avTab));
+  let html = '';
+  if (S.avTab === 'presets') html = A.presets.map((p, i) => `<button class="opt ${p.c === d.c && p.f === d.f && p.h === d.h ? 'on' : ''}" data-p="${i}" aria-label="avatar pronto ${i + 1}">${avatarSVG(p)}</button>`).join('');
+  else if (S.avTab === 'c') html = A.colors.map((c, i) => `<button class="opt ${d.c === i ? 'on' : ''}" data-k="c" data-v="${i}" aria-label="cor ${i + 1}"><span class="swatch" style="background:${c}"></span></button>`).join('');
+  else html = (S.avTab === 'f' ? A.faces : A.hats).map((x, i) => `<button class="opt ${d[S.avTab] === i ? 'on' : ''}" data-k="${S.avTab}" data-v="${i}" aria-label="${x}">${avatarSVG({ ...d, [S.avTab]: i })}</button>`).join('');
+  $('#av-opts').innerHTML = html;
+}
+function initAvatar() {
+  $$('.tab').forEach(t => t.onclick = () => { S.avTab = t.dataset.tab; renderAvatar(); });
+  $('#av-opts').onclick = e => {
+    const b = e.target.closest('.opt'); if (!b) return; vibrate();
+    if (b.dataset.p != null) S.avDraft = { ...C.avatar.presets[+b.dataset.p] };
+    else S.avDraft[b.dataset.k] = +b.dataset.v;
+    renderAvatar();
+  };
+  $('#av-back').onclick = () => show('nick');
+  $('#av-ok').onclick = () => {
+    S.player = { nick: S.pendingNick, av: S.avDraft };
+    store.set('player', S.player);
+    show('lobby'); renderLobby(); startNet();
+  };
+}
+
+/* 3. códigos */
+function renderLobby() {
+  $('#me-chip').innerHTML = chipHTML(S.player);
+  renderCode();
+  $('#call').disabled = false;
+  $('#call').textContent = 'Chamar para a partida';
+}
+let calling = null;
+function callFail(msg) { calling = null; $('#code-err').textContent = msg; $('#call').disabled = false; $('#call').textContent = 'Chamar para a partida'; }
+function callDone() { calling = null; $('#code-err').textContent = ''; $('#code-in').value = ''; }
+async function callCode(raw) {
+  const code = String(raw).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  $('#code-err').textContent = '';
+  if (S.sess || calling) return;
+  if (BOT_OK && code === 'BOT') return startBot();
+  if (!codeOk(code)) return callFail(`O código tem ${C.net.codeLength} letras ou números.`);
+  if (code === S.code) return callFail('Esse é o seu código. Digite o do seu parceiro.');
+  if (S.net !== 'ok') return callFail('Espere seu código aparecer (conectando...).');
+  calling = code;
+  $('#call').disabled = true; $('#call').textContent = 'Chamando ' + code + '...';
+  try {
+    const conn = await NET.connect(code);
+    if (calling !== code) { conn.close(); return; }
+    S.sess = newSess(conn, false);
+    send({ t: 'hello', ...me(), v: C.version });
+    setTimeout(() => { if (S.sess && !S.sess.partner && calling === code) { const s = S.sess; S.sess = null; s.conn.close(); callFail('Seu parceiro não respondeu. Tente de novo.'); } }, 6000);
+  } catch (e) {
+    callFail(e && e.type === 'not-found' ? 'Código não encontrado. Confira se o parceiro está com o jogo aberto.' :
+      e && e.type === 'timeout' ? 'Não deu para conectar. Tentem os dois no 4G ou no mesmo Wi-Fi.' : 'Não deu para conectar. Tente de novo.');
+  }
+}
+let autoCalled = false;
+function autoCall() {
+  const c = (QS.get('c') || '').toUpperCase();
+  if (autoCalled || !c || S.screen !== 'lobby') return;
+  autoCalled = true; $('#code-in').value = c; callCode(c);
+}
+function initLobby() {
+  const inp = $('#code-in');
+  inp.addEventListener('input', () => { const v = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, Math.max(C.net.codeLength, 3)); if (v !== inp.value) inp.value = v; $('#code-err').textContent = ''; });
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') callCode(inp.value); });
+  $('#call').onclick = () => callCode(inp.value);
+  $('#me-edit').onclick = () => { $('#nick').value = S.player.nick; show('nick'); };
+  $('#copy').onclick = async () => {
+    if (!S.code) return;
+    try { await navigator.clipboard.writeText(S.code); toast('Código copiado: ' + S.code); } catch (e) { toast('Seu código: ' + S.code); }
+  };
+  $('#invite').onclick = async () => {
+    if (!S.code) return;
+    const url = C.share.gameUrl + '?c=' + S.code, text = C.share.inviteText.replace('{code}', S.code);
+    if (navigator.share) { try { await navigator.share({ title: C.gameName, text, url }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+    window.open('https://wa.me/?text=' + encodeURIComponent(text + ' ' + url), '_blank', 'noopener');
+  };
+}
+
+/* 4. partida encontrada */
+function enterMatch() {
+  const s = S.sess; s.phase = 'match'; s.ready = {}; s.again = {}; s.result = null; s.glass = [];
+  calling = null;
+  $('#vs').innerHTML = `<span class="chip">${chipHTML(S.player)}</span><span class="plus">+</span><span class="chip">${chipHTML(s.partner)}</span>`;
+  const role = myRole(), card = $('#role-card');
+  card.className = 'card ' + (role === 'guide' ? 'pink' : 'teal');
+  $('#role-ico').innerHTML = role === 'guide' ? recipeIcon() : glyphSVG('star', '#009F93');
+  $('#role-badge').className = 'badge ' + (role === 'guide' ? 'pink' : 'teal');
+  $('#role-badge').textContent = role === 'guide' ? 'Você vê a receita' : 'Você monta o drink';
+  $('#role-title').textContent = role === 'guide' ? 'Você é o GUIA' : 'Você é o MISTURADOR';
+  $('#role-text').textContent = role === 'guide'
+    ? `Você vê a receita e a taça. Diga em voz alta para ${s.partner.nick} o que pôr. Ele vê só ícones misteriosos: descreva, corrija e comemore!`
+    : `Você vê a taça e ${C.mysteryTiles} ícones misteriosos. Ouça ${s.partner.nick} e toque nos ícones. Você não sabe qual é qual: teste e aprenda pela taça!`;
+  $('#ready').disabled = false; $('#ready').textContent = 'Estou pronto';
+  renderReady();
+  show('match');
+}
+function recipeIcon() { return `<svg class="stk" viewBox="-54 -54 108 108">${stk([[rr(-34, -44, 68, 88, 12), '#F2E9FC']], `<rect x="-22" y="-28" width="44" height="6" rx="3" fill="#E8336D"/><rect x="-22" y="-12" width="34" height="5" rx="2.5" fill="#B8ABC9"/><rect x="-22" y="0" width="38" height="5" rx="2.5" fill="#B8ABC9"/><rect x="-22" y="12" width="28" height="5" rx="2.5" fill="#B8ABC9"/><rect x="-22" y="24" width="36" height="5" rx="2.5" fill="#B8ABC9"/>`)}</svg>`; }
+function renderReady() {
+  const s = S.sess; if (!s || s.phase !== 'match') return;
+  $('#ready-msg').textContent = s.ready.me ? (s.ready.them ? 'Os dois prontos!' : `Esperando ${s.partner.nick} ficar pronto...`) : (s.ready.them ? `${s.partner.nick} já está pronto!` : '');
+}
+function initMatch() {
+  $('#ready').onclick = () => {
+    const s = S.sess; if (!s || s.ready.me) return; vibrate();
+    s.ready.me = true; $('#ready').disabled = true; $('#ready').textContent = 'Pronto!';
+    send({ t: 'ready' }); renderReady();
+    if (s.host) hostMaybeGo();
+  };
+  $('#match-leave').onclick = leave;
+}
+function beginCountdown() {
+  const s = S.sess; s.phase = 'count'; s.goAt = clock.now() + C.countdownSeconds * 1000;
+  $('#count b').textContent = C.countdownSeconds;
+  $('#count').classList.add('on');
+}
+
+/* 5. partida */
+function enterPlay() {
+  const s = S.sess, role = myRole(), recipe = recipeOf(s.setup);
+  s.phase = 'play'; if (!s.host) { s.left = ROUND_MS; s.stateAt = clock.now(); }
+  $('#count').classList.remove('on');
+  $('#play-role').className = 'badge ' + (role === 'guide' ? 'pink' : 'teal');
+  $('#play-role').textContent = role === 'guide' ? 'Guia' : 'Misturador';
+  $('#play-partner').innerHTML = chipHTML(s.partner);
+  $('#guide-view').hidden = role !== 'guide';
+  $('#mixer-view').hidden = role !== 'mixer';
+  $('#undo').hidden = role !== 'mixer' || !C.allowUndo;
+  $('#serve').hidden = !C.allowServeEarly;
+  $('#play-btns').hidden = $('#undo').hidden && $('#serve').hidden;
+  if (role === 'guide') renderRecipeCard($('#guide-view'), recipe, null);
+  else $('#tiles').innerHTML = s.setup.tiles.map((t, i) => `<button class="tile" data-i="${i}" aria-label="ícone misterioso ${i + 1}">${glyphSVG(t.g, t.c)}</button>`).join('');
+  s.pop = -1;
+  show('play'); renderPlayState();
+}
+function renderRecipeCard(el, recipe, have) {
+  const items = Object.entries(recipe.items);
+  const done = id => have ? (have[id] || 0) >= recipe.items[id] : false;
+  el.innerHTML = `<div class="recipe-head"><div class="ico">${glassSVG(recipe.glass, items.flatMap(([id, q]) => Array(q).fill(id)))}</div>
+    <div><span class="label" style="color:#FF8FB1">Receita</span><h2 class="h1">${esc(recipe.name)}</h2></div></div>
+    <div class="ing-list">${items.map(([id, q]) => `<div class="ing ${done(id) ? 'done' : ''}">${ingSVG(id)}<span>${esc(ING[id].name)}</span><b class="q">${q}×</b></div>`).join('')}</div>`;
+}
+function renderPlayState() {
+  const s = S.sess; if (!s || S.screen !== 'play') return;
+  const role = myRole(), recipe = recipeOf(s.setup);
+  const mystery = role === 'mixer' && !C.mixerSeesRealInGlass ? Object.fromEntries(s.setup.tiles.map(t => [t.id, t])) : null;
+  const pop = s.host ? s.pop : (s.glass.length > (s.prevLen || 0) ? s.glass.length - 1 : -1);
+  s.prevLen = s.glass.length;
+  const sayEl = $('#say');
+  $('#play-glass').innerHTML = glassSVG(recipe.glass, s.glass, { mystery, popIndex: pop }) + `<span class="glass-count">${s.glass.length}/${C.maxItemsInGlass}</span>`;
+  $('#play-glass').prepend(sayEl);
+  s.pop = -1;
+  if (role === 'guide' && C.guideSeesChecklist) { const have = {}; s.glass.forEach(id => have[id] = (have[id] || 0) + 1); renderRecipeCard($('#guide-view'), recipe, have); }
+  renderTimer();
+}
+function renderTimer() {
+  const s = S.sess; if (!s || s.phase !== 'play') return;
+  const left = s.host ? s.left : Math.max(0, s.left - (clock.now() - s.stateAt));
+  const sec = Math.ceil(left / 1000), t = $('#timer');
+  t.textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+  t.classList.toggle('hot', sec <= 10); t.classList.toggle('pulse', sec <= 5);
+  $('#bar').classList.toggle('hot', sec <= 10);
+  $('#bar i').style.transform = `scaleX(${(left / ROUND_MS).toFixed(4)})`;
+}
+function act(a, id) {
+  const s = S.sess; if (!s || s.phase !== 'play') return;
+  vibrate();
+  if (s.host) hostAct({ a, id }); else send(a === 'serve' ? { t: 'serve' } : { t: 'act', a, id });
+}
+let sayT;
+function showSay(text) { const el = $('#say'); el.textContent = text; el.classList.add('on'); clearTimeout(sayT); sayT = setTimeout(() => el.classList.remove('on'), 2400); }
+function initPlay() {
+  $('#tiles').onclick = e => {
+    const b = e.target.closest('.tile'); if (!b) return;
+    const t = S.sess && S.sess.setup.tiles[+b.dataset.i]; if (!t) return;
+    b.classList.remove('hit'); void b.offsetWidth; b.classList.add('hit');
+    act('add', t.id);
+  };
+  $('#undo').onclick = () => act('undo');
+  $('#serve').onclick = () => act('serve');
+}
+
+/* 6. resultado */
+function showResult() {
+  const s = S.sess, r = s.result, recipe = recipeOf(s.setup);
+  s.phase = 'end'; s.again = {};
+  $('#count').classList.remove('on');
+  const full = Math.floor(r.grade / 2), half = (r.grade / 2) - full >= 0.5;
+  const star = f => `<svg viewBox="-54 -54 108 108" class="stk">${glyphG('star', f)}</svg>`;
+  $('#grade').innerHTML = `<span class="badge">Avaliação do drink</span>
+    <div class="n">${String(r.grade).replace('.', ',')}<small>/10</small></div>
+    <div class="stars">${[0, 1, 2, 3, 4].map(i => star(i < full ? '#FFD21F' : (i === full && half) ? '#FFA726' : '#211F2B')).join('')}</div>
+    <h2 class="h1">${esc(r.label)}</h2><p class="body">${esc(r.sub)}</p>
+    <p class="small">${r.correct} de ${r.total} certos · ${r.extra} errado${r.extra === 1 ? '' : 's'} ou a mais · ${r.points} pontos${r.bonus ? ` (+${r.bonus} de tempo)` : ''}</p>`;
+  const tiles = Object.fromEntries(s.setup.tiles.map(t => [t.id, t]));
+  $('#res-recipe').innerHTML = `<div class="recipe-head"><div class="ico" style="width:52px;height:52px">${glassSVG(recipe.glass, Object.entries(recipe.items).flatMap(([id, q]) => Array(q).fill(id)))}</div>
+    <div><span class="label" style="color:#FF8FB1">Drink esperado</span><h2 class="h1">${esc(recipe.name)}</h2></div></div>
+    <table class="cmp"><thead><tr><th>Ingrediente</th><th>Receita</th><th>Feito</th></tr></thead><tbody>
+    ${r.rows.map(row => `<tr><td><span class="nm">${ingSVG(row.id)}${esc(ING[row.id].name)}</span></td><td>${row.need || '–'}</td>
+      <td class="${row.have === row.need ? 'ok' : 'no'}">${row.have}${row.have === row.need ? ' ✓' : ''}</td></tr>`).join('')}
+    </tbody></table>`;
+  $('#res-used').innerHTML = `<div><span class="label" style="color:#5BE3D6">O que foi para a taça</span>
+    <p class="small" style="margin-top:6px">Cada ícone misterioso e o ingrediente de verdade:</p></div>
+    ${s.glass.length ? `<div class="used">${s.glass.map(id => `<span class="u">${tiles[id] ? glyphSVG(tiles[id].g, tiles[id].c) : ''}<span class="arr">=</span>${ingSVG(id)}</span>`).join('')}</div>`
+      : '<p class="body">A taça ficou vazia.</p>'}
+    <div class="ready-row" style="justify-content:center">${glassSVG(recipe.glass, s.glass).replace('class="glass"', 'class="glass" style="height:120px;width:auto"')}</div>`;
+  $('#again').disabled = false; $('#again').textContent = 'Revanche';
+  renderAgain();
+  show('result');
+}
+function renderAgain() {
+  const s = S.sess; if (!s || s.phase !== 'end') return;
+  $('#again-msg').textContent = s.again.me ? `Esperando ${s.partner.nick} aceitar a revanche...` : s.again.them ? `${s.partner.nick} quer revanche!` : '';
+}
+function initResult() {
+  $('#again').onclick = () => { const s = S.sess; if (!s || s.again.me) return; vibrate(); s.again.me = true; $('#again').disabled = true; send({ t: 'again' }); renderAgain(); if (s.host) hostMaybeRematch(); };
+  $('#res-leave').onclick = leave;
+}
+
+/* ======================= BOT (parceiro simulado, só com ?bot=1) ======================= */
+function startBot() {
+  const [mine, bots] = pipePair();
+  onIncoming(mine);
+  const bot = { setup: null, next: 1500 };
+  const say = text => bots.send({ t: 'say', text });
+  bots.onData(m => {
+    if (m.t === 'setup') { bot.setup = m.setup; bot.next = 1500; setTimeout(() => bots.send({ t: 'ready' }), 500); }
+    else if (m.t === 'again') bots.send({ t: 'again' });
+    else if (m.t === 'state' && m.phase === 'play' && bot.setup) {
+      const el = ROUND_MS - m.left; if (el < bot.next) return;
+      bot.next = el + 1800;
+      const recipe = recipeOf(bot.setup), have = {}; m.glass.forEach(id => have[id] = (have[id] || 0) + 1);
+      const missing = Object.keys(recipe.items).filter(id => (have[id] || 0) < recipe.items[id]);
+      const botGuide = !bot.setup.guideHost;
+      if (botGuide) {
+        const extra = m.glass.length && !(m.glass[m.glass.length - 1] in recipe.items);
+        say(extra ? 'Não, esse não! Tira o último.' : missing.length ? `Põe ${recipe.items[missing[0]] - (have[missing[0]] || 0)} de ${ING[missing[0]].name.toLowerCase()}!` : 'Tá perfeito, serve!');
+      } else {
+        const r = rng(bot.setup.seed + Math.floor(el)), right = r() < 0.75 && missing.length;
+        const id = right ? missing[0] : bot.setup.tiles[Math.floor(r() * bot.setup.tiles.length)].id;
+        bots.send(missing.length ? { t: 'act', a: 'add', id } : { t: 'serve' });
+      }
+    }
+  });
+  bots.send({ t: 'hello', nick: 'BOT', av: C.avatar.presets[2], v: C.version });
+}
+
+/* ======================= início ======================= */
+brand(); initNick(); initAvatar(); initLobby(); initMatch(); initPlay(); initResult();
+if (S.player && S.player.nick && !nickError(S.player.nick)) { show('lobby'); renderLobby(); startNet(); }
+else { S.player = null; show('nick'); }
+
+/* Ganchos de teste (console): __dc.step(s), __dc.seed(n), __dc.tap(id), __dc.state() ... */
+window.__dc = {
+  step(sec) { if (!clock.manual) { clock.t = performance.now(); clock.manual = true; } const n = Math.max(1, Math.round(sec * 10)); for (let i = 0; i < n; i++) { clock.t += sec * 1000 / n; hostTick(); uiTick(); } },
+  seed(n) { S.seed = n; },
+  tap(id) { const i = S.sess.setup.tiles.findIndex(t => t.id === id); if (i < 0) return false; $$('#tiles .tile')[i].click(); return true; },
+  recipe() { return S.sess && S.sess.setup ? recipeOf(S.sess.setup) : null; },
+  role() { return S.sess && S.sess.setup ? myRole() : null; },
+  score: scoreDrink,
+  state() { const s = S.sess; return { screen: S.screen, code: S.code, net: S.net, phase: s && s.phase, host: s && s.host, glass: s && s.glass.slice(), left: s && s.left, result: s && s.result, partner: s && s.partner }; },
+  setPlayer(nick, av) { S.player = { nick, av: av || C.avatar.presets[0] }; store.set('player', S.player); show('lobby'); renderLobby(); startNet(); }
+};
+</script>
+</body>
+</html>
