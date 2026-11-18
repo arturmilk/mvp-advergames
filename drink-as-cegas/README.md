@@ -39,7 +39,7 @@ Jogo cooperativo para **dois celulares** (retrato, 360–480 px). Um jogador é 
 - Raios proporcionais: card com 24 px, filete com 18 px (24 − 6) e elementos internos com 8 px (24 − 16 de respiro).
 - Fundo de parede de tijolo bem sutil. O título acende como neon e os cards piscam ao acender.
 - Botão principal sólido, com degrau embaixo (sem gradiente).
-- Resultado: "Jogar de novo" (mesmo parceiro, papéis trocados) fica fixo no rodapé da tela. Sem contador de itens na taça e sem a linha de acertos e pontos.
+- Resultado: "Jogar de novo" (mesmo parceiro, papéis trocados) fica fixo no rodapé da tela. Sem contador de itens na taça, sem a linha de acertos e pontos e sem o card "O que foi para a taça" (a tabela "receita × feito" já mostra o que entrou).
 - Tela cheia (`fullscreen.js`, igual aos outros jogos) no primeiro toque em qualquer botão (Android/iPad; o iPhone não permite tela cheia em página).
 - Na partida, "Tirar o último" (com ícone de voltar) ocupa 70% da largura e "Servir" 30%.
 

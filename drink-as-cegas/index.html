@@ -368,7 +368,6 @@ svg{display:block}
   <div class="top"><div class="brand" data-brand></div><span class="client" data-client></span></div>
   <div class="grade" id="grade"></div>
   <div class="card pink" id="res-recipe"></div>
-  <div class="card teal" id="res-used"></div>
   <p class="wait-msg" id="again-msg"></p>
   <div class="res-actions">
     <button class="btn ghost" id="res-leave">Sair</button>
@@ -1326,18 +1325,12 @@ function showResult() {
     <div class="stars">${[0, 1, 2, 3, 4].map(i => star(i < full ? '#FFD21F' : (i === full && half) ? '#FFA726' : '#211F2B')).join('')}</div>
     <h2 class="h1">${esc(r.label)}</h2><p class="body">${esc(r.sub)}</p>
 `;
-  const tiles = Object.fromEntries(s.setup.tiles.map(t => [t.id, t]));
   $('#res-recipe').innerHTML = `<div class="recipe-head"><div class="ico" style="width:52px;height:52px">${glassSVG(recipe.glass, Object.entries(recipe.items).flatMap(([id, q]) => Array(q).fill(id)))}</div>
     <div><span class="label" style="color:#FF8FB1">Drink esperado</span><h2 class="h1">${esc(recipe.name)}</h2></div></div>
     <table class="cmp"><thead><tr><th>Ingrediente</th><th>Receita</th><th>Feito</th></tr></thead><tbody>
     ${r.rows.map(row => `<tr><td><span class="nm">${ingSVG(row.id)}${esc(ING[row.id].name)}</span></td><td>${row.need || '–'}</td>
       <td class="${row.have === row.need ? 'ok' : 'no'}">${row.have}${row.have === row.need ? ' ✓' : ''}</td></tr>`).join('')}
     </tbody></table>`;
-  $('#res-used').innerHTML = `<div><span class="label" style="color:#5BE3D6">O que foi para a taça</span>
-    <p class="small" style="margin-top:6px">Cada ícone misterioso e o ingrediente de verdade:</p></div>
-    ${s.glass.length ? `<div class="used">${s.glass.map(id => `<span class="u">${tiles[id] ? glyphSVG(tiles[id].g, tiles[id].c) : ''}<span class="arr">=</span>${ingSVG(id)}</span>`).join('')}</div>`
-      : '<p class="body">A taça ficou vazia.</p>'}
-    <div class="ready-row" style="justify-content:center">${glassSVG(recipe.glass, s.glass).replace('class="glass"', 'class="glass" style="height:120px;width:auto"')}</div>`;
   $('#again').disabled = false;
   renderAgain();
   show('result');
