@@ -161,6 +161,17 @@ const CONFIG = {
     ]
   },
 
+  /* ---------- Tela cheia (fullscreen.js; igual em todos os jogos) ----------
+     Android/iPad: tela cheia de verdade no 1º toque (o primeiro botão). iPhone/Safari não tem tela cheia para páginas:
+     lá o jogo já ocupa a tela toda, sem zoom de pinça. */
+  fullscreen: {
+    enabled: true,
+    onFirstTouch: true,        // pede tela cheia no primeiro toque (ex.: CONTINUAR ou CHAMAR)
+    devices: 'touch',          // 'touch' = só celular/tablet; 'all' = também no computador
+    orientation: 'portrait',   // trava em retrato depois de entrar em tela cheia (só Android)
+    blockZoom: true
+  },
+
   vibrateMs: 12,                  // vibração curta ao tocar em botão (0 = sem vibração)
 
   /* ---------- Selo "Produzido por Montaggio" (montaggio-selo.js) ---------- */

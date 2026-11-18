@@ -22,6 +22,7 @@ const ok = (c, m) => { if (!c) { console.error('FALHOU:', m); process.exitCode =
   // apelido: filtro
   await A.fill('#nick', 'B0STA'); await A.click('#nick-ok');
   ok((await A.textContent('#nick-err')).includes('não é permitido'), 'filtro de apelido barra B0STA');
+  ok(await A.waitForFunction(() => !!document.fullscreenElement, null, { timeout: 2000 }).then(() => true, () => false), 'tela cheia no primeiro botão');
   await shot(A, '01-apelido.png');
   await A.fill('#nick', 'ANA'); await A.click('#nick-ok');
   ok(await A.isVisible('#s-avatar'), 'apelido ANA leva ao avatar');
@@ -99,7 +100,7 @@ const ok = (c, m) => { if (!c) { console.error('FALHOU:', m); process.exitCode =
   // revanche: papéis trocam; tempo esgota com taça incompleta
   await A.click('#again'); await B.click('#again');
   await A.waitForSelector('#s-match.on'); await B.waitForSelector('#s-match.on');
-  ok((await A.evaluate(() => __dc.role())) !== roleA, 'revanche troca os papéis');
+  ok((await A.evaluate(() => __dc.role())) !== roleA, 'jogar de novo troca os papéis');
   await A.click('#ready'); await B.click('#ready');
   await A.waitForFunction(() => __dc.state().phase === 'count'); await A.evaluate(() => __dc.step(3.1));
   await B.waitForSelector('#s-play.on');
@@ -120,14 +121,14 @@ const ok = (c, m) => { if (!c) { console.error('FALHOU:', m); process.exitCode =
 
   // larguras: sem rolagem horizontal em todas as telas
   for (const w of [360, 430, 480]) {
-    for (const p of [A, B]) await p.setViewportSize({ width: w, height: 740 });
+    for (const p of [A, B]) { await p.evaluate(() => document.fullscreenElement && document.exitFullscreen()); await p.waitForTimeout(100); await p.setViewportSize({ width: w, height: 740 }); }
     for (const scr of ['nick', 'avatar', 'lobby', 'match', 'play', 'result']) {
       const over = await A.evaluate(scr => { document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === 's-' + scr)); return document.documentElement.scrollWidth - innerWidth; }, scr);
       ok(over <= 0, `${w}px ${scr}: sem rolagem horizontal (${over})`);
     }
     await A.evaluate(() => { document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === 's-lobby')); });
   }
-  await A.setViewportSize({ width: 360, height: 740 });
+  await A.evaluate(() => document.fullscreenElement && document.exitFullscreen()); await A.waitForTimeout(100); await A.setViewportSize({ width: 360, height: 740 });
 
   // BOT (?local=1&bot=1): uma pessoa sozinha joga contra o parceiro simulado
   const P = await ctx.newPage();

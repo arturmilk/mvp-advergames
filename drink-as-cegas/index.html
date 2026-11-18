@@ -31,7 +31,7 @@
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{background:var(--bg-canvas) var(--brick);color:var(--text-primary);font:500 16px/1.5 var(--f-ui);overflow-x:hidden;
+html,body{background:var(--bg-canvas) var(--brick);color:var(--text-primary);font:500 16px/1.5 var(--f-ui);overflow-x:hidden;overflow-x:clip;
   -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overscroll-behavior:none}
 body{min-height:100vh;min-height:100dvh}
 button,input{font:inherit;color:inherit}
@@ -74,6 +74,9 @@ svg{display:block}
 .btn.sm{height:52px;padding:0 16px;font-size:13px}
 .row{display:flex;gap:8px}
 .row>.btn{flex:1}
+.res-actions{position:sticky;bottom:calc(var(--sab) + 12px);z-index:5;display:grid;grid-template-columns:3fr 7fr;gap:8px;
+  padding:8px;margin:0 -8px;border-radius:var(--radius-pill);background:rgba(12,12,13,.88);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.res-actions .btn{white-space:nowrap;padding:0 12px}
 .play-btns{display:grid;grid-template-columns:7fr 3fr;gap:8px}
 .play-btns.solo{grid-template-columns:1fr}
 .play-btns .btn{padding:0 12px}
@@ -350,7 +353,7 @@ svg{display:block}
   <div class="hud"><div class="timer" id="timer">0:30</div><div class="bar" id="bar"><i></i></div></div>
   <div class="role-line"><span class="badge" id="play-role"></span><span class="chip" id="play-partner"></span></div>
   <div id="guide-view" class="card pink recipe" hidden></div>
-  <div class="play-glass" id="play-glass"><div id="som" aria-hidden="true"></div><div class="som-say" id="som-say" aria-live="polite"></div><div id="glass-holder"></div><span class="glass-count" id="glass-count"></span><div class="say" id="say"></div></div>
+  <div class="play-glass" id="play-glass"><div id="som" aria-hidden="true"></div><div class="som-say" id="som-say" aria-live="polite"></div><div id="glass-holder"></div><div class="say" id="say"></div></div>
   <div id="mixer-view" hidden>
     <div class="tiles" id="tiles"></div>
   </div>
@@ -367,9 +370,9 @@ svg{display:block}
   <div class="card pink" id="res-recipe"></div>
   <div class="card teal" id="res-used"></div>
   <p class="wait-msg" id="again-msg"></p>
-  <div class="row">
+  <div class="res-actions">
     <button class="btn ghost" id="res-leave">Sair</button>
-    <button class="btn cta" id="again">Revanche</button>
+    <button class="btn cta" id="again"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Jogar de novo</button>
   </div>
   <div class="foot"></div>
 </section>
@@ -379,6 +382,7 @@ svg{display:block}
 </div>
 
 <script src="config.js"></script>
+<script src="fullscreen.js"></script>
 <script src="vendor/peerjs.min.js"></script>
 <script src="vendor/matter.min.js" defer></script>
 <script src="montaggio-selo.js"></script>
@@ -1109,7 +1113,6 @@ function renderPlayState() {
   s.prevLen = s.glass.length;
   const fxOn = FX.ready();
   $('#glass-holder').innerHTML = glassSVG(recipe.glass, s.glass, fxOn ? { mystery, noSolids: true, landed: FX.landed, noFront: true } : { mystery, popIndex: pop });
-  $('#glass-count').textContent = `${s.glass.length}/${C.maxItemsInGlass}`;
   if (fxOn) FX.sync(recipe.glass, s.glass, mystery);
   s.pop = -1;
   if (role === 'guide' && C.guideSeesChecklist) { const have = {}; s.glass.forEach(id => have[id] = (have[id] || 0) + 1); renderRecipeCard($('#guide-view'), recipe, have); }
@@ -1322,7 +1325,7 @@ function showResult() {
     <div class="n">${String(r.grade).replace('.', ',')}<small>/10</small></div>
     <div class="stars">${[0, 1, 2, 3, 4].map(i => star(i < full ? '#FFD21F' : (i === full && half) ? '#FFA726' : '#211F2B')).join('')}</div>
     <h2 class="h1">${esc(r.label)}</h2><p class="body">${esc(r.sub)}</p>
-    <p class="small">${r.correct} de ${r.total} certos · ${r.extra} errado${r.extra === 1 ? '' : 's'} ou a mais · ${r.points} pontos${r.bonus ? ` (+${r.bonus} de tempo)` : ''}</p>`;
+`;
   const tiles = Object.fromEntries(s.setup.tiles.map(t => [t.id, t]));
   $('#res-recipe').innerHTML = `<div class="recipe-head"><div class="ico" style="width:52px;height:52px">${glassSVG(recipe.glass, Object.entries(recipe.items).flatMap(([id, q]) => Array(q).fill(id)))}</div>
     <div><span class="label" style="color:#FF8FB1">Drink esperado</span><h2 class="h1">${esc(recipe.name)}</h2></div></div>
@@ -1335,13 +1338,13 @@ function showResult() {
     ${s.glass.length ? `<div class="used">${s.glass.map(id => `<span class="u">${tiles[id] ? glyphSVG(tiles[id].g, tiles[id].c) : ''}<span class="arr">=</span>${ingSVG(id)}</span>`).join('')}</div>`
       : '<p class="body">A taça ficou vazia.</p>'}
     <div class="ready-row" style="justify-content:center">${glassSVG(recipe.glass, s.glass).replace('class="glass"', 'class="glass" style="height:120px;width:auto"')}</div>`;
-  $('#again').disabled = false; $('#again').textContent = 'Revanche';
+  $('#again').disabled = false;
   renderAgain();
   show('result');
 }
 function renderAgain() {
   const s = S.sess; if (!s || s.phase !== 'end') return;
-  $('#again-msg').textContent = s.again.me ? `Esperando ${s.partner.nick} aceitar a revanche...` : s.again.them ? `${s.partner.nick} quer revanche!` : '';
+  $('#again-msg').textContent = s.again.me ? `Esperando ${s.partner.nick} topar jogar de novo...` : s.again.them ? `${s.partner.nick} quer jogar de novo!` : '';
 }
 function initResult() {
   $('#again').onclick = () => { const s = S.sess; if (!s || s.again.me) return; vibrate(); s.again.me = true; $('#again').disabled = true; send({ t: 'again' }); renderAgain(); if (s.host) hostMaybeRematch(); };
