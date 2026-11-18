@@ -22,23 +22,36 @@ Jogo cooperativo para **dois celulares** (retrato, 360–480 px). Um jogador é 
 
 ## Sommelier Bigode (`CONFIG.sommelier`)
 
-É um personagem adesivo: hipster magro com bigode, óculos redondos, suspensório, gravata-borboleta e tatuagens old school. Foi gerado no Higgsfield (`gpt_image_2_5`); o original está em `assets/_raw/sommelier-higgsfield.png`. O recorte usado no jogo é `assets/sommelier.webp` (315×480, 39 KB). Ele fica à direita da taça, atrás dela, na mesma posição para o guia e para o misturador.
+É uma **cabeça gigante em cartoon simples**, de traço preto grosso e cor chapada, com topete, óculos redondos, bigodão e gravata-borboleta. Fica à direita, atrás da taça, olhando para o drink, na mesma posição para o guia e para o misturador.
+
+- Foi desenhado à mão em SVG, dentro do `index.html` (`sommelierSVG()`), e não pesa nada a mais.
+- As expressões trocam por classe: `neutral`, `hmm` (sobrancelha levantada e olhos semicerrados), `happy`, `disgust` e `surprised`. A boca abre e fecha enquanto ele fala (`talking`).
+- Ele pisca sozinho e balança a cabeça de leve.
+- Ingrediente certo deixa ele feliz, ingrediente errado dá cara de nojo e passar da quantidade dá cara de surpresa.
 
 - **Uma fala por ingrediente:** todo ingrediente que cai na taça é anunciado pelo nome ("Limão!"), por no máximo 1 s (`nameMs`).
 - **Observações:** ele também solta comentários como "É uma mistura bem... arrojada.". Saem logo depois do nome, quando não chega outro ingrediente, e dependem do momento: no início, depois de um ingrediente errado, quando passa da quantidade, ao tirar o último ou ao acaso. As frases e as chances ficam em `sommelier.lines` e `*Chance`.
 - **Iguais nos dois:** quem hospeda escolhe a fala, com sorteio pela semente da partida, e manda junto com o estado da taça.
 
+## Visual
+
+- Cards no estilo **letreiro neon**: um tubo claro com brilho colorido, mais um filete interno.
+- Raios proporcionais: card com 24 px, filete com 18 px (24 − 6) e elementos internos com 8 px (24 − 16 de respiro).
+- Fundo de parede de tijolo bem sutil. O título acende como neon e os cards piscam ao acender.
+- Botão principal sólido, com degrau embaixo (sem gradiente).
+- Na partida, "Tirar o último" (com ícone de voltar) ocupa 70% da largura e "Servir" 30%.
+
 ## Física (`CONFIG.physics`, Matter.js 0.20)
 
 - Os sólidos (limão, gelo, hortelã, morango, açúcar) caem do topo da tela, quicam e se empilham na taça.
-- Os líquidos caem como gota e, ao chegar na superfície, viram uma camada com respingo.
+- Os líquidos caem como gota. Ao chegar na superfície, fazem **splash**: uma coroa de gotas da cor do líquido, um anel na superfície e os sólidos próximos dão um pulinho. Depois viram camada.
 - Paredes invisíveis sobem acima da borda e são grossas, para nada atravessar nem quicar para fora.
 - "Tirar o último" remove o corpo.
 - O Matter.js (`vendor/matter.min.js`, MIT, 26 KB com gzip) carrega com `defer`, sem atrasar a primeira tela. Se não carregar, a taça volta para o desenho estático.
 - No máximo 14 corpos e um único canvas, com nitidez limitada a 2×.
 - Cada celular simula a física por conta própria. A taça tem o mesmo conteúdo nos dois, mas a posição exata de cada item pode variar um pouco.
 
-**Peso da página (com gzip):** cerca de 200 KB no total, contando HTML, PeerJS, Matter.js, sommelier e fontes.
+**Peso da página (com gzip):** cerca de 165 KB no total, contando HTML, PeerJS, Matter.js, sommelier e fontes.
 
 ## Nota do drink (`CONFIG.scoring`)
 

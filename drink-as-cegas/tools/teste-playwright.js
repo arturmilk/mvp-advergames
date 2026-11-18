@@ -76,6 +76,7 @@ const ok = (c, m) => { if (!c) { console.error('FALHOU:', m); process.exitCode =
   await host.evaluate(() => __dc.step(2)); await (host === guide ? mixer : guide).evaluate(() => __dc.step(2));
   const fxG = await guide.evaluate(() => __dc.fx()), fxM = await mixer.evaluate(() => __dc.fx());
   const nSolid = await guide.evaluate(() => __dc.state().glass.filter(id => !CONFIG.ingredients.find(i => i.id === id).liquid).length);
+  if (fxG.inGlass !== nSolid) console.log(await guide.evaluate(() => JSON.stringify({ g: [FX.geo.x0, FX.geo.x1, FX.geo.top, FX.geo.bot, FX.geo.H], b: FX.items.map(i => i.body ? [i.id, Math.round(i.body.position.x), Math.round(i.body.position.y), +i.body.velocity.y.toFixed(2), i.body.isSleeping, i.body.isStatic] : [i.id, i.gone]), w: FX.walls.map(w => [Math.round(w.bounds.min.x), Math.round(w.bounds.min.y), Math.round(w.bounds.max.x), Math.round(w.bounds.max.y)]), all: Matter.Composite.allBodies(FX.engine.world).length, grav: FX.engine.gravity })));
   ok(fxG.on && fxG.bodies === nSolid && fxG.inGlass === nSolid, `física no guia: ${fxG.inGlass}/${nSolid} sólidos dentro da taça, ${fxG.landed} líquidos assentados`);
   ok(fxM.inGlass === nSolid, `física no misturador: ${fxM.inGlass}/${nSolid} sólidos dentro da taça`);
   await shot(guide, '05-guia.png'); await shot(mixer, '06b-misturador-assentado.png');

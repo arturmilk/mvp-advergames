@@ -30,7 +30,6 @@ const CONFIG = {
   sommelier: {
     enabled: true,
     name: 'Bigode',
-    image: 'assets/sommelier.webp',
     nameMs: 900,                  // duração da fala com o nome do ingrediente (máx. 1 s)
     nameText: '{name}!',          // {name} = nome do ingrediente
     obsMs: 1800,                  // duração de uma observação

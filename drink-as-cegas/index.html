@@ -24,13 +24,14 @@
   --text-primary:#F2E9FC; --text-secondary:#B8ABC9; --text-muted:#7A6E8A;
   --border-subtle:rgba(242,233,252,.12);
   --glow-pink:0 0 18px rgba(232,51,109,.5); --glow-teal:0 0 16px rgba(0,159,147,.45); --glow-purple:0 0 22px rgba(93,42,142,.55);
-  --radius-card:20px; --radius-pill:9999px; --radius-input:12px;
+  --radius-card:24px; --radius-pill:9999px; --pad:16px; --radius-inner:calc(var(--radius-card) - var(--pad)); --radius-input:var(--radius-inner);
+  --brick:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='44'%3E%3Cpath d='M0 .5H88M0 22.5H88M.5 0V22M44.5 22V44' stroke='%23F2E9FC' stroke-opacity='.035' fill='none'/%3E%3C/svg%3E");
   --f-display:'Space Grotesk','Outfit',system-ui,sans-serif;
   --f-ui:'Plus Jakarta Sans','Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{background:var(--bg-canvas);color:var(--text-primary);font:500 16px/1.5 var(--f-ui);overflow-x:hidden;
+html,body{background:var(--bg-canvas) var(--brick);color:var(--text-primary);font:500 16px/1.5 var(--f-ui);overflow-x:hidden;
   -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overscroll-behavior:none}
 body{min-height:100vh;min-height:100dvh}
 button,input{font:inherit;color:inherit}
@@ -64,22 +65,33 @@ svg{display:block}
   transition:transform .08s ease,box-shadow .2s ease,background .2s ease;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .btn:active{transform:scale(.96)}
 .btn[disabled]{opacity:.45;pointer-events:none}
-.btn.cta{background:linear-gradient(135deg,var(--color-pink),var(--color-pink-deep));color:var(--text-primary);box-shadow:0 4px 20px rgba(232,51,109,.45)}
-.btn.cta:active{box-shadow:var(--glow-pink)}
+.btn.cta{background:var(--color-pink);color:#fff;box-shadow:0 4px 0 #8E1840,0 0 22px rgba(232,51,109,.35)}
+.btn.cta:active{transform:translateY(3px) scale(.96);box-shadow:0 1px 0 #8E1840,var(--glow-pink)}
 .btn.teal{background:var(--bg-surface-elevated);border:1.5px solid var(--color-teal);color:var(--text-primary);box-shadow:var(--glow-teal)}
-.btn.ghost{background:var(--bg-surface);border:1px solid var(--border-subtle);color:var(--text-secondary)}
+.btn.ghost{background:var(--bg-surface);border:1.5px solid rgba(242,233,252,.22);color:var(--text-primary);box-shadow:0 4px 0 #050506}
+.btn svg.ico{width:22px;height:22px;flex:none}
 .btn.ghost:active{background:var(--bg-surface-elevated)}
 .btn.sm{height:52px;padding:0 16px;font-size:13px}
 .row{display:flex;gap:8px}
 .row>.btn{flex:1}
+.play-btns{display:grid;grid-template-columns:7fr 3fr;gap:8px}
+.play-btns.solo{grid-template-columns:1fr}
+.play-btns .btn{padding:0 12px}
 .link{font:700 13px/1 var(--f-ui);color:var(--text-secondary);text-decoration:underline;text-underline-offset:3px;min-height:52px;padding:0 8px}
 
 /* cards */
-.card{background:radial-gradient(120% 90% at 50% 0%,rgba(93,42,142,.28),transparent 62%),var(--bg-surface);
-  border:1.5px solid var(--color-purple);border-radius:var(--radius-card);padding:20px;display:flex;flex-direction:column;gap:16px}
-.card.pink{border:2px solid var(--color-pink);box-shadow:var(--glow-pink)}
-.card.teal{border:2px solid var(--color-teal);box-shadow:var(--glow-teal)}
-.card.flat{background:var(--bg-surface);border:1px solid var(--border-subtle)}
+.card{--nc:#C9A2F2;--ng:rgba(125,64,190,.85);position:relative;background:rgba(22,21,29,.92);border-radius:var(--radius-card);
+  padding:var(--pad);display:flex;flex-direction:column;gap:16px}
+/* letreiro neon: tubo de fora (claro, com brilho) + filete de dentro, com raio proporcional (raio do card − distância) */
+.card::after{content:'';position:absolute;inset:0;border-radius:inherit;border:2.5px solid var(--nc);pointer-events:none;
+  box-shadow:0 0 2px var(--nc),0 0 8px var(--ng),0 0 22px var(--ng),inset 0 0 6px var(--ng),inset 0 0 18px rgba(0,0,0,.2);animation:ignite 1.4s linear 1 both}
+.card::before{content:'';position:absolute;inset:6px;border-radius:calc(var(--radius-card) - 6px);border:1px solid var(--nc);opacity:.4;pointer-events:none}
+.card.pink{--nc:#FF8DB0;--ng:rgba(232,51,109,.8)}
+.card.teal{--nc:#5FF0E2;--ng:rgba(0,159,147,.85)}
+.card.flat{--nc:rgba(242,233,252,.2);--ng:transparent}
+.card.flat::after{box-shadow:none;animation:none}
+@keyframes ignite{0%{opacity:.15}6%{opacity:1}9%{opacity:.25}14%{opacity:1}31%{opacity:.6}33%{opacity:1}100%{opacity:1}}
+.neon-text{color:#FFE6EE;text-shadow:0 0 1px #fff,0 0 6px #E8336D,0 0 14px #E8336D,0 0 32px rgba(232,51,109,.7)}
 .badge{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:var(--radius-pill);
   font:700 11px/1 var(--f-ui);letter-spacing:.08em;text-transform:uppercase;background:var(--color-purple);color:var(--text-primary)}
 .badge.teal{background:rgba(0,159,147,.18);color:#5BE3D6;border:1px solid var(--color-teal)}
@@ -87,7 +99,7 @@ svg{display:block}
 
 /* inputs */
 .field{display:flex;flex-direction:column;gap:8px}
-.input{height:56px;width:100%;border-radius:var(--radius-input);border:1.5px solid var(--border-subtle);background:var(--bg-canvas);
+.input{height:56px;width:100%;border-radius:var(--radius-inner);border:1.5px solid rgba(242,233,252,.18);background:var(--bg-canvas);
   padding:0 16px;font:700 22px/1 var(--f-display);letter-spacing:.18em;text-transform:uppercase;color:var(--text-primary);outline:none}
 .input::placeholder{color:var(--text-muted);letter-spacing:.06em;font-weight:500;font-size:16px}
 .input:focus{border-color:var(--color-teal);box-shadow:var(--glow-teal)}
@@ -95,7 +107,7 @@ svg{display:block}
 
 /* chips de jogador */
 .chip{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 14px 0 4px;border-radius:var(--radius-pill);
-  background:var(--bg-surface-elevated);border:1px solid var(--color-teal);font:700 14px/1 var(--f-display);letter-spacing:.04em;max-width:100%}
+  background:var(--bg-surface-elevated);border:1.5px solid #5FF0E2;box-shadow:0 0 6px rgba(0,159,147,.8),inset 0 0 6px rgba(0,159,147,.4);font:700 14px/1 var(--f-display);letter-spacing:.04em;max-width:100%}
 .chip svg{width:36px;height:36px;flex:none}
 .chip .x{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;margin-right:-8px;color:var(--text-muted);font-size:16px}
 
@@ -125,7 +137,7 @@ svg{display:block}
 /* lobby */
 .me-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .code-big{display:flex;justify-content:center;gap:8px}
-.code-big span{width:56px;height:64px;border-radius:var(--radius-input);background:var(--bg-canvas);border:1.5px solid var(--color-teal);
+.code-big span{width:56px;height:64px;border-radius:var(--radius-inner);background:var(--bg-canvas);border:1.5px solid var(--color-teal);
   display:flex;align-items:center;justify-content:center;font:700 32px/1 var(--f-display);color:var(--text-primary);box-shadow:var(--glow-teal)}
 .code-big.wait span{border-color:var(--border-subtle);box-shadow:none;color:var(--text-muted)}
 .net{display:flex;align-items:center;justify-content:center;gap:8px;font:600 13px/1.3 var(--f-ui);color:var(--text-secondary);text-align:center}
@@ -155,8 +167,8 @@ svg{display:block}
 #s-play{gap:12px;height:100vh;height:100dvh;min-height:0;overflow:hidden}
 .hud{display:flex;align-items:center;gap:8px}
 .timer{display:flex;align-items:center;justify-content:center;min-width:76px;height:40px;padding:0 12px;border-radius:var(--radius-pill);
-  background:var(--bg-surface-elevated);border:1.5px solid var(--color-teal);font:700 20px/1 var(--f-display);box-shadow:var(--glow-teal)}
-.timer.hot{border-color:var(--color-pink);box-shadow:var(--glow-pink);color:#FFB3C9}
+  background:var(--bg-surface-elevated);border:2px solid #5FF0E2;font:700 20px/1 var(--f-display);box-shadow:0 0 8px rgba(0,159,147,.9),inset 0 0 6px rgba(0,159,147,.5)}
+.timer.hot{border-color:#FF8DB0;box-shadow:0 0 8px rgba(232,51,109,.9),inset 0 0 6px rgba(232,51,109,.5);color:#FFB3C9}
 .timer.pulse{animation:pulse .5s infinite alternate}
 @keyframes pulse{to{transform:scale(1.08)}}
 .bar{flex:1;height:8px;border-radius:var(--radius-pill);background:var(--bg-surface-elevated);overflow:hidden}
@@ -166,11 +178,25 @@ svg{display:block}
 .play-glass{flex:1;min-height:120px;display:flex;align-items:stretch;justify-content:flex-start;position:relative;margin:0 -20px;padding:0 20px}
 #glass-holder{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:center;width:62%;height:100%;padding-top:8px}
 #glass-holder svg{height:100%;max-height:280px;width:auto;max-width:100%}
-#som{position:absolute;right:-6px;bottom:-6px;height:calc(100% + 6px);max-height:320px;width:auto;z-index:0;pointer-events:none;
-  transform-origin:70% 100%;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
-#som.talk{animation:talk .32s ease-out}
-@keyframes talk{40%{transform:translateY(-6px) rotate(-1.5deg)}}
-.som-say{position:absolute;right:calc(min(42%, 190px));top:0;max-width:58%;padding:10px 16px;border-radius:18px;background:#F2E9FC;color:#16151D;
+#som{position:absolute;right:-18px;bottom:-4px;height:calc(100% + 4px);max-height:300px;aspect-ratio:260/300;z-index:0;pointer-events:none;
+  transform-origin:60% 100%;transform:rotate(-4deg)}
+#som svg{width:100%;height:100%;animation:bob 2.8s ease-in-out infinite alternate}
+#som.talk{animation:talk .3s ease-out}
+@keyframes talk{40%{transform:rotate(-7deg) translateY(-5px)}}
+@keyframes bob{to{transform:translateY(-4px)}}
+.som-svg .brow,.som-svg .mouth{display:none}
+.face-neutral .b-neutral,.face-neutral .m-neutral,.face-hmm .b-hmm,.face-hmm .m-hmm,.face-happy .b-happy,.face-happy .m-happy,
+.face-disgust .b-disgust,.face-disgust .m-disgust,.face-surprised .b-surprised,.face-surprised .m-surprised{display:inline}
+.som-svg.talking .mouth{display:none}
+.som-svg.talking .m-talk{display:inline;transform-box:fill-box;transform-origin:center;animation:yap .14s ease-in-out infinite alternate}
+@keyframes yap{from{transform:scaleY(.3)}}
+.som-svg .lid{transform-box:fill-box;transform:translateY(-100%);animation:blink 4.6s infinite}
+.som-svg .lid-line{display:none;transform:translateY(16px)}
+.face-hmm .lid,.face-disgust .lid{animation:none;transform:translateY(-56%)}
+.face-hmm .lid-line,.face-disgust .lid-line{display:inline}
+.face-surprised .pupil{transform-box:fill-box;transform-origin:center;transform:scale(.72)}
+@keyframes blink{0%,94%,100%{transform:translateY(-100%)}97%{transform:translateY(0)}}
+.som-say{position:absolute;right:calc(min(50%, 220px));top:0;max-width:58%;padding:10px 16px;border-radius:18px;background:#F2E9FC;color:#16151D;
   font:700 16px/1.25 var(--f-display);text-align:center;border:3px solid #fff;box-shadow:0 3px 0 rgba(0,0,0,.45),var(--glow-purple);
   opacity:0;transform:scale(.7);transform-origin:100% 100%;transition:opacity .12s,transform .12s;pointer-events:none;z-index:4}
 .som-say::after{content:'';position:absolute;right:-12px;bottom:10px;border:8px solid transparent;border-left:14px solid #F2E9FC}
@@ -180,18 +206,18 @@ svg{display:block}
 #fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
 #s-play{position:relative}
 .glass-count{position:absolute;left:20px;bottom:0;z-index:2;font:700 12px/1 var(--f-ui);color:var(--text-muted)}
-.recipe{gap:12px;padding:16px 20px}
+.recipe{gap:12px}
 .recipe-head{display:flex;align-items:center;gap:12px}
 .recipe-head .ico{width:52px;height:52px;flex:none}
 .ing-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.ing{display:flex;align-items:center;gap:8px;min-height:48px;padding:4px 8px 4px 4px;border-radius:var(--radius-input);background:var(--bg-surface-elevated);
+.ing{display:flex;align-items:center;gap:8px;min-height:48px;padding:4px 8px 4px 4px;border-radius:var(--radius-inner);background:var(--bg-surface-elevated);
   font:600 13px/1.2 var(--f-ui);color:var(--text-primary)}
 .ing svg{width:40px;height:40px;flex:none}
 .ing .q{margin-left:auto;font:700 16px/1 var(--f-display);color:#FF8FB1}
 .ing.done{box-shadow:inset 0 0 0 1.5px var(--color-teal)}
 .ing.done .q{color:#5BE3D6}
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.tile{aspect-ratio:1/1;min-height:52px;border-radius:16px;background:var(--bg-surface);border:1.5px solid var(--border-subtle);
+.tile{aspect-ratio:1/1;min-height:52px;border-radius:16px;background:var(--bg-surface);border:1.5px solid rgba(201,162,242,.28);box-shadow:inset 0 0 0 4px var(--bg-surface),inset 0 0 0 5px rgba(201,162,242,.1);
   display:flex;align-items:center;justify-content:center;transition:transform .08s,background .15s;touch-action:manipulation}
 .tile:active{transform:scale(.92);background:var(--bg-surface-elevated)}
 .tile svg{width:68%;height:68%}
@@ -218,7 +244,7 @@ svg{display:block}
 .cmp .nm svg{width:32px;height:32px;flex:none}
 .cmp .ok{color:#5BE3D6}.cmp .no{color:#FF8FB1}
 .used{display:flex;flex-wrap:wrap;gap:8px}
-.used .u{display:flex;align-items:center;gap:2px;padding:4px 8px 4px 4px;border-radius:var(--radius-input);background:var(--bg-surface-elevated)}
+.used .u{display:flex;align-items:center;gap:2px;padding:4px 8px 4px 4px;border-radius:var(--radius-inner);background:var(--bg-surface-elevated)}
 .used .u svg{width:30px;height:30px}
 .used .u .arr{font:700 12px/1 var(--f-ui);color:var(--text-muted);margin:0 2px}
 .wait-msg{text-align:center;font:600 13px/1.4 var(--f-ui);color:var(--text-secondary);min-height:18px}
@@ -229,7 +255,7 @@ svg{display:block}
 .toast.on{opacity:1;transform:translateX(-50%)}
 @media (max-height:640px){
   .hero{height:170px}.hero .glass{width:130px;height:156px}
-  #s-play{gap:8px}.tiles{gap:6px}.recipe{padding:12px 16px}
+  #s-play{gap:8px}.tiles{gap:6px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -242,7 +268,7 @@ svg{display:block}
   <div class="top"><div class="brand" data-brand></div><span class="client" data-client></span></div>
   <div class="hero" id="hero"></div>
   <div class="title-wrap">
-    <h1 class="dxl" data-gname></h1>
+    <h1 class="dxl neon-text" data-gname></h1>
     <p class="body" data-tagline></p>
   </div>
   <div class="card">
@@ -324,13 +350,13 @@ svg{display:block}
   <div class="hud"><div class="timer" id="timer">0:30</div><div class="bar" id="bar"><i></i></div></div>
   <div class="role-line"><span class="badge" id="play-role"></span><span class="chip" id="play-partner"></span></div>
   <div id="guide-view" class="card pink recipe" hidden></div>
-  <div class="play-glass" id="play-glass"><img id="som" alt="" decoding="async"><div class="som-say" id="som-say" aria-live="polite"></div><div id="glass-holder"></div><span class="glass-count" id="glass-count"></span><div class="say" id="say"></div></div>
+  <div class="play-glass" id="play-glass"><div id="som" aria-hidden="true"></div><div class="som-say" id="som-say" aria-live="polite"></div><div id="glass-holder"></div><span class="glass-count" id="glass-count"></span><div class="say" id="say"></div></div>
   <div id="mixer-view" hidden>
     <div class="tiles" id="tiles"></div>
   </div>
-  <div class="row" id="play-btns">
-    <button class="btn ghost sm" id="undo">Tirar o último</button>
-    <button class="btn cta sm" id="serve">Servir!</button>
+  <div class="play-btns" id="play-btns">
+    <button class="btn ghost sm" id="undo"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>Tirar o último</button>
+    <button class="btn cta sm" id="serve">Servir</button>
   </div>
 </section>
 
@@ -440,6 +466,58 @@ const GLYPH_KEYS = Object.keys(GLYPHS);
 const GLYPH_COLORS = ['#E8336D', '#009F93', '#A77BDB', '#F2E9FC'];
 function glyphSVG(g, c) { return `<svg class="stk" viewBox="-54 -54 108 108" aria-label="ingrediente misterioso">${glyphG(g, c)}</svg>`; }
 function glyphG(g, c) { return `<path d="${GLYPHS[g]}" fill="#fff" stroke="#fff" stroke-width="9" stroke-linejoin="round" fill-rule="evenodd"/><path d="${GLYPHS[g]}" fill="${c}" fill-rule="evenodd" stroke="rgba(12,12,13,.3)" stroke-width="1.6"/>`; }
+
+/* sommelier: cabeça cartoon desenhada à mão (expressões trocam por classe: face-neutral/hmm/happy/disgust/surprised + talking) */
+function sommelierSVG() {
+  const K = '#1A1414', SK = '#E2A77B', SKD = '#C98A5E', HR = '#3A2419', HRL = '#5A3A28';
+  const o = `stroke="${K}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"`;
+  const eye = (cx, cy, r, id) => `
+    <clipPath id="ec${id}"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff"/>
+    <g class="pupil"><circle cx="${cx - 7}" cy="${cy + 4}" r="8.5" fill="${K}"/><circle cx="${cx - 9.5}" cy="${cy + 1}" r="2.6" fill="#fff"/></g>
+    <g clip-path="url(#ec${id})"><rect class="lid" x="${cx - r - 2}" y="${cy - r - 2}" width="${2 * r + 4}" height="${2 * r + 4}" fill="${SK}"/><path class="lid-line" d="M${cx - r},${cy - r + 4}H${cx + r}" stroke="${K}" stroke-width="4"/></g>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${K}" stroke-width="3.5"/>`;
+  return `<svg class="som-svg face-neutral" viewBox="0 0 260 300" role="img" aria-label="sommelier">
+  <!-- ombros e camisa -->
+  <path d="M40,300C46,262 84,246 130,246C178,246 214,262 222,300Z" fill="#8E6FC0" ${o}/>
+  <path d="M104,246L130,276L156,246Z" fill="#fff" ${o}/>
+  <path d="M112,262L130,272L112,284ZM148,262L130,272L148,284Z" fill="#E8336D" ${o}/><circle cx="130" cy="273" r="6" fill="#E8336D" ${o}/>
+  <path d="M110,226V250Q130,262 152,250V226Z" fill="${SKD}" ${o}/>
+  <!-- orelha -->
+  <ellipse cx="226" cy="156" rx="17" ry="24" fill="${SK}" ${o}/><path d="M228,146Q218,156 228,168" fill="none" stroke="${K}" stroke-width="3.5" stroke-linecap="round"/>
+  <!-- rosto -->
+  <path d="M58,146C56,82 98,50 148,50C200,50 230,90 230,148C230,206 196,248 144,248C94,248 60,214 58,146Z" fill="${SK}" ${o}/>
+  <!-- cabelo: topete -->
+  <path d="M60,116C50,64 92,24 146,22C178,20 206,30 222,52C236,72 238,104 230,128C224,110 214,98 202,92C188,86 176,90 164,86C148,80 130,84 116,86C96,88 74,98 60,116Z" fill="${HR}" ${o}/>
+  <path d="M96,52C112,36 140,30 164,36M110,72C128,58 156,56 180,64M196,46C210,58 218,76 220,96" fill="none" stroke="${HRL}" stroke-width="4" stroke-linecap="round"/>
+  <path d="M214,128C220,122 226,124 228,132" fill="none" stroke="${HR}" stroke-width="6" stroke-linecap="round"/>
+  <!-- sobrancelhas (uma por expressão) -->
+  <g class="brow b-neutral" fill="none" stroke="${HR}" stroke-width="9" stroke-linecap="round"><path d="M76,112Q94,104 114,110"/><path d="M152,108Q174,100 196,108"/></g>
+  <g class="brow b-hmm" fill="none" stroke="${HR}" stroke-width="9" stroke-linecap="round"><path d="M76,116Q94,112 114,116"/><path d="M152,98Q174,84 196,96"/></g>
+  <g class="brow b-happy" fill="none" stroke="${HR}" stroke-width="9" stroke-linecap="round"><path d="M76,106Q94,94 114,102"/><path d="M152,100Q174,90 196,100"/></g>
+  <g class="brow b-disgust" fill="none" stroke="${HR}" stroke-width="9" stroke-linecap="round"><path d="M76,104Q96,110 116,120"/><path d="M150,118Q172,108 196,104"/></g>
+  <g class="brow b-surprised" fill="none" stroke="${HR}" stroke-width="9" stroke-linecap="round"><path d="M76,98Q94,84 114,94"/><path d="M152,92Q174,78 196,90"/></g>
+  <!-- olhos atrás das lentes -->
+  ${eye(96, 146, 20, 'a')}${eye(174, 144, 21, 'b')}
+  <!-- óculos redondos -->
+  <circle cx="96" cy="146" r="30" fill="rgba(190,230,255,.18)" stroke="${K}" stroke-width="6"/>
+  <circle cx="174" cy="144" r="31" fill="rgba(190,230,255,.18)" stroke="${K}" stroke-width="6"/>
+  <path d="M126,142Q135,132 143,140" fill="none" stroke="${K}" stroke-width="6" stroke-linecap="round"/>
+  <path d="M205,140L218,140" stroke="${K}" stroke-width="6" stroke-linecap="round"/>
+  <path d="M78,130Q84,122 94,120M156,128Q162,120 172,118" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+  <!-- nariz -->
+  <path d="M124,160C98,152 76,166 80,186C84,204 110,208 126,196" fill="${SKD}" ${o}/>
+  <!-- boca (uma por expressão; atrás do bigode) -->
+  <path class="mouth m-neutral" d="M110,232Q128,236 146,230" fill="none" stroke="${K}" stroke-width="5" stroke-linecap="round"/>
+  <path class="mouth m-hmm" d="M112,234Q130,236 148,226" fill="none" stroke="${K}" stroke-width="5" stroke-linecap="round"/>
+  <path class="mouth m-happy" d="M104,224Q128,252 152,224Z" fill="#7A2430" ${o}/>
+  <path class="mouth m-disgust" d="M106,236q6,-7 12,0t12,0t12,0t12,0" fill="none" stroke="${K}" stroke-width="5" stroke-linecap="round"/>
+  <ellipse class="mouth m-surprised" cx="128" cy="234" rx="8" ry="11" fill="#7A2430" ${o}/>
+  <ellipse class="mouth m-talk" cx="128" cy="232" rx="12" ry="10" fill="#7A2430" ${o}/>
+  <!-- bigode (moustache) -->
+  <path class="stache" d="M128,204C116,196 98,198 86,210C80,216 70,220 62,214C58,210 60,202 66,202C62,210 70,212 74,206C84,190 110,186 128,194C146,186 172,190 182,206C186,212 194,210 190,202C196,202 198,210 194,214C186,220 176,216 170,210C158,198 140,196 128,204Z" fill="${HR}" ${o}/>
+</svg>`;
+}
 
 /* avatar */
 function avatarSVG(av, cls = '') {
@@ -764,19 +842,20 @@ function hostStartPlay() {
 }
 /* sommelier: quem hospeda decide a fala e manda junto com o estado (os dois veem a mesma) */
 const SOM = C.sommelier || { enabled: false };
-function hostSay(text, kind) {
+function hostSay(text, kind, face) {
   const s = S.sess; s.talkN = (s.talkN || 0) + 1;
-  s.talk = { n: s.talkN, text, kind, ms: kind === 'name' ? Math.min(1000, SOM.nameMs) : SOM.obsMs };
+  s.talk = { n: s.talkN, text, kind, face: face || 'neutral', ms: kind === 'name' ? Math.min(1000, SOM.nameMs) : SOM.obsMs };
   s.lastTalkAt = clock.now(); showTalk(s.talk);
 }
 function hostQueueObs(kind, chance) {
   const s = S.sess, L = (SOM.lines || {})[kind];
   if (!L || !L.length || s.talkRng() >= chance) return;
-  s.obs = { text: L[Math.floor(s.talkRng() * L.length)], at: clock.now() + (kind === 'start' ? 600 : Math.min(1000, SOM.nameMs) + 150) };
+  const face = { start: 'hmm', wrong: 'disgust', repeat: 'surprised', undo: 'happy' }[kind] || (s.talkRng() < 0.5 ? 'hmm' : 'happy');
+  s.obs = { face, text: L[Math.floor(s.talkRng() * L.length)], at: clock.now() + (kind === 'start' ? 600 : Math.min(1000, SOM.nameMs) + 150) };
 }
 function hostTalkTick() {
   const s = S.sess; if (!SOM.enabled || !s.obs || clock.now() < s.obs.at) return;
-  const text = s.obs.text; s.obs = null; hostSay(text, 'obs'); hostBroadcast(true);
+  const o = s.obs; s.obs = null; hostSay(o.text, 'obs', o.face); hostBroadcast(true);
 }
 function hostBroadcast(force) {
   const s = S.sess; const t = clock.now();
@@ -792,7 +871,7 @@ function hostAct(m) {
     if (SOM.enabled) {
       const need = recipeOf(s.setup).items, n = s.glass.filter(x => x === m.id).length;
       if (s.obs) s.obs.at = Math.max(s.obs.at, clock.now() + Math.min(1000, SOM.nameMs) + 150);
-      hostSay(SOM.nameText.replace('{name}', ING[m.id].name), 'name');
+      hostSay(SOM.nameText.replace('{name}', ING[m.id].name), 'name', !(m.id in need) ? 'disgust' : n > need[m.id] ? 'surprised' : 'happy');
       if (!(m.id in need)) hostQueueObs('wrong', SOM.wrongChance);
       else if (n > need[m.id]) hostQueueObs('repeat', SOM.repeatChance);
       else if (!s.obs) hostQueueObs('general', SOM.obsChance);
@@ -1007,10 +1086,11 @@ function enterPlay() {
   $('#undo').hidden = role !== 'mixer' || !C.allowUndo;
   $('#serve').hidden = !C.allowServeEarly;
   $('#play-btns').hidden = $('#undo').hidden && $('#serve').hidden;
+  $('#play-btns').classList.toggle('solo', $('#undo').hidden || $('#serve').hidden);
   if (role === 'guide') renderRecipeCard($('#guide-view'), recipe, null);
   else $('#tiles').innerHTML = s.setup.tiles.map((t, i) => `<button class="tile" data-i="${i}" aria-label="ícone misterioso ${i + 1}">${glyphSVG(t.g, t.c)}</button>`).join('');
   s.pop = -1; s.lastTalkShown = 0;
-  const som = $('#som'); som.hidden = !SOM.enabled; if (SOM.enabled && !som.getAttribute('src')) som.src = SOM.image;
+  const som = $('#som'); som.hidden = !SOM.enabled; if (SOM.enabled) { som.innerHTML = sommelierSVG(); }
   $('#som-say').className = 'som-say'; $('#glass-holder').dataset.key = '';
   show('play'); FX.reset(); renderPlayState();
 }
@@ -1049,13 +1129,22 @@ function act(a, id) {
   vibrate();
   if (s.host) hostAct({ a, id }); else send(a === 'serve' ? { t: 'serve' } : { t: 'act', a, id });
 }
-let sayT, talkT;
+let sayT, talkT, faceT, faceT2;
+/* expressão do sommelier: rosto + boca falando por ms; depois de um tempo volta ao normal */
+function setFace(face, talking, ms) {
+  const svg = $('#som svg'); if (!svg) return;
+  svg.setAttribute('class', 'som-svg face-' + face + (talking ? ' talking' : ''));
+  clearTimeout(faceT); clearTimeout(faceT2);
+  faceT = setTimeout(() => svg.setAttribute('class', 'som-svg face-' + face), ms);
+  faceT2 = setTimeout(() => svg.setAttribute('class', 'som-svg face-neutral'), ms + 1600);
+}
 function showTalk(t) {
   const s = S.sess; if (!SOM.enabled || !t || !s || t.n === s.lastTalkShown || S.screen !== 'play') return;
   s.lastTalkShown = t.n;
   const el = $('#som-say'), som = $('#som');
   el.textContent = t.text; el.className = 'som-say on' + (t.kind === 'obs' ? ' obs' : '');
   som.classList.remove('talk'); void som.offsetWidth; som.classList.add('talk');
+  setFace(t.face || 'neutral', true, t.ms);
   clearTimeout(talkT); talkT = setTimeout(() => el.classList.remove('on'), t.ms);
 }
 function showSay(text) { const el = $('#say'); el.textContent = text; el.classList.add('on'); clearTimeout(sayT); sayT = setTimeout(() => el.classList.remove('on'), 2400); }
@@ -1085,7 +1174,7 @@ const FX = {
   init() {
     if (this.engine || !this.ready()) return;
     const M = Matter, P = C.physics;
-    this.engine = M.Engine.create({ enableSleeping: true });
+    this.engine = M.Engine.create({ enableSleeping: false });
     this.engine.gravity.y = P.gravity;
     this.cv = $('#fx'); this.ctx = this.cv.getContext('2d');
     window.addEventListener('resize', () => { if (S.screen === 'play') { this.geo = null; renderPlayState(); } });
@@ -1118,7 +1207,7 @@ const FX = {
     this.walls.forEach(w => M.Composite.remove(this.engine.world, w));
     this.walls = [];
     // paredes invisíveis sobem acima da borda: nada quica para fora da taça
-    const wl = WALLS[type], ext = [[wl[0][0], wl[0][1] - 320]].concat(wl, [[wl[wl.length - 1][0], wl[wl.length - 1][1] - 320]]);
+    const wl = WALLS[type], ext = [[wl[0][0], wl[0][1] - 1600]].concat(wl, [[wl[wl.length - 1][0], wl[wl.length - 1][1] - 1600]]);
     const pts = ext.map(([x, y]) => [ox + x * sc, oy + y * sc]), th = 44;
     for (let i = 0; i < pts.length - 1; i++) {
       const [ax, ay] = pts[i], [bx, by] = pts[i + 1], len = Math.hypot(bx - ax, by - ay), ang = Math.atan2(by - ay, bx - ax);
@@ -1147,7 +1236,7 @@ const FX = {
       const box = ['cubes', 'ice', 'can'].includes(ing.icon);
       const body = box ? M.Bodies.rectangle(x, -sz, sz * 0.78, sz * 0.78, { ...opt, chamfer: { radius: sz * 0.18 } }) : M.Bodies.circle(x, -sz, sz * 0.4, opt);
       M.Body.setAngle(body, r() * Math.PI * 2);
-      M.Body.setVelocity(body, { x: (r() - .5) * 2, y: 2 });
+      M.Body.setVelocity(body, { x: (r() - .5) * 0.6, y: 2 });
       M.Body.setAngularVelocity(body, (r() - .5) * P.spin);
       M.Composite.add(this.engine.world, body);
       this.items.push({ id, body, sz, im });
@@ -1168,9 +1257,9 @@ const FX = {
       this.items.forEach((it, i) => {
         if (!it.liquid || this.landed.has(i)) return;
         it.vy += grav * dt * dt; it.y += it.vy;
-        if (it.y >= surf - it.sz * 0.2) { this.landed.add(i); landedNow = true; this.splash(it.x, surf, ING[it.id].liquid); }
+        if (it.y >= surf - it.sz * 0.2) { this.landed.add(i); landedNow = true; this.splash(it.x, surf, ING[it.id].liquid, it.vy); }
       });
-      this.parts.forEach(p => { p.vy += 0.35; p.x += p.vx; p.y += p.vy; p.life--; });
+      this.parts.forEach(p => { if (p.ring) { p.life--; return; } p.vy += 0.38; p.x += p.vx; p.y += p.vy; p.life--; });
       this.parts = this.parts.filter(p => p.life > 0);
     }
     // corpo que caiu para fora da tela: sai do mundo
@@ -1178,7 +1267,17 @@ const FX = {
     if (landedNow) { const s = S.sess; if (s && s.phase === 'play') { const mystery = myRole() === 'mixer' && !C.mixerSeesRealInGlass ? Object.fromEntries(s.setup.tiles.map(t => [t.id, t])) : null;
       $('#glass-holder').innerHTML = glassSVG(this.geo.type, s.glass, { mystery, noSolids: true, landed: this.landed, noFront: true }); } }
   },
-  splash(x, y, col) { for (let k = 0; k < 7; k++) this.parts.push({ x, y, vx: (Math.random() - .5) * 5, vy: -2 - Math.random() * 3, life: 18, col }); },
+  /* splash: coroa de gotas + anel na superfície + os sólidos dão um pulinho */
+  splash(x, y, col, v) {
+    const g = this.geo, force = Math.min(1.6, 0.6 + (v || 0) / 14), cx = Math.max(g.x0 + 8, Math.min(g.x1 - 8, x));
+    for (let k = 0; k < 18; k++) {
+      const a = -Math.PI / 2 + (Math.random() - .5) * 2.2, sp = (3 + Math.random() * 5) * force;
+      this.parts.push({ x: cx + (Math.random() - .5) * 14, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, r: 2 + Math.random() * 3.5, life: 26 + (Math.random() * 10 | 0), max: 36, col });
+    }
+    this.parts.push({ ring: true, x: cx, y, life: 16, max: 16, col, w: (g.x1 - g.x0) });
+    this.items.forEach(it => { if (it.body && Math.abs(it.body.position.y - y) < it.sz * 1.6) { Matter.Sleeping.set(it.body, false);
+      Matter.Body.setVelocity(it.body, { x: it.body.velocity.x + (Math.random() - .5) * 2, y: -2.5 * force }); Matter.Body.setAngularVelocity(it.body, (Math.random() - .5) * .3); } });
+  },
   draw() {
     const c = this.ctx, g = this.geo; if (!c || !g) return;
     c.clearRect(0, 0, g.W, g.H);
@@ -1187,7 +1286,12 @@ const FX = {
       if (it.body) drawIm(it.im, it.body.position.x, it.body.position.y, it.body.angle, it.sz);
       else if (it.liquid && !this.landed.has(i)) drawIm(it.im, it.x, it.y, it.rot, it.sz * 0.8);
     });
-    this.parts.forEach(p => { c.globalAlpha = p.life / 18; c.fillStyle = p.col; c.beginPath(); c.arc(p.x, p.y, 3.5, 0, 7); c.fill(); });
+    this.parts.forEach(p => {
+      const k = p.life / p.max;
+      if (p.ring) { const t = 1 - k; c.globalAlpha = k * .9; c.strokeStyle = '#fff'; c.lineWidth = 2.5; c.beginPath(); c.ellipse(p.x, p.y, 6 + t * p.w * .45, 2 + t * 6, 0, 0, 7); c.stroke(); return; }
+      c.globalAlpha = Math.min(1, k * 1.6); c.fillStyle = p.col; c.strokeStyle = '#fff'; c.lineWidth = 1.5;
+      c.beginPath(); c.arc(p.x, p.y, p.r, 0, 7); c.fill(); c.stroke();
+    });
     c.globalAlpha = 1;
     // frente da taça (contorno) por cima dos itens
     c.save(); c.translate(g.ox, g.oy); c.scale(g.sc, g.sc);
