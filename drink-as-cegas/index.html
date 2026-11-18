@@ -163,9 +163,23 @@ svg{display:block}
 .bar i{display:block;height:100%;width:100%;border-radius:inherit;background:var(--color-teal);box-shadow:var(--glow-teal);transform-origin:left;transition:transform .12s linear}
 .bar.hot i{background:var(--color-pink)}
 .role-line{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.play-glass{flex:1;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative}
-.play-glass svg{height:100%;max-height:260px;width:auto;max-width:100%}
-.glass-count{position:absolute;right:0;bottom:0;font:700 12px/1 var(--f-ui);color:var(--text-muted)}
+.play-glass{flex:1;min-height:120px;display:flex;align-items:stretch;justify-content:flex-start;position:relative;margin:0 -20px;padding:0 20px}
+#glass-holder{position:relative;z-index:1;display:flex;align-items:flex-end;justify-content:center;width:62%;height:100%;padding-top:8px}
+#glass-holder svg{height:100%;max-height:280px;width:auto;max-width:100%}
+#som{position:absolute;right:-6px;bottom:-6px;height:calc(100% + 6px);max-height:320px;width:auto;z-index:0;pointer-events:none;
+  transform-origin:70% 100%;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
+#som.talk{animation:talk .32s ease-out}
+@keyframes talk{40%{transform:translateY(-6px) rotate(-1.5deg)}}
+.som-say{position:absolute;right:calc(min(42%, 190px));top:0;max-width:58%;padding:10px 16px;border-radius:18px;background:#F2E9FC;color:#16151D;
+  font:700 16px/1.25 var(--f-display);text-align:center;border:3px solid #fff;box-shadow:0 3px 0 rgba(0,0,0,.45),var(--glow-purple);
+  opacity:0;transform:scale(.7);transform-origin:100% 100%;transition:opacity .12s,transform .12s;pointer-events:none;z-index:4}
+.som-say::after{content:'';position:absolute;right:-12px;bottom:10px;border:8px solid transparent;border-left:14px solid #F2E9FC}
+.som-say.on{opacity:1;transform:none}
+.som-say.obs{background:var(--color-purple);color:var(--text-primary);border-color:#fff}
+.som-say.obs::after{border-left-color:var(--color-purple)}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+#s-play{position:relative}
+.glass-count{position:absolute;left:20px;bottom:0;z-index:2;font:700 12px/1 var(--f-ui);color:var(--text-muted)}
 .recipe{gap:12px;padding:16px 20px}
 .recipe-head{display:flex;align-items:center;gap:12px}
 .recipe-head .ico{width:52px;height:52px;flex:none}
@@ -183,7 +197,7 @@ svg{display:block}
 .tile svg{width:68%;height:68%}
 .tile.hit{animation:hit .25s}
 @keyframes hit{50%{transform:scale(.9);box-shadow:var(--glow-teal)}}
-.say{position:absolute;left:50%;top:0;transform:translateX(-50%);max-width:92%;padding:10px 16px;border-radius:16px;background:var(--color-purple);
+.say{position:absolute;left:31%;bottom:24px;transform:translateX(-50%);max-width:92%;padding:10px 16px;border-radius:16px;background:var(--color-purple);
   box-shadow:var(--glow-purple);font:700 15px/1.3 var(--f-ui);text-align:center;opacity:0;transition:opacity .2s;pointer-events:none;z-index:2}
 .say.on{opacity:1}
 .pop{animation:pop .3s ease-out;transform-box:fill-box;transform-origin:center}
@@ -306,11 +320,11 @@ svg{display:block}
 </section>
 
 <!-- 5. PARTIDA -->
-<section id="s-play" class="screen">
+<section id="s-play" class="screen"><canvas id="fx" aria-hidden="true"></canvas>
   <div class="hud"><div class="timer" id="timer">0:30</div><div class="bar" id="bar"><i></i></div></div>
   <div class="role-line"><span class="badge" id="play-role"></span><span class="chip" id="play-partner"></span></div>
   <div id="guide-view" class="card pink recipe" hidden></div>
-  <div class="play-glass" id="play-glass"><div class="say" id="say"></div></div>
+  <div class="play-glass" id="play-glass"><img id="som" alt="" decoding="async"><div class="som-say" id="som-say" aria-live="polite"></div><div id="glass-holder"></div><span class="glass-count" id="glass-count"></span><div class="say" id="say"></div></div>
   <div id="mixer-view" hidden>
     <div class="tiles" id="tiles"></div>
   </div>
@@ -340,6 +354,7 @@ svg{display:block}
 
 <script src="config.js"></script>
 <script src="vendor/peerjs.min.js"></script>
+<script src="vendor/matter.min.js" defer></script>
 <script src="montaggio-selo.js"></script>
 <script>
 'use strict';
@@ -465,7 +480,7 @@ const GLASSES = {
 function glassSVG(type, glass, opts = {}) {
   const G = GLASSES[type] || GLASSES.rocks, uid = 'g' + Math.random().toString(36).slice(2, 8);
   const H = G.bot - G.top, liquids = [], solids = [];
-  glass.forEach((id, i) => { const ing = ING[id]; if (!ing) return; (ing.liquid ? liquids : solids).push({ id, i }); });
+  glass.forEach((id, i) => { const ing = ING[id]; if (!ing) return; if (ing.liquid) { if (!opts.landed || opts.landed.has(i)) liquids.push({ id, i }); } else if (!opts.noSolids) solids.push({ id, i }); });
   const bandH = H / 9;
   let y = G.bot, bands = '';
   liquids.forEach(({ id, i }) => {
@@ -491,8 +506,8 @@ function glassSVG(type, glass, opts = {}) {
     <path d="${G.out}" fill="rgba(242,233,252,.07)"/>
     <g clip-path="url(#${uid})">${bands}</g>
     ${solidsSvg}
-    <path d="${G.out}" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
-    <path d="M${G.x0 + 4},${G.top + 14}L${G.x0 + 8},${G.bot - 30}" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".35"/>
+    ${opts.noFront ? '' : `<path d="${G.out}" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M${G.x0 + 4},${G.top + 14}L${G.x0 + 8},${G.bot - 30}" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".35"/>`}
   </svg>`;
 }
 
@@ -710,7 +725,7 @@ function onMsg(m) {
       if (s.host) return;
       s.glass = m.glass; s.left = m.left; s.stateAt = clock.now();
       if (m.phase === 'play' && s.phase !== 'play' && s.phase !== 'end') enterPlay();
-      if (s.phase === 'play') renderPlayState();
+      if (s.phase === 'play') { renderPlayState(); if (m.talk) showTalk(m.talk); }
       break;
     case 'act': if (s.host && myRole() === 'guide') hostAct(m); break;
     case 'serve': if (s.host) hostAct({ a: 'serve' }); break;
@@ -740,17 +755,50 @@ function hostNewSetup() {
 }
 function hostMaybeGo() { const s = S.sess; if (s.ready.me && s.ready.them && s.phase === 'match') { send({ t: 'go' }); beginCountdown(); } }
 function hostMaybeRematch() { const s = S.sess; if (s.again.me && s.again.them && s.phase === 'end') hostNewSetup(); }
-function hostStartPlay() { const s = S.sess; s.phase = 'play'; s.glass = []; s.endAt = clock.now() + ROUND_MS; s.left = ROUND_MS; enterPlay(); hostBroadcast(true); }
+function hostStartPlay() {
+  const s = S.sess; s.phase = 'play'; s.glass = []; s.endAt = clock.now() + ROUND_MS; s.left = ROUND_MS; s.talk = null; s.obs = null; s.talkN = 0;
+  s.talkRng = rng((s.setup.seed ^ 0x5bd1e995) >>> 0);
+  enterPlay();
+  if (SOM.enabled) hostQueueObs('start', 1);
+  hostBroadcast(true);
+}
+/* sommelier: quem hospeda decide a fala e manda junto com o estado (os dois veem a mesma) */
+const SOM = C.sommelier || { enabled: false };
+function hostSay(text, kind) {
+  const s = S.sess; s.talkN = (s.talkN || 0) + 1;
+  s.talk = { n: s.talkN, text, kind, ms: kind === 'name' ? Math.min(1000, SOM.nameMs) : SOM.obsMs };
+  s.lastTalkAt = clock.now(); showTalk(s.talk);
+}
+function hostQueueObs(kind, chance) {
+  const s = S.sess, L = (SOM.lines || {})[kind];
+  if (!L || !L.length || s.talkRng() >= chance) return;
+  s.obs = { text: L[Math.floor(s.talkRng() * L.length)], at: clock.now() + (kind === 'start' ? 600 : Math.min(1000, SOM.nameMs) + 150) };
+}
+function hostTalkTick() {
+  const s = S.sess; if (!SOM.enabled || !s.obs || clock.now() < s.obs.at) return;
+  const text = s.obs.text; s.obs = null; hostSay(text, 'obs'); hostBroadcast(true);
+}
 function hostBroadcast(force) {
   const s = S.sess; const t = clock.now();
   if (!force && t - s.lastSent < C.net.stateEveryMs) return;
   s.lastSent = t;
-  send({ t: 'state', phase: s.phase, glass: s.glass, left: Math.round(s.left) });
+  send({ t: 'state', phase: s.phase, glass: s.glass, left: Math.round(s.left), talk: s.talk || null });
 }
 function hostAct(m) {
   const s = S.sess; if (!s || !s.host || s.phase !== 'play') return;
-  if (m.a === 'add' && ING[m.id]) { if (s.glass.length >= C.maxItemsInGlass) { if (myRole() === 'mixer') toast('A taça está cheia!'); return; } s.glass.push(m.id); s.pop = s.glass.length - 1; }
-  else if (m.a === 'undo' && C.allowUndo) { s.glass.pop(); s.pop = -1; }
+  if (m.a === 'add' && ING[m.id]) {
+    if (s.glass.length >= C.maxItemsInGlass) { if (myRole() === 'mixer') toast('A taça está cheia!'); return; }
+    s.glass.push(m.id); s.pop = s.glass.length - 1;
+    if (SOM.enabled) {
+      const need = recipeOf(s.setup).items, n = s.glass.filter(x => x === m.id).length;
+      if (s.obs) s.obs.at = Math.max(s.obs.at, clock.now() + Math.min(1000, SOM.nameMs) + 150);
+      hostSay(SOM.nameText.replace('{name}', ING[m.id].name), 'name');
+      if (!(m.id in need)) hostQueueObs('wrong', SOM.wrongChance);
+      else if (n > need[m.id]) hostQueueObs('repeat', SOM.repeatChance);
+      else if (!s.obs) hostQueueObs('general', SOM.obsChance);
+    }
+  }
+  else if (m.a === 'undo' && C.allowUndo) { if (!s.glass.length) return; s.glass.pop(); s.pop = -1; if (SOM.enabled && !s.obs) hostQueueObs('undo', SOM.undoChance); }
   else if (m.a === 'serve') { hostEnd(); return; }
   else return;
   renderPlayState(); hostBroadcast(true);
@@ -766,7 +814,7 @@ function hostTick() {
   const s = S.sess; if (!s || !s.host) return;
   const t = clock.now();
   if (s.phase === 'count' && t >= s.goAt) hostStartPlay();
-  else if (s.phase === 'play') { s.left = Math.max(0, s.endAt - t); if (s.left <= 0) hostEnd(); else { hostBroadcast(false); renderTimer(); } }
+  else if (s.phase === 'play') { s.left = Math.max(0, s.endAt - t); if (s.left <= 0) hostEnd(); else { hostTalkTick(); hostBroadcast(false); renderTimer(); } }
 }
 function uiTick() {
   const s = S.sess; if (!s) return;
@@ -961,8 +1009,10 @@ function enterPlay() {
   $('#play-btns').hidden = $('#undo').hidden && $('#serve').hidden;
   if (role === 'guide') renderRecipeCard($('#guide-view'), recipe, null);
   else $('#tiles').innerHTML = s.setup.tiles.map((t, i) => `<button class="tile" data-i="${i}" aria-label="ícone misterioso ${i + 1}">${glyphSVG(t.g, t.c)}</button>`).join('');
-  s.pop = -1;
-  show('play'); renderPlayState();
+  s.pop = -1; s.lastTalkShown = 0;
+  const som = $('#som'); som.hidden = !SOM.enabled; if (SOM.enabled && !som.getAttribute('src')) som.src = SOM.image;
+  $('#som-say').className = 'som-say'; $('#glass-holder').dataset.key = '';
+  show('play'); FX.reset(); renderPlayState();
 }
 function renderRecipeCard(el, recipe, have) {
   const items = Object.entries(recipe.items);
@@ -977,9 +1027,10 @@ function renderPlayState() {
   const mystery = role === 'mixer' && !C.mixerSeesRealInGlass ? Object.fromEntries(s.setup.tiles.map(t => [t.id, t])) : null;
   const pop = s.host ? s.pop : (s.glass.length > (s.prevLen || 0) ? s.glass.length - 1 : -1);
   s.prevLen = s.glass.length;
-  const sayEl = $('#say');
-  $('#play-glass').innerHTML = glassSVG(recipe.glass, s.glass, { mystery, popIndex: pop }) + `<span class="glass-count">${s.glass.length}/${C.maxItemsInGlass}</span>`;
-  $('#play-glass').prepend(sayEl);
+  const fxOn = FX.ready();
+  $('#glass-holder').innerHTML = glassSVG(recipe.glass, s.glass, fxOn ? { mystery, noSolids: true, landed: FX.landed, noFront: true } : { mystery, popIndex: pop });
+  $('#glass-count').textContent = `${s.glass.length}/${C.maxItemsInGlass}`;
+  if (fxOn) FX.sync(recipe.glass, s.glass, mystery);
   s.pop = -1;
   if (role === 'guide' && C.guideSeesChecklist) { const have = {}; s.glass.forEach(id => have[id] = (have[id] || 0) + 1); renderRecipeCard($('#guide-view'), recipe, have); }
   renderTimer();
@@ -998,7 +1049,15 @@ function act(a, id) {
   vibrate();
   if (s.host) hostAct({ a, id }); else send(a === 'serve' ? { t: 'serve' } : { t: 'act', a, id });
 }
-let sayT;
+let sayT, talkT;
+function showTalk(t) {
+  const s = S.sess; if (!SOM.enabled || !t || !s || t.n === s.lastTalkShown || S.screen !== 'play') return;
+  s.lastTalkShown = t.n;
+  const el = $('#som-say'), som = $('#som');
+  el.textContent = t.text; el.className = 'som-say on' + (t.kind === 'obs' ? ' obs' : '');
+  som.classList.remove('talk'); void som.offsetWidth; som.classList.add('talk');
+  clearTimeout(talkT); talkT = setTimeout(() => el.classList.remove('on'), t.ms);
+}
 function showSay(text) { const el = $('#say'); el.textContent = text; el.classList.add('on'); clearTimeout(sayT); sayT = setTimeout(() => el.classList.remove('on'), 2400); }
 function initPlay() {
   $('#tiles').onclick = e => {
@@ -1010,6 +1069,143 @@ function initPlay() {
   $('#undo').onclick = () => act('undo');
   $('#serve').onclick = () => act('serve');
 }
+
+/* ======================= física (Matter.js): itens caem do topo da tela e se acomodam na taça ======================= */
+const WALLS = {
+  rocks: [[34, 70], [48, 206], [58, 214], [142, 214], [152, 206], [166, 70]],
+  highball: [[52, 20], [58, 224], [66, 232], [134, 232], [142, 224], [148, 20]],
+  coupe: (() => { const q = (a, c, b, t) => (1 - t) * (1 - t) * a + 2 * (1 - t) * t * c + t * t * b, pts = [];
+    for (let i = 0; i <= 6; i++) { const t = i / 6; pts.push([q(22, 24, 100, t), q(40, 140, 146, t)]); }
+    for (let i = 1; i <= 6; i++) { const t = i / 6; pts.push([q(100, 176, 178, t), q(146, 140, 40, t)]); }
+    return pts; })()
+};
+const FX = {
+  engine: null, items: [], landed: new Set(), walls: [], geo: null, cv: null, ctx: null, imgs: {}, raf: 0, last: 0, acc: 0, parts: [],
+  ready() { return !!(C.physics && C.physics.enabled && window.Matter); },
+  init() {
+    if (this.engine || !this.ready()) return;
+    const M = Matter, P = C.physics;
+    this.engine = M.Engine.create({ enableSleeping: true });
+    this.engine.gravity.y = P.gravity;
+    this.cv = $('#fx'); this.ctx = this.cv.getContext('2d');
+    window.addEventListener('resize', () => { if (S.screen === 'play') { this.geo = null; renderPlayState(); } });
+  },
+  reset() {
+    this.init(); if (!this.engine) return;
+    Matter.Composite.clear(this.engine.world, false); this.items = []; this.walls = []; this.landed = new Set(); this.parts = []; this.geo = null;
+    if (!this.raf) this.loop();
+  },
+  img(key, svgInner) {
+    if (this.imgs[key]) return this.imgs[key];
+    const im = new Image();
+    im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="-54 -54 108 108" width="128" height="128">${svgInner}</svg>`);
+    return (this.imgs[key] = im);
+  },
+  layout(type) {
+    const svg = $('#glass-holder svg'), host = $('#s-play'); if (!svg) return false;
+    const r = svg.getBoundingClientRect(), h = host.getBoundingClientRect(), vb = GLASSES[type].vb.split(' ').map(Number);
+    const sc = Math.min(r.width / vb[2], r.height / vb[3]); if (!sc) return false;
+    const ox = r.left - h.left + (r.width - vb[2] * sc) / 2, oy = r.top - h.top + (r.height - vb[3] * sc) / 2;
+    const key = [type, ox, oy, sc, h.width, h.height].map(v => typeof v === 'number' ? v.toFixed(1) : v).join();
+    if (this.geo && this.geo.key === key) return true;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    this.cv.width = Math.round(h.width * dpr); this.cv.height = Math.round(h.height * dpr);
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const G = GLASSES[type];
+    this.geo = { key, type, ox, oy, sc, W: h.width, H: h.height, x0: ox + G.x0 * sc, x1: ox + G.x1 * sc, top: oy + G.top * sc, bot: oy + G.bot * sc,
+      out: new Path2D(G.out), stem: G.stem ? new Path2D(G.stem) : null, G };
+    const M = Matter;
+    this.walls.forEach(w => M.Composite.remove(this.engine.world, w));
+    this.walls = [];
+    // paredes invisíveis sobem acima da borda: nada quica para fora da taça
+    const wl = WALLS[type], ext = [[wl[0][0], wl[0][1] - 320]].concat(wl, [[wl[wl.length - 1][0], wl[wl.length - 1][1] - 320]]);
+    const pts = ext.map(([x, y]) => [ox + x * sc, oy + y * sc]), th = 44;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [ax, ay] = pts[i], [bx, by] = pts[i + 1], len = Math.hypot(bx - ax, by - ay), ang = Math.atan2(by - ay, bx - ax);
+      const nx = -Math.sin(ang), ny = Math.cos(ang); // normal (para fora da taça fica do lado de baixo/fora)
+      const w = M.Bodies.rectangle((ax + bx) / 2 + nx * th / 2, (ay + by) / 2 + ny * th / 2, len + th, th,
+        { isStatic: true, angle: ang, friction: C.physics.friction, render: { visible: false } });
+      this.walls.push(w);
+    }
+    M.Composite.add(this.engine.world, this.walls);
+    // depois de mudar o tamanho da tela, os sólidos voltam para dentro da taça
+    this.items.forEach((it, k) => { if (it.body) { M.Body.setPosition(it.body, { x: this.geo.x0 + (k % 3 + 0.5) * (this.geo.x1 - this.geo.x0) / 3, y: this.geo.top + 10 }); M.Body.setVelocity(it.body, { x: 0, y: 0 }); M.Sleeping.set(it.body, false); } });
+    return true;
+  },
+  size() { const g = this.geo; return Math.max(30, Math.min(60, (g.x1 - g.x0) * C.physics.itemSize)); },
+  sync(type, glass, mystery) {
+    if (!this.engine || !this.layout(type)) return;
+    const M = Matter, g = this.geo, P = C.physics;
+    // tirou o último: some o corpo
+    while (this.items.length > glass.length) { const it = this.items.pop(); if (it.body) M.Composite.remove(this.engine.world, it.body); this.landed.delete(this.items.length); }
+    for (let i = this.items.length; i < glass.length; i++) {
+      const id = glass[i], ing = ING[id], sz = this.size(), r = rng(i * 7919 + id.length * 31);
+      const x = g.x0 + sz / 2 + r() * Math.max(1, g.x1 - g.x0 - sz);
+      const key = mystery ? 'm-' + id : id, im = this.img(key, mystery ? glyphG(mystery[id].g, mystery[id].c) : ingG(id));
+      if (ing.liquid) { this.items.push({ id, liquid: true, x, y: -sz, vy: 0, sz, im, rot: (r() - .5) * .6 }); continue; }
+      const opt = { restitution: P.restitution, friction: P.friction, frictionAir: 0.01, density: 0.002 };
+      const box = ['cubes', 'ice', 'can'].includes(ing.icon);
+      const body = box ? M.Bodies.rectangle(x, -sz, sz * 0.78, sz * 0.78, { ...opt, chamfer: { radius: sz * 0.18 } }) : M.Bodies.circle(x, -sz, sz * 0.4, opt);
+      M.Body.setAngle(body, r() * Math.PI * 2);
+      M.Body.setVelocity(body, { x: (r() - .5) * 2, y: 2 });
+      M.Body.setAngularVelocity(body, (r() - .5) * P.spin);
+      M.Composite.add(this.engine.world, body);
+      this.items.push({ id, body, sz, im });
+    }
+  },
+  liquidTop() { // altura da superfície do líquido (px), igual à conta do glassSVG
+    const g = this.geo, H = g.G.bot - g.G.top, n = this.landed.size;
+    return g.oy + (g.G.bot - Math.min(H - 6, n * H / 9)) * g.sc;
+  },
+  update(ms) {
+    if (!this.engine || !this.geo) return;
+    const dt = 1000 / 60; this.acc = Math.min(this.acc + ms, 100);
+    let landedNow = false;
+    while (this.acc >= dt) {
+      this.acc -= dt;
+      Matter.Engine.update(this.engine, dt);
+      const surf = this.liquidTop(), grav = C.physics.gravity * 0.0011;
+      this.items.forEach((it, i) => {
+        if (!it.liquid || this.landed.has(i)) return;
+        it.vy += grav * dt * dt; it.y += it.vy;
+        if (it.y >= surf - it.sz * 0.2) { this.landed.add(i); landedNow = true; this.splash(it.x, surf, ING[it.id].liquid); }
+      });
+      this.parts.forEach(p => { p.vy += 0.35; p.x += p.vx; p.y += p.vy; p.life--; });
+      this.parts = this.parts.filter(p => p.life > 0);
+    }
+    // corpo que caiu para fora da tela: sai do mundo
+    this.items.forEach(it => { if (it.body && it.body.position.y > this.geo.H + 80) { Matter.Composite.remove(this.engine.world, it.body); it.gone = true; it.body = null; } });
+    if (landedNow) { const s = S.sess; if (s && s.phase === 'play') { const mystery = myRole() === 'mixer' && !C.mixerSeesRealInGlass ? Object.fromEntries(s.setup.tiles.map(t => [t.id, t])) : null;
+      $('#glass-holder').innerHTML = glassSVG(this.geo.type, s.glass, { mystery, noSolids: true, landed: this.landed, noFront: true }); } }
+  },
+  splash(x, y, col) { for (let k = 0; k < 7; k++) this.parts.push({ x, y, vx: (Math.random() - .5) * 5, vy: -2 - Math.random() * 3, life: 18, col }); },
+  draw() {
+    const c = this.ctx, g = this.geo; if (!c || !g) return;
+    c.clearRect(0, 0, g.W, g.H);
+    const drawIm = (im, x, y, a, sz) => { if (!im.complete || !im.naturalWidth) return; c.save(); c.translate(x, y); c.rotate(a); c.drawImage(im, -sz / 2, -sz / 2, sz, sz); c.restore(); };
+    this.items.forEach((it, i) => {
+      if (it.body) drawIm(it.im, it.body.position.x, it.body.position.y, it.body.angle, it.sz);
+      else if (it.liquid && !this.landed.has(i)) drawIm(it.im, it.x, it.y, it.rot, it.sz * 0.8);
+    });
+    this.parts.forEach(p => { c.globalAlpha = p.life / 18; c.fillStyle = p.col; c.beginPath(); c.arc(p.x, p.y, 3.5, 0, 7); c.fill(); });
+    c.globalAlpha = 1;
+    // frente da taça (contorno) por cima dos itens
+    c.save(); c.translate(g.ox, g.oy); c.scale(g.sc, g.sc);
+    c.lineJoin = 'round'; c.strokeStyle = '#fff'; c.lineWidth = 5; c.stroke(g.out);
+    c.globalAlpha = .35; c.lineCap = 'round'; c.beginPath(); c.moveTo(g.G.x0 + 4, g.G.top + 14); c.lineTo(g.G.x0 + 8, g.G.bot - 30); c.stroke();
+    c.restore();
+  },
+  loop() {
+    const f = t => {
+      this.raf = 0;
+      if (S.screen !== 'play') return;
+      if (!clock.manual) { this.update(this.last ? Math.min(50, t - this.last) : 16); this.draw(); }
+      this.last = t; this.raf = requestAnimationFrame(f);
+    };
+    this.last = 0; this.raf = requestAnimationFrame(f);
+  },
+  step(sec) { if (!this.engine || S.screen !== 'play') return; const n = Math.round(sec * 60); for (let i = 0; i < n; i++) this.update(1000 / 60); this.draw(); }
+};
 
 /* 6. resultado */
 function showResult() {
@@ -1083,7 +1279,10 @@ else { S.player = null; show('nick'); }
 
 /* Ganchos de teste (console): __dc.step(s), __dc.seed(n), __dc.tap(id), __dc.state() ... */
 window.__dc = {
-  step(sec) { if (!clock.manual) { clock.t = performance.now(); clock.manual = true; } const n = Math.max(1, Math.round(sec * 10)); for (let i = 0; i < n; i++) { clock.t += sec * 1000 / n; hostTick(); uiTick(); } },
+  step(sec) { if (!clock.manual) { clock.t = performance.now(); clock.manual = true; } const n = Math.max(1, Math.round(sec * 10)); for (let i = 0; i < n; i++) { clock.t += sec * 1000 / n; hostTick(); uiTick(); } FX.step(sec); },
+  fx() { return { on: FX.ready(), items: FX.items.length, bodies: FX.items.filter(i => i.body).length, landed: FX.landed.size,
+    inGlass: FX.items.filter(i => i.body && FX.geo && i.body.position.x > FX.geo.x0 - 8 && i.body.position.x < FX.geo.x1 + 8 && i.body.position.y < FX.geo.bot + 4 && i.body.position.y > FX.geo.top - 60).length }; },
+  talk() { return { text: $('#som-say').textContent, on: $('#som-say').classList.contains('on'), n: S.sess && S.sess.lastTalkShown }; },
   seed(n) { S.seed = n; },
   tap(id) { const i = S.sess.setup.tiles.findIndex(t => t.id === id); if (i < 0) return false; $$('#tiles .tile')[i].click(); return true; },
   recipe() { return S.sess && S.sess.setup ? recipeOf(S.sess.setup) : null; },

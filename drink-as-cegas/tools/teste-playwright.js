@@ -67,8 +67,23 @@ const ok = (c, m) => { if (!c) { console.error('FALHOU:', m); process.exitCode =
   const wrongId = await mixer.evaluate(items => (window.CONFIG.ingredients.find(i => !(i.id in items)) || {}).id, recipe.items);
   await mixer.evaluate(i => __dc.tap(i), wrongId); await host.evaluate(() => __dc.step(0.3));
   await guide.waitForFunction(n => __dc.state().glass.length === n, ids.length);
-  await shot(guide, '05-guia.png'); await shot(mixer, '06-misturador.png');
+  // sommelier: a última fala é o nome do ingrediente e aparece igual nos dois
+  const lastName = await A.evaluate(id => CONFIG.ingredients.find(i => i.id === id).name, wrongId);
+  const tkA = await A.evaluate(() => __dc.talk()), tkB = await B.evaluate(() => __dc.talk());
+  ok(tkA.text.includes(lastName) && tkA.text === tkB.text && tkA.n === tkB.n, `sommelier fala "${tkA.text}" nos dois`);
+  await shot(guide, '05-guia-instante.png');
+  // física: deixa assentar e confere que os sólidos ficaram dentro da taça
+  await host.evaluate(() => __dc.step(2)); await (host === guide ? mixer : guide).evaluate(() => __dc.step(2));
+  const fxG = await guide.evaluate(() => __dc.fx()), fxM = await mixer.evaluate(() => __dc.fx());
+  const nSolid = await guide.evaluate(() => __dc.state().glass.filter(id => !CONFIG.ingredients.find(i => i.id === id).liquid).length);
+  ok(fxG.on && fxG.bodies === nSolid && fxG.inGlass === nSolid, `física no guia: ${fxG.inGlass}/${nSolid} sólidos dentro da taça, ${fxG.landed} líquidos assentados`);
+  ok(fxM.inGlass === nSolid, `física no misturador: ${fxM.inGlass}/${nSolid} sólidos dentro da taça`);
+  await shot(guide, '05-guia.png'); await shot(mixer, '06b-misturador-assentado.png');
+  if (fxM.inGlass !== nSolid) console.log(await mixer.evaluate(() => JSON.stringify({ g: FX.geo && [FX.geo.x0, FX.geo.x1, FX.geo.top, FX.geo.bot], b: FX.items.filter(i => i.body).map(i => [i.id, Math.round(i.body.position.x), Math.round(i.body.position.y)]) }))); await shot(mixer, '06-misturador.png');
   await mixer.click('#undo'); await host.evaluate(() => __dc.step(0.3));
+  await guide.waitForFunction(n => __dc.state().glass.length === n, ids.length - 1);
+  await guide.evaluate(() => __dc.step(0.1)); await mixer.evaluate(() => __dc.step(0.1));
+  ok((await guide.evaluate(() => __dc.fx().items)) === ids.length - 1, 'tirar o último remove o item da física');
   await mixer.evaluate(i => __dc.tap(i), ids[ids.length - 1]); await host.evaluate(() => __dc.step(0.3));
   await guide.waitForFunction(n => __dc.state().glass.length === n, ids.length);
   const tA = await A.textContent('#timer'), tB = await B.textContent('#timer');
@@ -91,7 +106,7 @@ const ok = (c, m) => { if (!c) { console.error('FALHOU:', m); process.exitCode =
   const rec2 = await A.evaluate(() => __dc.recipe());
   const first = Object.keys(rec2.items)[0];
   await mixer2.evaluate(i => __dc.tap(i), first); await A.evaluate(() => __dc.step(0.2));
-  await A.evaluate(() => __dc.step(31));
+  await A.evaluate(() => __dc.step(46));
   await A.waitForSelector('#s-result.on'); await B.waitForSelector('#s-result.on');
   const r2 = await B.evaluate(() => __dc.state().result);
   ok(r2.leftMs === 0 && r2.grade < 10, `tempo esgotado encerra a partida (nota ${r2.grade})`);
@@ -126,7 +141,7 @@ const ok = (c, m) => { if (!c) { console.error('FALHOU:', m); process.exitCode =
   await P.evaluate(() => __dc.step(3.1));
   await P.waitForSelector('#s-play.on');
   const roleP = await P.evaluate(() => __dc.role());
-  for (let i = 0; i < 70; i++) { if (i === 6 && roleP === "mixer") await shot(P, "09-bot-guia-falando.png"); await P.evaluate(() => __dc.step(0.5)); await P.waitForTimeout(10); if ((await P.evaluate(() => __dc.state().phase)) === 'end') break; }
+  for (let i = 0; i < 110; i++) { if (i === 6 && roleP === "mixer") await shot(P, "09-bot-guia-falando.png"); await P.evaluate(() => __dc.step(0.5)); await P.waitForTimeout(10); if ((await P.evaluate(() => __dc.state().phase)) === 'end') break; }
   await P.waitForSelector('#s-result.on', { timeout: 5000 });
   ok(true, `partida contra o BOT termina (você = ${roleP}, nota ${(await P.evaluate(() => __dc.state().result.grade))})`);
 

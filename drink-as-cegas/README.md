@@ -1,6 +1,6 @@
 # Drink às Cegas
 
-Jogo cooperativo para **dois celulares** (retrato, 360–480 px). Um jogador é o **GUIA** e vê a receita. O outro é o **MISTURADOR** e vê ícones misteriosos, sem saber qual ingrediente é cada um. Os dois veem a mesma taça e conversam em voz alta, fora do app. A partida dura **30 segundos**. No fim, os dois veem o drink esperado, o que foi para a taça (cada ícone e o ingrediente de verdade) e uma **nota de 0 a 10**.
+Jogo cooperativo para **dois celulares** (retrato, 360–480 px). Um jogador é o **GUIA** e vê a receita. O outro é o **MISTURADOR** e vê ícones misteriosos, sem saber qual ingrediente é cada um. Os dois veem a mesma taça e conversam em voz alta, fora do app. A partida dura **45 segundos**. O sommelier **Bigode** comenta a taça nos dois celulares, e os ingredientes caem com física 2D. No fim, os dois veem o drink esperado, o que foi para a taça (cada ícone e o ingrediente de verdade) e uma **nota de 0 a 10**.
 
 - URL futura: `https://arturmilk.github.io/mvp-advergames/drink-as-cegas/`
 - QR code: `qr/qr-drink-as-cegas.png` e `.svg` (gerar de novo com `python drink-as-cegas/tools/make_qr.py [url]`)
@@ -14,11 +14,31 @@ Jogo cooperativo para **dois celulares** (retrato, 360–480 px). Um jogador é 
 2. **Avatar**: 6 avatares prontos, ou monte com cor, rosto e acessório (adesivos SVG desenhados no código).
 3. **Códigos**: "Seu código" (4 caracteres, sem 0/O e 1/I/L) e "Colocar código". Quem digita o código do outro chama para a partida. "Convidar" compartilha o link `…/drink-as-cegas/?c=CÓDIGO`, que já chama ao abrir.
 4. **Partida encontrada**: o jogo sorteia quem é o GUIA (`roles`) e explica o papel. Os dois apertam "Estou pronto", aí vem a contagem 3, 2, 1.
-5. **Partida (30 s)**:
+5. **Partida (45 s)**:
    - GUIA: card da receita (rosa) e a taça.
    - MISTURADOR: a taça, 12 ícones misteriosos (glifo e cor sorteados a cada partida), "Tirar o último" e "Servir!".
    - A taça é a mesma para os dois e mostra o que caiu nela (`mixerSeesRealInGlass`).
 6. **Resultado**: nota e estrelas, a tabela "receita × feito", "o que foi para a taça" (ícone = ingrediente) e Revanche (os papéis trocam) ou Sair.
+
+## Sommelier Bigode (`CONFIG.sommelier`)
+
+É um personagem adesivo: hipster magro com bigode, óculos redondos, suspensório, gravata-borboleta e tatuagens old school. Foi gerado no Higgsfield (`gpt_image_2_5`); o original está em `assets/_raw/sommelier-higgsfield.png`. O recorte usado no jogo é `assets/sommelier.webp` (315×480, 39 KB). Ele fica à direita da taça, atrás dela, na mesma posição para o guia e para o misturador.
+
+- **Uma fala por ingrediente:** todo ingrediente que cai na taça é anunciado pelo nome ("Limão!"), por no máximo 1 s (`nameMs`).
+- **Observações:** ele também solta comentários como "É uma mistura bem... arrojada.". Saem logo depois do nome, quando não chega outro ingrediente, e dependem do momento: no início, depois de um ingrediente errado, quando passa da quantidade, ao tirar o último ou ao acaso. As frases e as chances ficam em `sommelier.lines` e `*Chance`.
+- **Iguais nos dois:** quem hospeda escolhe a fala, com sorteio pela semente da partida, e manda junto com o estado da taça.
+
+## Física (`CONFIG.physics`, Matter.js 0.20)
+
+- Os sólidos (limão, gelo, hortelã, morango, açúcar) caem do topo da tela, quicam e se empilham na taça.
+- Os líquidos caem como gota e, ao chegar na superfície, viram uma camada com respingo.
+- Paredes invisíveis sobem acima da borda e são grossas, para nada atravessar nem quicar para fora.
+- "Tirar o último" remove o corpo.
+- O Matter.js (`vendor/matter.min.js`, MIT, 26 KB com gzip) carrega com `defer`, sem atrasar a primeira tela. Se não carregar, a taça volta para o desenho estático.
+- No máximo 14 corpos e um único canvas, com nitidez limitada a 2×.
+- Cada celular simula a física por conta própria. A taça tem o mesmo conteúdo nos dois, mas a posição exata de cada item pode variar um pouco.
+
+**Peso da página (com gzip):** cerca de 200 KB no total, contando HTML, PeerJS, Matter.js, sommelier e fontes.
 
 ## Nota do drink (`CONFIG.scoring`)
 
@@ -46,9 +66,20 @@ Jogo cooperativo para **dois celulares** (retrato, 360–480 px). Um jogador é 
 
 ## Ganchos de teste (`window.__dc`)
 
-`__dc.step(s)` avança o relógio manualmente (o modo determinístico; os temporizadores reais param de contar). Também há `__dc.seed(n)` (fixa o sorteio de receita e ícones no lado que hospeda), `__dc.tap(id)` (toca no ícone misterioso desse ingrediente), `__dc.recipe()`, `__dc.role()`, `__dc.state()`, `__dc.score(recipe, glass, leftMs)` e `__dc.setPlayer(nick)`.
+`__dc.step(s)` avança o relógio e a física manualmente (o modo determinístico; os temporizadores reais param de contar). `__dc.fx()` mostra os corpos e quantos estão dentro da taça, e `__dc.talk()` mostra a fala atual do sommelier. Também há `__dc.seed(n)` (fixa o sorteio de receita e ícones no lado que hospeda), `__dc.tap(id)` (toca no ícone misterioso desse ingrediente), `__dc.recipe()`, `__dc.role()`, `__dc.state()`, `__dc.score(recipe, glass, leftMs)` e `__dc.setPlayer(nick)`.
 
-## Testes feitos (17/11/2026)
+## Testes feitos (18/11/2026, sommelier + física + 45 s)
+
+`tools/teste-playwright.js`, 41 verificações, rodado 5 vezes seguidas sem falha:
+
+- O sommelier fala o nome do último ingrediente, com o mesmo texto e o mesmo número de fala nos dois celulares.
+- Depois de assentar, todos os sólidos ficam dentro da taça nos dois (guia e misturador).
+- Os líquidos viram camada.
+- "Tirar o último" remove o corpo.
+- O tempo esgota em 45 s.
+- Partida com BOT, 360/430/480 px sem rolagem horizontal e console limpo.
+
+## Testes anteriores (17/11/2026)
 
 `tools/teste-playwright.js` (Chromium headless, duas abas `?local=1`, viewport de celular, 37 verificações, rodado 3 vezes seguidas sem falha):
 

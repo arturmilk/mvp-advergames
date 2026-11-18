@@ -12,7 +12,7 @@ const CONFIG = {
   storagePrefix: 'dc_',           // prefixo de localStorage (próprio deste jogo)
 
   /* ---------- Partida ---------- */
-  roundSeconds: 30,               // tempo da partida
+  roundSeconds: 45,               // tempo da partida
   countdownSeconds: 3,            // 3, 2, 1 antes de começar
   roles: 'random',                // quem é o GUIA (vê a receita): 'random' | 'host' (quem foi chamado) | 'guest' (quem chamou)
   swapRolesOnRematch: true,       // na revanche os papéis se invertem
@@ -23,6 +23,40 @@ const CONFIG = {
   guideSeesChecklist: false,      // true = o GUIA vê ✓ na receita conforme acerta (mais fácil)
   mixerSeesRealInGlass: true,     // a taça é a mesma para os dois: true = o MISTURADOR também vê o que caiu nela
   alcoholFree: false,             // true = só receitas sem álcool (ex.: evento com menor de idade / CONAR)
+
+  /* ---------- Sommelier (personagem que comenta a taça; aparece igual nos dois celulares) ----------
+     Toda vez que um ingrediente cai na taça ele fala o nome (uma fala por ingrediente, no máximo nameMs).
+     De vez em quando solta uma observação, depois de um respiro sem ingrediente novo. */
+  sommelier: {
+    enabled: true,
+    name: 'Bigode',
+    image: 'assets/sommelier.webp',
+    nameMs: 900,                  // duração da fala com o nome do ingrediente (máx. 1 s)
+    nameText: '{name}!',          // {name} = nome do ingrediente
+    obsMs: 1800,                  // duração de uma observação
+    obsChance: 0.3,               // chance de observação depois de um ingrediente certo
+    wrongChance: 0.7,             // ...depois de um ingrediente que não está na receita
+    repeatChance: 0.6,            // ...quando passa da quantidade da receita
+    undoChance: 0.5,              // ...quando o misturador tira o último
+    lines: {
+      start:   ['Me surpreendam.', 'Vamos ver do que são capazes.', 'Taça limpa, expectativa alta.'],
+      general: ['Hmm... interessante.', 'Ousado. Gosto.', 'Isso tem personalidade.', 'Clássico, mas com atitude.', 'Notas de... coragem.', 'Tá ficando instagramável.'],
+      wrong:   ['É uma mistura bem... arrojada.', 'Isso não estava no meu cardápio.', 'Corajoso. Muito corajoso.', 'Meu bigode tremeu agora.', 'Hmm. Experimental.'],
+      repeat:  ['Mais ainda?', 'Generoso, hein.', 'Calma, não é sopa.'],
+      undo:    ['Melhor assim.', 'Sábia decisão.', 'Arrependimento é elegante.']
+    }
+  },
+
+  /* ---------- Física dos itens (Matter.js 2D; leve: no máximo maxItemsInGlass corpos) ----------
+     Os sólidos (limão, gelo, folha...) caem do topo da tela e se acomodam na taça; os líquidos caem como gota e viram camada. */
+  physics: {
+    enabled: true,
+    gravity: 1.3,                 // 1 = gravidade padrão do Matter.js
+    restitution: 0.35,            // quique (0 = não quica)
+    friction: 0.4,
+    itemSize: 0.46,               // tamanho do adesivo em relação à largura da taça
+    spin: 0.25                    // giro inicial aleatório
+  },
 
   /* ---------- Nota do drink (0 a 10) ----------
      acerto = (unidades certas − extraWeight × unidades a mais ou erradas) ÷ unidades da receita
